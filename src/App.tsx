@@ -5,31 +5,22 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import * as React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
-import LoginPage from './pages/LoginPage';
-import OverviewPage from './pages/OverviewPage';
-import UsersPage from './pages/UsersPage';
-import OrdersPage from './pages/OrdersPage';
-import PaymentsPage from './pages/PaymentsPage';
-import CatalogPage from './pages/CatalogPage';
-import VariantsPage from './pages/VariantsPage';
-import ContentPage from './pages/ContentPage';
-import ProductionPage from './pages/ProductionPage';
-import SettingsPage from './pages/SettingsPage';
-import HelpPage from './pages/HelpPage';
 import { DashboardLayout } from './components/dashboard/Layout';
 import { useAuthStore } from './store/authStore';
 import { INTERNAL_ALLOWED_ROLES } from './types';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30000,
-      refetchOnWindowFocus: true,
-    },
-  },
-});
+const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
+const UsersPage = React.lazy(() => import('./pages/UsersPage'));
+const OrdersPage = React.lazy(() => import('./pages/OrdersPage'));
+const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage'));
+const CatalogPage = React.lazy(() => import('./pages/CatalogPage'));
+const VariantsPage = React.lazy(() => import('./pages/VariantsPage'));
+const ContentPage = React.lazy(() => import('./pages/ContentPage'));
+const ProductionPage = React.lazy(() => import('./pages/ProductionPage'));
+const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
+const HelpPage = React.lazy(() => import('./pages/HelpPage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
@@ -45,29 +36,37 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
       <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          
-          <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Navigate to="/overview" replace />} />
-            <Route path="/overview" element={<OverviewPage />} />
-            <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/payments" element={<PaymentsPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/variants" element={<VariantsPage />} />
-            <Route path="/content" element={<ContentPage />} />
-            <Route path="/productions" element={<ProductionPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-          </Route>
+        <React.Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] text-sm font-medium text-gray-500">
+              Loading dashboard...
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
 
-          <Route path="*" element={<Navigate to="/overview" replace />} />
-        </Routes>
+            <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+              <Route path="/" element={<Navigate to="/overview" replace />} />
+              <Route path="/overview" element={<OverviewPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/payments" element={<PaymentsPage />} />
+              <Route path="/catalog" element={<CatalogPage />} />
+              <Route path="/variants" element={<VariantsPage />} />
+              <Route path="/content" element={<ContentPage />} />
+              <Route path="/productions" element={<ProductionPage />} />
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpPage />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/overview" replace />} />
+          </Routes>
+        </React.Suspense>
       </Router>
       <Toaster position="top-right" richColors closeButton />
-    </QueryClientProvider>
+    </>
   );
 }
