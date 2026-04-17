@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import OverviewPage from './pages/OverviewPage';
 import UsersPage from './pages/UsersPage';
 import OrdersPage from './pages/OrdersPage';
+import PaymentsPage from './pages/PaymentsPage';
 import { DashboardLayout } from './components/dashboard/Layout';
 import { useAuthStore } from './store/authStore';
 
@@ -46,7 +47,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/overview" replace />} />
             <Route path="/overview" element={<OverviewPage />} />
             <Route path="/orders" element={<OrdersPage />} />
-            <Route path="/payments" element={<div className="p-8 text-center text-gray-500">Payments Tracking (Under Construction)</div>} />
+            <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<div className="p-8 text-center text-gray-500">Global Settings (Under Construction)</div>} />
             <Route path="/help" element={<div className="p-8 text-center text-gray-500">Help & Support (Under Construction)</div>} />
