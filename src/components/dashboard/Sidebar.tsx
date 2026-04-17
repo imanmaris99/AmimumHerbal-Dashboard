@@ -9,6 +9,7 @@ import {
   LogOut,
   ShieldCheck,
   Boxes,
+  Layers3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleGuard } from '../RoleGuard';
@@ -20,6 +21,7 @@ const sharedNavItems = [
   { icon: ShoppingBag, label: 'Orders', path: '/orders', description: 'Pantau dan review order customer' },
   { icon: CreditCard, label: 'Payments', path: '/payments', description: 'Monitor transaksi pembayaran' },
   { icon: Boxes, label: 'Catalog Management', path: '/catalog', description: 'Submit product baru dan pantau struktur katalog' },
+  { icon: Layers3, label: 'Variant Management', path: '/variants', description: 'Kelola pack type dan variant sesuai struktur BE' },
 ];
 
 const ownerNavItems = [

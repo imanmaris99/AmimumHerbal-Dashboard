@@ -42,6 +42,7 @@ Halaman/fitur yang boleh diakses:
 - `/orders`
 - `/payments`
 - `/catalog`
+- `/variants`
 
 ### 2. Owner-only
 Halaman/fitur yang hanya boleh diakses owner:
@@ -59,6 +60,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - orders live ke backend admin orders
 - payments live ke backend admin payments
 - catalog management awal untuk submit product baru
+- variant / pack type management awal sesuai struktur BE
 - users live ke backend admin users
 - owner-only visibility untuk area sensitif
 - topbar/sidebar sudah disejajarkan dengan role matrix internal
@@ -73,6 +75,11 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `GET /brand/all`
 - `GET /product/all`
 - `POST /product/create`
+- `GET /type/all`
+- `POST /type/create`
+- `PUT /type/{type_id}`
+- `PUT /type/image/{type_id}`
+- `DELETE /type/delete/{type_id}`
 
 ## Deploy ke Vercel free
 1. Import repo ini ke Vercel
@@ -88,4 +95,6 @@ Halaman/fitur yang hanya boleh diakses owner:
 - Dashboard ini sengaja dipisah dari frontend customer agar boundary auth, UX, dan security tetap jelas.
 - Rollout owner-only write actions dibuat bertahap agar aman dan mudah diaudit.
 - Submit product baru mengikuti diagram database utama: `products.product_by_id -> productions.id`, lalu tahap berikutnya melengkapi `pack_types.product_id -> products.id` untuk variant/kemasan/stok.
+- Matrix endpoint dashboard harus selalu mengikuti struktur backend: shared internal untuk endpoint dengan `admin_access_required`, owner-only hanya untuk area sensitif yang memang dipisah guard-nya.
+- QA dashboard harus memeriksa 3 hal: akses role, kontrak endpoint, dan kesesuaian relasi DB pada payload create/update.
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
