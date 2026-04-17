@@ -8,6 +8,24 @@ export interface User {
   isActive: boolean;
 }
 
+export interface LoginResponse {
+  status_code: number;
+  message: string;
+  data: {
+    access_token: {
+      access_token: string;
+      token_type: string;
+      exp: string;
+    };
+    user: {
+      id: string;
+      email: string;
+      role: UserRole;
+      is_active: boolean;
+    };
+  };
+}
+
 export interface AuthState {
   user: User | null;
   token: string | null;

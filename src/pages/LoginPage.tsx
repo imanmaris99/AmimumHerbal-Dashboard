@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
+import { LoginResponse, UserRole } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,26 +23,37 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Mock login logic - in real app, call POST /admin/login
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      let role: 'owner' | 'admin' = 'admin';
-      let name = 'Staff Admin';
-      
-      if (email.includes('owner')) {
-        role = 'owner';
-        name = 'Main Owner';
+      const response = await api.post<LoginResponse>('/admin/login', {
+        email,
+        password,
+      });
+
+      const payload = response.data.data;
+      const backendUser = payload.user;
+      const role = backendUser.role as UserRole;
+
+      if (role !== 'admin' && role !== 'owner') {
+        throw new Error('Akun ini tidak memiliki akses ke dashboard internal.');
       }
 
+      const displayName = role === 'owner' ? 'Owner' : 'Admin';
+
       setAuth(
-        { id: '1', name, email, role, isActive: true },
-        'dummy-jwt-token'
+        {
+          id: backendUser.id,
+          name: displayName,
+          email: backendUser.email,
+          role,
+          isActive: backendUser.is_active,
+        },
+        payload.access_token.access_token
       );
       
-      toast.success(`Welcome back, ${name}!`);
+      toast.success(`Welcome back, ${displayName}!`);
       navigate('/overview');
-    } catch (err) {
-      toast.error('Login failed. Please check your credentials.');
+    } catch (err: any) {
+      const message = err?.response?.data?.detail?.message || err?.message || 'Login failed. Please check your credentials.';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +138,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pb-8 pt-2">
             <p className="text-xs text-center text-gray-400 px-8">
-              Tip: Use email containing "owner" to test owner-only features.
+              Gunakan akun internal dengan role <strong>admin</strong> atau <strong>owner</strong> untuk masuk ke dashboard.
             </p>
           </CardFooter>
         </Card>
