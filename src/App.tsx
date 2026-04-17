@@ -12,6 +12,7 @@ import OverviewPage from './pages/OverviewPage';
 import UsersPage from './pages/UsersPage';
 import OrdersPage from './pages/OrdersPage';
 import PaymentsPage from './pages/PaymentsPage';
+import CatalogPage from './pages/CatalogPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import { DashboardLayout } from './components/dashboard/Layout';
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/overview" element={<OverviewPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/help" element={<HelpPage />} />

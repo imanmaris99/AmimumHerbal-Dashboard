@@ -41,6 +41,7 @@ Halaman/fitur yang boleh diakses:
 - `/overview`
 - `/orders`
 - `/payments`
+- `/catalog`
 
 ### 2. Owner-only
 Halaman/fitur yang hanya boleh diakses owner:
@@ -57,6 +58,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - overview live ke dashboard summary
 - orders live ke backend admin orders
 - payments live ke backend admin payments
+- catalog management awal untuk submit product baru
 - users live ke backend admin users
 - owner-only visibility untuk area sensitif
 - topbar/sidebar sudah disejajarkan dengan role matrix internal
@@ -68,6 +70,9 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `GET /admin/payments`
 - `GET /admin/users`
 - `PATCH /admin/users/{user_id}/status`
+- `GET /brand/all`
+- `GET /product/all`
+- `POST /product/create`
 
 ## Deploy ke Vercel free
 1. Import repo ini ke Vercel
@@ -82,4 +87,5 @@ Halaman/fitur yang hanya boleh diakses owner:
 ## Catatan implementasi
 - Dashboard ini sengaja dipisah dari frontend customer agar boundary auth, UX, dan security tetap jelas.
 - Rollout owner-only write actions dibuat bertahap agar aman dan mudah diaudit.
+- Submit product baru mengikuti diagram database utama: `products.product_by_id -> productions.id`, lalu tahap berikutnya melengkapi `pack_types.product_id -> products.id` untuk variant/kemasan/stok.
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
