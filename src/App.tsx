@@ -13,6 +13,7 @@ import { INTERNAL_ALLOWED_ROLES } from './types';
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const UsersPage = React.lazy(() => import('./pages/UsersPage'));
+const UserEditPage = React.lazy(() => import('./pages/UserEditPage'));
 const OrdersPage = React.lazy(() => import('./pages/OrdersPage'));
 const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage'));
 const CatalogPage = React.lazy(() => import('./pages/CatalogPage'));
@@ -58,6 +59,7 @@ export default function App() {
               <Route path="/content" element={<ContentPage />} />
               <Route path="/productions" element={<ProductionPage />} />
               <Route path="/users" element={<UsersPage />} />
+              <Route path="/users/edit/:userId" element={<UserEditPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/help" element={<HelpPage />} />
             </Route>

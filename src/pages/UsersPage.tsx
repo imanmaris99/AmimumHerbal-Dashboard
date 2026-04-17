@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical, Search, Filter, ShieldCheck, User as UserIcon, Users, UserCheck, Shield, UserX, PencilLine, Loader2, Save } from 'lucide-react';
+import { MoreVertical, Search, Filter, ShieldCheck, User as UserIcon, Users, UserCheck, Shield, UserX, PencilLine } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,17 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { AdminProfileEditPayload } from '@/types';
 import { getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
 
 type DashboardUserRole = 'owner' | 'admin' | 'customer';
@@ -67,15 +58,8 @@ interface AdminUserStatusResponse {
 
 export default function UsersPage() {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
-  const [editingUser, setEditingUser] = useState<AdminUserInfo | null>(null);
-  const [editForm, setEditForm] = useState<AdminProfileEditPayload>({
-    fullname: '',
-    firstname: '',
-    lastname: '',
-    phone: '',
-    address: '',
-  });
   const queryClient = useQueryClient();
 
   if (user?.role !== 'owner') {
@@ -111,18 +95,6 @@ export default function UsersPage() {
 
   const users = usersResponse?.data ?? [];
 
-  useEffect(() => {
-    if (!editingUser) return;
-    const fullname = `${editingUser.firstname ?? ''} ${editingUser.lastname ?? ''}`.trim();
-    setEditForm({
-      fullname,
-      firstname: editingUser.firstname ?? '',
-      lastname: editingUser.lastname ?? '',
-      phone: editingUser.phone ?? '',
-      address: '',
-    });
-  }, [editingUser]);
-
   const filteredUsers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     if (!normalizedSearch) return users;
@@ -137,22 +109,6 @@ export default function UsersPage() {
     });
   }, [users, search]);
 
-  const updateUserMutation = useMutation({
-    mutationFn: async ({ userId, payload }: { userId: string; payload: AdminProfileEditPayload }) => {
-      const response = await api.put(`/admin/users/${userId}`, payload);
-      return response.data;
-    },
-    onSuccess: (response) => {
-      toast.success(response?.message || 'User profile updated successfully.');
-      setEditingUser(null);
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || 'Failed to update user profile.';
-      toast.error(message);
-    },
-  });
-
   const handleToggleStatus = (targetUser: AdminUserInfo) => {
     toggleUserStatusMutation.mutate({
       userId: targetUser.id,
@@ -161,35 +117,7 @@ export default function UsersPage() {
   };
 
   const handleStartEdit = (targetUser: AdminUserInfo) => {
-    setEditingUser(targetUser);
-  };
-
-  const handleSubmitEdit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!editingUser) return;
-
-    const firstname = editForm.firstname.trim();
-    const lastname = editForm.lastname.trim();
-    const phone = editForm.phone.trim();
-    const address = editForm.address.trim();
-    const fullname = `${firstname} ${lastname}`.trim();
-
-    if (!firstname || !lastname || !phone || !address) {
-      toast.error('Firstname, lastname, phone, dan address wajib diisi.');
-      return;
-    }
-
-    updateUserMutation.mutate({
-      userId: editingUser.id,
-      payload: {
-        fullname,
-        firstname,
-        lastname,
-        phone,
-        address,
-      },
-    });
+    navigate(`/users/edit/${targetUser.id}`);
   };
 
   const ownerCount = filteredUsers.filter((u) => u.role === 'owner').length;
@@ -390,7 +318,7 @@ export default function UsersPage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
           <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
           <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-            Owner memonitor keseluruhan akun dan sekarang juga bisa memperbarui data profil user dari halaman ini. Kontrol status customer tetap aktif, sementara role internal tetap dijaga terpisah agar tidak terjadi perubahan otoritas yang sembrono.
+            Owner memonitor keseluruhan akun dan sekarang juga bisa memperbarui data profil user melalui page edit khusus. Kontrol status customer tetap aktif, sementara role internal tetap dijaga terpisah agar tidak terjadi perubahan otoritas yang sembrono.
           </p>
         </Card>
 
@@ -400,74 +328,10 @@ export default function UsersPage() {
             Halaman ini sengaja owner-only agar pengawasan user, pemisahan akun internal, dan kontrol customer account tetap terpusat pada role dengan otoritas tertinggi.
           </p>
           <p className="mt-2 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
-            Source: GET /admin/users + PUT /admin/users/:id + PATCH /admin/users/:id/status
+            Source: GET /admin/users + GET /admin/users/:id + PUT /admin/users/:id + PATCH /admin/users/:id/status
           </p>
         </Card>
       </div>
-      <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-        <DialogContent className="w-[calc(100vw-2rem)] max-w-xl rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit User Profile</DialogTitle>
-            <DialogDescription>
-              Pengaturan khusus owner untuk memperbarui data user dari modul manajemen pengguna.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form className="space-y-5 mt-4" onSubmit={handleSubmitEdit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-user-firstname">Firstname</Label>
-                <Input id="edit-user-firstname" value={editForm.firstname} onChange={(e) => setEditForm((prev) => ({ ...prev, firstname: e.target.value, fullname: `${e.target.value} ${prev.lastname}`.trim() }))} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-user-lastname">Lastname</Label>
-                <Input id="edit-user-lastname" value={editForm.lastname} onChange={(e) => setEditForm((prev) => ({ ...prev, lastname: e.target.value, fullname: `${prev.firstname} ${e.target.value}`.trim() }))} required />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-user-fullname">Fullname</Label>
-              <Input id="edit-user-fullname" value={editForm.fullname} onChange={(e) => setEditForm((prev) => ({ ...prev, fullname: e.target.value }))} required />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-user-phone">Phone</Label>
-                <Input id="edit-user-phone" value={editForm.phone} onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))} required />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={editingUser?.email || ''} disabled className="bg-gray-50 border-gray-100 text-gray-500" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-user-address">Address</Label>
-              <textarea
-                id="edit-user-address"
-                value={editForm.address}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, address: e.target.value }))}
-                className="min-h-[120px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full"
-                placeholder="Alamat user"
-                required
-              />
-            </div>
-
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
-              <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => setEditingUser(null)}>
-                Cancel
-              </Button>
-              <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto" disabled={updateUserMutation.isPending}>
-                {updateUserMutation.isPending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-                ) : (
-                  <><Save className="w-4 h-4 mr-2" />Save Changes</>
-                )}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
