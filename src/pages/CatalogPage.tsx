@@ -193,7 +193,7 @@ export default function CatalogPage() {
                     <option value="">Pilih production</option>
                     {productions.map((production) => (
                       <option key={production.id} value={production.id}>{production.name}{production.category ? ` - ${production.category}` : ''}</option>
-                    ))}
+                    )).slice(0, 50)}
                   </select>
                 </div>
               </div>

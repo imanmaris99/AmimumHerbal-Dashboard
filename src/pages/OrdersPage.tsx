@@ -43,7 +43,7 @@ export default function OrdersPage() {
     queryFn: async () => {
       const response = await api.get<AdminOrdersResponse>('/admin/orders', {
         params: {
-          limit: 100,
+          limit: 30,
           skip: 0,
           ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
         },

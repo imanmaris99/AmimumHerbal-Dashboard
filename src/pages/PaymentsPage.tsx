@@ -46,7 +46,7 @@ export default function PaymentsPage() {
     queryFn: async () => {
       const response = await api.get<AdminPaymentsResponse>('/admin/payments', {
         params: {
-          limit: 100,
+          limit: 30,
           skip: 0,
           ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
         },

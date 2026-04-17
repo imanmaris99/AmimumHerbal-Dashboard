@@ -452,16 +452,18 @@ export default function VariantsPage() {
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Discount</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Expiry</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Image</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {variantsLoading || productsLoading ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
               ) : filteredVariants.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
               ) : (
                 filteredVariants.slice(0, 10).map((variant, index) => (
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -478,10 +480,21 @@ export default function VariantsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">
+                          {typeof variant.discounted_price === 'number'
+                            ? `Rp ${Number(variant.discounted_price).toLocaleString('id-ID')}`
+                            : '-'}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium">discounted price</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${Number(variant.discount || 0) > 0 ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-600'}`}>
                         {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'no discount'}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-sm text-gray-600">{variant.expiration || '-'}</TableCell>
                     <TableCell className="text-sm text-gray-600">{variant.img ? 'Available' : 'No image'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

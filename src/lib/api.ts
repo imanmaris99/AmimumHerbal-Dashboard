@@ -1,8 +1,20 @@
 import axios from 'axios';
+import { QueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://amimumprojectbe-production.up.railway.app',
+});
+
+export const dashboardQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
 });
 
 api.interceptors.request.use((config) => {
