@@ -11,6 +11,7 @@ import {
   Boxes,
   Layers3,
   FileText,
+  Factory,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleGuard } from '../RoleGuard';
@@ -23,6 +24,7 @@ const sharedNavItems = [
   { icon: CreditCard, label: 'Payments', path: '/payments', description: 'Monitor transaksi pembayaran' },
   { icon: Boxes, label: 'Catalog Management', path: '/catalog', description: 'Submit product baru dan pantau struktur katalog' },
   { icon: Layers3, label: 'Variant Management', path: '/variants', description: 'Kelola pack type dan variant sesuai struktur BE' },
+  { icon: Factory, label: 'Production Management', path: '/productions', description: 'Kelola brand atau production sebagai relasi katalog' },
   { icon: FileText, label: 'Content Management', path: '/content', description: 'Pantau artikel dan kategori sesuai struktur BE' },
 ];
 

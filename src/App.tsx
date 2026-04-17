@@ -15,6 +15,7 @@ import PaymentsPage from './pages/PaymentsPage';
 import CatalogPage from './pages/CatalogPage';
 import VariantsPage from './pages/VariantsPage';
 import ContentPage from './pages/ContentPage';
+import ProductionPage from './pages/ProductionPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import { DashboardLayout } from './components/dashboard/Layout';
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/catalog" element={<CatalogPage />} />
             <Route path="/variants" element={<VariantsPage />} />
             <Route path="/content" element={<ContentPage />} />
+            <Route path="/productions" element={<ProductionPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/help" element={<HelpPage />} />

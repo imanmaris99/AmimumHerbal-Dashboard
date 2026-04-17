@@ -44,6 +44,7 @@ Halaman/fitur yang boleh diakses:
 - `/catalog`
 - `/variants`
 - `/content`
+- `/productions`
 
 ### 2. Owner-only
 Halaman/fitur yang hanya boleh diakses owner:
@@ -63,6 +64,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - catalog management awal untuk submit product baru
 - variant / pack type management awal sesuai struktur BE
 - content management awal untuk article/category layer
+- production / brand management awal untuk relasi katalog
 - users live ke backend admin users
 - owner-only visibility untuk area sensitif
 - topbar/sidebar sudah disejajarkan dengan role matrix internal
@@ -83,8 +85,11 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `PUT /type/image/{type_id}`
 - `DELETE /type/delete/{type_id}`
 - `GET /articles/all`
+- `POST /articles/create`
 - `GET /categories/all`
 - `POST /categories/post`
+- `GET /brand/all`
+- `POST /brand/create`
 
 ## Deploy ke Vercel free
 1. Import repo ini ke Vercel
@@ -110,6 +115,8 @@ Halaman/fitur yang hanya boleh diakses owner:
   - `PUT /type/:type_id` memperbarui stock/discount dengan respons sukses
   - `PUT /type/image/:type_id` menerima file valid untuk upload image variant
   - `GET /articles/all` dan `GET /categories/all` memberi data monitoring content
+  - `POST /articles/create` membuat article dengan token internal valid
   - `POST /categories/post` membuat category dengan token internal valid
+  - `POST /brand/create` membuat production dengan `herbal_category_id` valid
   - empty state dan loading state frontend tidak boleh crash saat data kosong
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
