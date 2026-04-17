@@ -189,15 +189,15 @@ export default function OverviewPage() {
             ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8">
         <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-8 pt-8 px-8">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-8 pt-8 px-6 sm:px-8">
             <div>
               <CardTitle className="text-lg font-bold tracking-tight">{t('overview.orderStatus')}</CardTitle>
               <CardDescription>{t('overview.orderStatusDesc')}</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="px-4 pb-8">
+          <CardContent className="px-2 sm:px-4 pb-8">
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={orderStatusChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -233,7 +233,7 @@ export default function OverviewPage() {
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.paymentStatus')}</CardTitle>
             <CardDescription>{t('overview.paymentStatusDesc')}</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center p-8">
+          <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8">
             <div className="h-[250px] w-full relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -251,7 +251,7 @@ export default function OverviewPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 w-full mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 w-full mt-6">
               {paymentStatusChart.map((entry, i) => (
                 <div key={entry.name} className="flex flex-col items-center">
                   <div className="flex items-center gap-1.5 mb-1">
@@ -267,7 +267,7 @@ export default function OverviewPage() {
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between px-8 py-8">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-8 py-8">
           <div>
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
             <CardDescription>{t('overview.recentOrdersDesc')}</CardDescription>
@@ -276,8 +276,8 @@ export default function OverviewPage() {
             {t('overview.viewAll')}
           </Button>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+          <Table className="min-w-[640px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50">
                 <TableHead className="w-[80px] font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.no')}</TableHead>

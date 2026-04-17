@@ -172,7 +172,7 @@ export default function CatalogPage() {
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PackagePlus className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matrix</span></div><p className="text-sm font-medium text-gray-500 mt-4">Submit Product</p><p className="text-2xl font-bold text-gray-900 mt-1">Enabled</p><p className="text-[11px] text-gray-400 mt-2">Shared internal, write action terkontrol</p></CardContent></Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-8">
+      <div className="grid grid-cols-1 2xl:grid-cols-[1.1fr_0.9fr] gap-6 xl:gap-8 items-start">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 pt-8 pb-4">
             <div>
@@ -224,9 +224,9 @@ export default function CatalogPage() {
                 <textarea id="instruction" value={form.instruction} onChange={(e) => handleChange('instruction', e.target.value)} placeholder="Aturan pakai, saran konsumsi, atau petunjuk penggunaan" className="min-h-[110px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
               </div>
 
-              <div className="flex items-center justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>.</p>
-                <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
+                <p className="text-xs text-gray-500 leading-relaxed lg:max-w-xl">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>.</p>
+                <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {createProductMutation.isPending ? 'Submitting...' : 'Submit Product Baru'}
                 </Button>
@@ -236,7 +236,7 @@ export default function CatalogPage() {
         </Card>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
             <h3 className="text-lg font-bold text-emerald-900">Matrix submit product</h3>
             <div className="mt-4 space-y-3 text-sm text-emerald-800">
               <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit product baru karena endpoint backend memakai <code>admin_access_required</code>.</p>
@@ -253,7 +253,7 @@ export default function CatalogPage() {
 
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="px-8 pt-8 pb-4">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Existing products</h2>
                   <p className="text-sm text-gray-500 mt-1">Pantau produk yang sudah ada sebelum menambah item baru.</p>
@@ -264,8 +264,8 @@ export default function CatalogPage() {
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama produk, production, atau id..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-8">
-              <Table>
+            <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+              <Table className="min-w-[640px]">
                 <TableHeader className="bg-gray-50/50">
                   <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>

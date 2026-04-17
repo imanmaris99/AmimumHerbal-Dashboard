@@ -141,7 +141,7 @@ export default function PaymentsPage() {
         ))}
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-green-50 border-green-100 overflow-hidden p-8">
+      <Card className="border-none shadow-sm rounded-3xl bg-green-50 border-green-100 overflow-hidden p-6 sm:p-8">
         <h3 className="text-lg font-bold text-green-900">Visible gross amount</h3>
         <p className="text-3xl font-bold text-green-700 mt-2">Rp {grossVisible.toLocaleString('id-ID')}</p>
         <p className="text-green-700 text-sm mt-2 leading-relaxed">
@@ -150,8 +150,8 @@ export default function PaymentsPage() {
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-        <CardHeader className="px-8 pt-8 pb-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
+        <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -166,7 +166,7 @@ export default function PaymentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none"
+                className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none w-full md:w-auto"
               >
                 {paymentStatusOptions.map((status) => (
                   <option key={status} value={status}>
@@ -177,8 +177,8 @@ export default function PaymentsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+          <Table className="min-w-[1020px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Transaction</TableHead>
@@ -246,7 +246,7 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+      <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
         <h3 className="text-lg font-bold text-emerald-900">Peran halaman ini</h3>
         <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
           Halaman payments disiapkan untuk monitoring transaksi dan audit status pembayaran oleh admin maupun owner. Fokus utamanya adalah membaca health payment flow, status settlement, dan anomali fraud secara cepat.

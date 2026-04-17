@@ -165,8 +165,8 @@ export default function SettingsPage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            <Card className="border-none shadow-sm rounded-3xl overflow-hidden xl:col-span-1">
+          <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 xl:gap-8">
+            <Card className="border-none shadow-sm rounded-3xl overflow-hidden 2xl:col-span-1">
               <CardContent className="p-8 space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <Badge className="bg-emerald-50 text-emerald-600 border-none">Admin + Owner</Badge>
@@ -193,7 +193,7 @@ export default function SettingsPage() {
                   )}
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">{user?.name || 'Owner'}</h2>
-                    <p className="text-sm text-gray-500">{profileQuery.data?.email}</p>
+                    <p className="text-sm text-gray-500 break-all">{profileQuery.data?.email}</p>
                   </div>
                 </div>
 
@@ -231,15 +231,15 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            <div className="xl:col-span-2 space-y-8">
+            <div className="2xl:col-span-2 space-y-8">
               <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                <CardHeader className="px-8 pt-8 pb-4">
+                <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">Profil pribadi internal</h2>
                     <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /admin/edit-info</strong>.</p>
                   </div>
                 </CardHeader>
-                <CardContent className="px-8 pb-8">
+                <CardContent className="px-6 sm:px-8 pb-8">
                   <form
                     className="space-y-5"
                     onSubmit={(e) => {
@@ -281,9 +281,9 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       <p className="text-xs text-gray-500">Profil ini memengaruhi data akun internal yang sedang login, bukan data customer/public.</p>
-                      <Button type="submit" disabled={updateProfileMutation.isPending} className="rounded-xl bg-slate-900 hover:bg-slate-800">
+                      <Button type="submit" disabled={updateProfileMutation.isPending} className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto">
                         {updateProfileMutation.isPending ? (
                           <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>
                         ) : (
@@ -296,13 +296,13 @@ export default function SettingsPage() {
               </Card>
 
               <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                <CardHeader className="px-8 pt-8 pb-4">
+                <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">Ganti password internal</h2>
                     <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /admin/change-password</strong>.</p>
                   </div>
                 </CardHeader>
-                <CardContent className="px-8 pb-8">
+                <CardContent className="px-6 sm:px-8 pb-8">
                   <form
                     className="space-y-5"
                     onSubmit={(e) => {
@@ -325,7 +325,7 @@ export default function SettingsPage() {
                       Password tetap mengikuti policy backend, jadi harus cukup kuat dan lolos validasi server.
                     </div>
 
-                    <Button type="submit" disabled={changePasswordMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
+                    <Button type="submit" disabled={changePasswordMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                       {changePasswordMutation.isPending ? (
                         <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Memproses...</>
                       ) : (

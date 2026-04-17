@@ -259,8 +259,8 @@ export default function UsersPage() {
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-        <CardHeader className="px-8 pt-8 pb-4">
-          <div className="flex flex-col md:flex-row gap-4 items-center">
+        <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -278,8 +278,8 @@ export default function UsersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+          <Table className="min-w-[760px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="w-[320px] font-bold text-gray-400 text-[10px] uppercase">User Profile</TableHead>
@@ -385,7 +385,7 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
         <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
           <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
@@ -405,7 +405,7 @@ export default function UsersPage() {
         </Card>
       </div>
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-        <DialogContent className="sm:max-w-xl rounded-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-xl rounded-2xl">
           <DialogHeader>
             <DialogTitle>Edit User Profile</DialogTitle>
             <DialogDescription>
@@ -453,11 +453,11 @@ export default function UsersPage() {
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="ghost" className="rounded-xl" onClick={() => setEditingUser(null)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+              <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => setEditingUser(null)}>
                 Cancel
               </Button>
-              <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700" disabled={updateUserMutation.isPending}>
+              <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto" disabled={updateUserMutation.isPending}>
                 {updateUserMutation.isPending ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
                 ) : (

@@ -46,8 +46,8 @@ export function Topbar() {
   };
 
   return (
-    <header className="h-16 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 gap-2 sm:gap-4">
-      <div className="flex-1 min-w-0 mr-2 sm:mr-4">
+    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-8 py-3 md:py-4 flex items-center justify-between sticky top-0 z-10 gap-2 sm:gap-4 flex-wrap md:flex-nowrap">
+      <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 md:order-1 basis-full md:basis-auto">
         <Dialog>
           <DialogTrigger asChild>
             <button className="text-left w-full focus:outline-none min-w-0 rounded-md group block">
@@ -75,7 +75,7 @@ export function Topbar() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 px-2 text-xs font-semibold text-gray-600 hover:text-emerald-600">
@@ -92,7 +92,7 @@ export function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="hidden lg:flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
+        <div className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
           <ShieldCheck className="w-4 h-4" />
           <span className="text-xs font-semibold">{roleLabel}</span>
         </div>
@@ -102,13 +102,13 @@ export function Topbar() {
           <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
         </Button>
 
-        <div className="h-8 w-px bg-gray-100 mx-1" />
+        <div className="hidden sm:block h-8 w-px bg-gray-100 mx-1" />
 
         <div 
-          className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 group cursor-pointer"
+          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 group cursor-pointer min-w-0"
           onClick={() => setIsProfileOpen(true)}
         >
-          <div className="text-right hidden md:block">
+          <div className="text-right hidden lg:block min-w-0">
             <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors">{displayName}</p>
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
           </div>
@@ -118,7 +118,7 @@ export function Topbar() {
           </Avatar>
         </div>
 
-        <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar}>
+        <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={toggleSidebar}>
           <Menu className="w-6 h-6" />
         </Button>
       </div>
