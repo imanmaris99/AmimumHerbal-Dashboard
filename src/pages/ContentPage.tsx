@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, PlusCircle, Search, LayoutList, PenSquare, PencilLine } from 'lucide-react';
+import { FileText, PlusCircle, Search, LayoutList, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -29,28 +30,17 @@ interface CreateArticlePayload {
   img?: string;
 }
 
-interface UpdateArticlePayload {
-  title?: string;
-  description?: string;
-}
-
 const initialArticleForm: CreateArticlePayload = {
   title: '',
   description: '',
   img: '',
 };
 
-const initialEditForm: UpdateArticlePayload = {
-  title: '',
-  description: '',
-};
-
 export default function ContentPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [articleForm, setArticleForm] = useState(initialArticleForm);
-  const [editingArticleId, setEditingArticleId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState(initialEditForm);
 
   const { data: articlesResponse, isLoading: articlesLoading } = useQuery({
     queryKey: ['content-articles'],
@@ -77,24 +67,6 @@ export default function ContentPage() {
     },
   });
 
-  const updateArticleMutation = useMutation({
-    mutationFn: async ({ articleId, payload }: { articleId: number; payload: UpdateArticlePayload }) => {
-      const response = await api.put(`/articles/update/${articleId}`, payload);
-      return response.data;
-    },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || 'Artikel berhasil diperbarui.');
-      setEditingArticleId(null);
-      setEditForm(initialEditForm);
-      queryClient.invalidateQueries({ queryKey: ['content-articles'] });
-    },
-    onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui artikel.';
-      toast.error(String(message));
-    },
-  });
-
   const articles = articlesResponse?.data ?? [];
 
   const filteredArticles = useMemo(() => {
@@ -107,32 +79,6 @@ export default function ContentPage() {
   const submitArticle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     createArticleMutation.mutate(articleForm);
-  };
-
-  const startEdit = (article: ArticleItem) => {
-    const resolvedId = article.display_id ?? null;
-    setEditingArticleId(resolvedId);
-    setEditForm({
-      title: article.title,
-      description: article.description_list?.join('\n') || '',
-    });
-  };
-
-  const submitEditArticle = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!editingArticleId) {
-      toast.error('Pilih article yang ingin diedit terlebih dahulu.');
-      return;
-    }
-
-    updateArticleMutation.mutate({
-      articleId: editingArticleId,
-      payload: {
-        title: editForm.title?.trim() || undefined,
-        description: editForm.description?.trim() || undefined,
-      },
-    });
   };
 
   return (
@@ -151,7 +97,7 @@ export default function ContentPage() {
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PencilLine className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ops</span></div><p className="text-sm font-medium text-gray-500 mt-4">Create + Edit</p><p className="text-2xl font-bold text-gray-900 mt-1">Active</p><p className="text-[11px] text-gray-400 mt-2">POST /articles/create dan PUT /articles/update/:article_id</p></CardContent></Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 2xl:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 pt-8 pb-4">
             <div>
@@ -181,36 +127,18 @@ export default function ContentPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="px-8 pt-8 pb-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Edit article</h2>
-              <p className="text-sm text-gray-500 mt-1">Tersambung ke endpoint backend <strong>PUT /articles/update/:article_id</strong>.</p>
-            </div>
-          </CardHeader>
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={submitEditArticle} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="editing-article">Selected article</Label>
-                <Input id="editing-article" value={editingArticleId ? String(editingArticleId) : ''} placeholder="Pilih dari tabel overview" disabled />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-article-title">Article title</Label>
-                <Input id="edit-article-title" value={editForm.title || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Judul article yang diperbarui" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-article-description">Description</Label>
-                <textarea id="edit-article-description" value={editForm.description || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Deskripsi article yang diperbarui" className="min-h-[140px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs text-gray-500">Klik tombol <strong>Edit</strong> pada tabel overview untuk memuat data ke form ini.</p>
-                <Button type="submit" disabled={updateArticleMutation.isPending || !editingArticleId} className="rounded-xl bg-slate-900 hover:bg-slate-800">
-                  <PencilLine className="w-4 h-4 mr-2" />
-                  {updateArticleMutation.isPending ? 'Updating...' : 'Update Article'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
+        <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+          <h3 className="text-lg font-bold text-emerald-900">Flow edit article sekarang</h3>
+          <div className="mt-4 space-y-3 text-sm text-emerald-800">
+            <p>CTA <strong>Edit</strong> sekarang langsung menuju halaman edit article khusus agar flow create dan edit tidak bercampur.</p>
+            <ol className="list-decimal pl-5 space-y-1">
+              <li>Buka daftar article di overview</li>
+              <li>Klik <strong>Edit</strong> pada row yang dipilih</li>
+              <li>Masuk ke page edit article khusus</li>
+              <li>Simpan perubahan lalu kembali ke halaman content</li>
+            </ol>
+            <p className="pt-2 text-[11px] font-semibold text-emerald-900">Pattern ini diselaraskan dengan flow edit user dan production agar UX dashboard lebih konsisten.</p>
+          </div>
         </Card>
       </div>
 
@@ -225,8 +153,8 @@ export default function ContentPage() {
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari article..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-4 pb-8 overflow-x-auto">
+          <Table className="min-w-[720px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Article</TableHead>
@@ -250,7 +178,7 @@ export default function ContentPage() {
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{article.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => startEdit(article)} disabled={!article.display_id}>
+                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => article.display_id && navigate(`/content/edit/${article.display_id}`)} disabled={!article.display_id}>
                         <PencilLine className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
@@ -273,7 +201,7 @@ export default function ContentPage() {
               <li>admin dan owner bisa membuka halaman content</li>
               <li>list articles tetap aman saat data kosong</li>
               <li>form create article tidak submit saat field wajib kosong</li>
-              <li>edit form hanya aktif setelah row article dipilih</li>
+              <li>CTA edit langsung masuk ke halaman edit article</li>
             </ul>
           </div>
           <div>
