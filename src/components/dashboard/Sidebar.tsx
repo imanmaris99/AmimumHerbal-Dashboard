@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Boxes,
   Layers3,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleGuard } from '../RoleGuard';
@@ -22,6 +23,7 @@ const sharedNavItems = [
   { icon: CreditCard, label: 'Payments', path: '/payments', description: 'Monitor transaksi pembayaran' },
   { icon: Boxes, label: 'Catalog Management', path: '/catalog', description: 'Submit product baru dan pantau struktur katalog' },
   { icon: Layers3, label: 'Variant Management', path: '/variants', description: 'Kelola pack type dan variant sesuai struktur BE' },
+  { icon: FileText, label: 'Content Management', path: '/content', description: 'Pantau artikel dan kategori sesuai struktur BE' },
 ];
 
 const ownerNavItems = [

@@ -81,6 +81,8 @@ export default function VariantsPage() {
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
   const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
   const [updateForm, setUpdateForm] = useState<UpdateVariantPayload>(initialUpdateForm);
+  const [imageVariantId, setImageVariantId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const { data: productsResponse, isLoading: productsLoading } = useQuery({
     queryKey: ['variant-products'],
@@ -134,6 +136,30 @@ export default function VariantsPage() {
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
       const message = detail?.message || detail || 'Gagal memperbarui variant.';
+      toast.error(String(message));
+    },
+  });
+
+  const uploadVariantImageMutation = useMutation({
+    mutationFn: async ({ variantId, file }: { variantId: number; file: File }) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.put(`/type/image/${variantId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+    onSuccess: (response: any) => {
+      toast.success(response?.message || 'Image variant berhasil diperbarui.');
+      setImageVariantId(null);
+      setImageFile(null);
+      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
+    },
+    onError: (error: any) => {
+      const detail = error?.response?.data?.detail;
+      const message = detail?.message || detail || 'Gagal upload image variant.';
       toast.error(String(message));
     },
   });
@@ -204,6 +230,28 @@ export default function VariantsPage() {
     });
   };
 
+  const openImageFlow = (variant: VariantItem) => {
+    if (!variant.id) {
+      toast.error('Variant ini tidak memiliki id yang valid untuk upload image.');
+      return;
+    }
+
+    setImageVariantId(variant.id);
+    setImageFile(null);
+  };
+
+  const submitImageUpload = () => {
+    if (!imageVariantId || !imageFile) {
+      toast.error('Pilih file image terlebih dahulu.');
+      return;
+    }
+
+    uploadVariantImageMutation.mutate({
+      variantId: imageVariantId,
+      file: imageFile,
+    });
+  };
+
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -268,7 +316,7 @@ export default function VariantsPage() {
               </div>
 
               <div className="flex items-center justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed">Create variant sudah aktif lewat <strong>POST /type/create</strong>. Update stock/discount juga sudah mulai dihubungkan ke <strong>PUT /type/:type_id</strong>.</p>
+                <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update stock/discount aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>.</p>
                 <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
@@ -286,9 +334,9 @@ export default function VariantsPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li><code>GET /type/all</code> untuk monitoring variant</li>
                 <li><code>POST /type/create</code> untuk submit variant baru</li>
-                <li><code>PUT /type/:type_id</code> sudah mulai dipakai untuk update stock/discount</li>
-                <li><code>PUT /type/image/:type_id</code> dipetakan untuk batch image flow</li>
-                <li><code>DELETE /type/delete/:type_id</code> dipetakan sebagai delete flow sensitif</li>
+                <li><code>PUT /type/:type_id</code> aktif untuk update stock/discount</li>
+                <li><code>PUT /type/image/:type_id</code> aktif untuk upload image variant</li>
+                <li><code>DELETE /type/delete/:type_id</code> tetap dipetakan sebagai delete flow sensitif</li>
               </ul>
               <p>Flow relasi DB yang dipakai: <strong>products.id to pack_types.product_id</strong></p>
             </div>
@@ -297,42 +345,66 @@ export default function VariantsPage() {
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="px-8 pt-8 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Update stock / discount</h2>
-                <p className="text-sm text-gray-500 mt-1">Panel operasional cepat untuk variant yang dipilih dari list.</p>
+                <h2 className="text-lg font-bold text-gray-900">Operational action panels</h2>
+                <p className="text-sm text-gray-500 mt-1">Panel cepat untuk edit stock/discount dan upload image variant.</p>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8 space-y-4">
-              {editingVariantId ? (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="update-stock">Stock</Label>
-                      <Input id="update-stock" type="number" min="0" value={updateForm.stock} onChange={(e) => handleUpdateChange('stock', e.target.value)} />
+            <CardContent className="px-8 pb-8 space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Update stock / discount</h3>
+                {editingVariantId ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="update-stock">Stock</Label>
+                        <Input id="update-stock" type="number" min="0" value={updateForm.stock} onChange={(e) => handleUpdateChange('stock', e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="update-discount">Discount</Label>
+                        <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="update-discount">Discount</Label>
-                      <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
+                    <div className="flex items-center gap-3">
+                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                        <PencilLine className="w-4 h-4 mr-2" />
+                        {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setEditingVariantId(null); setUpdateForm(initialUpdateForm); }} className="rounded-xl">
+                        Cancel
+                      </Button>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
-                      <PencilLine className="w-4 h-4 mr-2" />
-                      {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
-                    </Button>
-                    <Button variant="outline" onClick={() => { setEditingVariantId(null); setUpdateForm(initialUpdateForm); }} className="rounded-xl">
-                      Cancel
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit stock dan discount.</p>
-              )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit stock dan discount.</p>
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Upload image variant</h3>
+                {imageVariantId ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="variant-image">Image file</Label>
+                      <Input id="variant-image" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                        <ImagePlus className="w-4 h-4 mr-2" />
+                        {uploadVariantImageMutation.isPending ? 'Uploading...' : 'Upload Image'}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setImageVariantId(null); setImageFile(null); }} className="rounded-xl">
+                        Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk upload image baru.</p>
+                )}
+              </div>
 
               <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 space-y-2">
-                <p><strong>Image flow</strong> belum diaktifkan di UI, tapi endpoint target sudah dipetakan:</p>
-                <p><code>PUT /type/image/:type_id</code></p>
-                <p><strong>Delete flow</strong> juga belum diaktifkan agar aman, tapi endpoint target sudah dipetakan:</p>
-                <p><code>DELETE /type/delete/:type_id</code></p>
+                <p><strong>Delete flow</strong> tetap belum diaktifkan di UI agar rollout aman.</p>
+                <p>Endpoint target yang dipetakan: <code>DELETE /type/delete/:type_id</code></p>
               </div>
             </CardContent>
           </Card>
@@ -358,14 +430,15 @@ export default function VariantsPage() {
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Discount</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Image</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {variantsLoading || productsLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
               ) : filteredVariants.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
               ) : (
                 filteredVariants.slice(0, 10).map((variant, index) => (
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -386,12 +459,13 @@ export default function VariantsPage() {
                         {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'no discount'}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-sm text-gray-600">{variant.img ? 'Available' : 'No image'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="rounded-xl" onClick={() => startEditing(variant)}>
                           <PencilLine className="w-4 h-4 mr-1" /> Edit
                         </Button>
-                        <Button variant="outline" size="sm" className="rounded-xl" disabled>
+                        <Button variant="outline" size="sm" className="rounded-xl" onClick={() => openImageFlow(variant)}>
                           <ImagePlus className="w-4 h-4 mr-1" /> Image
                         </Button>
                         <Button variant="outline" size="sm" className="rounded-xl text-red-500" disabled>
@@ -418,7 +492,8 @@ export default function VariantsPage() {
               <li>owner login bisa buka halaman variants</li>
               <li>form create variant hanya submit saat product dipilih</li>
               <li>edit stock/discount hanya aktif jika variant dipilih</li>
-              <li>button image dan delete belum aktif, tapi state-nya jelas</li>
+              <li>upload image hanya aktif jika variant dipilih dan file tersedia</li>
+              <li>button delete tetap nonaktif sampai flow aman dibuka</li>
             </ul>
           </div>
           <div>
@@ -427,6 +502,7 @@ export default function VariantsPage() {
               <li><code>GET /type/all</code> harus 200</li>
               <li><code>POST /type/create</code> harus 201 untuk token internal valid</li>
               <li><code>PUT /type/:type_id</code> harus 200 untuk update stock/discount</li>
+              <li><code>PUT /type/image/:type_id</code> harus sukses untuk file valid</li>
               <li>customer tidak boleh mengakses flow internal ini</li>
               <li>variant baru harus nyambung ke <code>product_id</code> yang valid</li>
             </ul>

@@ -43,6 +43,7 @@ Halaman/fitur yang boleh diakses:
 - `/payments`
 - `/catalog`
 - `/variants`
+- `/content`
 
 ### 2. Owner-only
 Halaman/fitur yang hanya boleh diakses owner:
@@ -61,6 +62,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - payments live ke backend admin payments
 - catalog management awal untuk submit product baru
 - variant / pack type management awal sesuai struktur BE
+- content management awal untuk article/category layer
 - users live ke backend admin users
 - owner-only visibility untuk area sensitif
 - topbar/sidebar sudah disejajarkan dengan role matrix internal
@@ -80,6 +82,9 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `PUT /type/{type_id}`
 - `PUT /type/image/{type_id}`
 - `DELETE /type/delete/{type_id}`
+- `GET /articles/all`
+- `GET /categories/all`
+- `POST /categories/post`
 
 ## Deploy ke Vercel free
 1. Import repo ini ke Vercel
@@ -103,5 +108,8 @@ Halaman/fitur yang hanya boleh diakses owner:
   - `POST /product/create` membuat product dengan `product_by_id` valid
   - `POST /type/create` membuat variant dengan `product_id` valid
   - `PUT /type/:type_id` memperbarui stock/discount dengan respons sukses
+  - `PUT /type/image/:type_id` menerima file valid untuk upload image variant
+  - `GET /articles/all` dan `GET /categories/all` memberi data monitoring content
+  - `POST /categories/post` membuat category dengan token internal valid
   - empty state dan loading state frontend tidak boleh crash saat data kosong
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
