@@ -1,0 +1,78 @@
+{
+  "topbar": {
+    "title": "Amimum Herbal Internal Dashboard",
+    "titleMobile": "Amimum Dashboard",
+    "subtitle": "This area follows the internal access matrix: shared access for Admin and Owner, owner-only for sensitive actions.",
+    "dialog": {
+      "title": "Dashboard Information",
+      "shared": "Shared Internal",
+      "sharedDesc": "for Admin and Owner access",
+      "owner": "Owner-only",
+      "ownerDesc": "for sensitive actions (strict authorization boundaries)",
+      "language": "Language Options"
+    }
+  },
+  "sidebar": {
+    "header": {
+      "subtitle": "Internal Dashboard"
+    },
+    "roleCard": {
+      "title": "Internal Access Layer",
+      "desc": "Admins can access overview, orders, and payments. Owners get additional access to user management and sensitive areas."
+    },
+    "group": {
+      "shared": "Shared Access",
+      "owner": "Owner Only"
+    },
+    "nav": {
+      "dashboard": "Dashboard Overview",
+      "dashboardDesc": "Internal operations summary",
+      "orders": "Orders",
+      "ordersDesc": "Monitor and review customer orders",
+      "payments": "Payments",
+      "paymentsDesc": "Monitor payment transactions",
+      "catalog": "Catalog Management",
+      "catalogDesc": "Submit new products and monitor catalog structure",
+      "variants": "Variant Management",
+      "variantsDesc": "Manage pack types and variants",
+      "production": "Production Management",
+      "productionDesc": "Manage brand or production relationships",
+      "content": "Content Management",
+      "contentDesc": "Monitor articles and classifications",
+      "users": "User Management",
+      "usersDesc": "Manage internal operations and customer accounts",
+      "settings": "Settings",
+      "settingsDesc": "Owner-only area for sensitive configurations"
+    },
+    "logout": "Log Out"
+  },
+  "overview": {
+    "title": "Dashboard Overview",
+    "subtitle": "Monitor your internal business metrics and latest transactions.",
+    "grossRevenue": "Gross Revenue",
+    "grossRevenueHelper": "Paid orders revenue",
+    "totalOrders": "Total Orders",
+    "totalOrdersHelper": "pending orders",
+    "activeUsers": "Active Users",
+    "activeUsersHelper": "total users",
+    "pendingPayments": "Pending Payments",
+    "pendingPaymentsHelper": "settlement payments",
+    "orderStatus": "Order Status Overview",
+    "orderStatusDesc": "Status distribution from live backend summary",
+    "paymentStatus": "Payment Status",
+    "paymentStatusDesc": "Distribution by payment state",
+    "total": "Total",
+    "recentOrders": "Recent Orders",
+    "recentOrdersDesc": "Latest orders from live backend",
+    "viewAll": "View All",
+    "table": {
+      "no": "No",
+      "customer": "Customer",
+      "amount": "Amount",
+      "status": "Status",
+      "loading": "Loading recent orders...",
+      "empty": "No recent orders found.",
+      "unknown": "Unknown Customer"
+    }
+  }
+}

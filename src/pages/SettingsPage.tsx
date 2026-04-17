@@ -20,7 +20,7 @@ export default function SettingsPage() {
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardContent className="p-8 space-y-4">
-          <Badge className="bg-orange-50 text-orange-600 border-none">Owner-only</Badge>
+          <Badge className="bg-emerald-50 text-emerald-600 border-none">Owner-only</Badge>
           <h2 className="text-lg font-bold text-gray-900">Role matrix alignment</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
             Sesuai matrix awal, halaman ini dicadangkan untuk pengaturan yang tidak boleh dibuka admin umum. Saat ini area settings belum dihubungkan ke backend write action agar rollout tetap aman dan bertahap.

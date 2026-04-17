@@ -60,7 +60,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 selection:bg-orange-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 selection:bg-emerald-100">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -69,7 +69,7 @@ export default function LoginPage() {
       >
         <div className="flex justify-center mb-10">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-orange-500 rounded-2xl shadow-lg shadow-orange-200 flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-300">
+            <div className="w-12 h-12 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-300">
                <LayoutDashboard className="text-white w-7 h-7" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 tracking-tight">AmImUm</h1>
@@ -103,7 +103,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <button type="button" className="text-xs font-semibold text-orange-500 hover:text-orange-600">
+                  <button type="button" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600">
                     Forgot Password?
                   </button>
                 </div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
               </div>
               <Button 
                 type="submit" 
-                className="w-full h-12 rounded-xl bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all active:scale-[0.98]"
+                className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all active:scale-[0.98]"
                 disabled={isLoading}
               >
                 {isLoading ? (

@@ -1,0 +1,78 @@
+{
+  "topbar": {
+    "title": "Dashboard Internal Toko Herbal Amimum",
+    "titleMobile": "Dashboard Amimum",
+    "subtitle": "Area ini mengikuti matriks akses internal: akses bersama untuk Admin dan Owner, khusus Owner untuk aksi sensitif.",
+    "dialog": {
+      "title": "Informasi Dashboard",
+      "shared": "Shared Internal",
+      "sharedDesc": "untuk akses Admin dan Owner",
+      "owner": "Owner-only",
+      "ownerDesc": "untuk aksi sensitif (menjaga batasan otorisasi secara ketat)",
+      "language": "Pilihan Bahasa"
+    }
+  },
+  "sidebar": {
+    "header": {
+      "subtitle": "Dashboard Internal"
+    },
+    "roleCard": {
+      "title": "Lapis Akses Internal",
+      "desc": "Admin dapat mengakses ringkasan, pesanan, dan pembayaran. Owner mendapat tambahan akses manajemen pengguna dan area sensitif."
+    },
+    "group": {
+      "shared": "Akses Bersama",
+      "owner": "Khusus Owner"
+    },
+    "nav": {
+      "dashboard": "Ringkasan Utama",
+      "dashboardDesc": "Ringkasan operasional internal",
+      "orders": "Pesanan",
+      "ordersDesc": "Pantau dan tinjau pesanan pelanggan",
+      "payments": "Pembayaran",
+      "paymentsDesc": "Monitor transaksi pembayaran",
+      "catalog": "Manajemen Katalog",
+      "catalogDesc": "Tambah produk baru dan pantau struktur katalog",
+      "variants": "Manajemen Varian",
+      "variantsDesc": "Kelola tipe kemasan dan varian",
+      "production": "Manajemen Produksi",
+      "productionDesc": "Kelola relasi merek atau produksi",
+      "content": "Manajemen Konten",
+      "contentDesc": "Pantau artikel dan klasifikasi",
+      "users": "Manajemen Pengguna",
+      "usersDesc": "Kelola akun internal dan pelanggan",
+      "settings": "Pengaturan",
+      "settingsDesc": "Area khusus Owner untuk pengaturan sensitif"
+    },
+    "logout": "Keluar"
+  },
+  "overview": {
+    "title": "Ringkasan Dashboard",
+    "subtitle": "Pantau metrik bisnis internal dan transaksi terbaru Anda.",
+    "grossRevenue": "Pendapatan Kotor",
+    "grossRevenueHelper": "Pendapatan pesanan lunas",
+    "totalOrders": "Total Pesanan",
+    "totalOrdersHelper": "pesanan tertunda",
+    "activeUsers": "Pengguna Aktif",
+    "activeUsersHelper": "total pengguna",
+    "pendingPayments": "Pembayaran Tertunda",
+    "pendingPaymentsHelper": "pembayaran selesai",
+    "orderStatus": "Ringkasan Status Pesanan",
+    "orderStatusDesc": "Distribusi status pesanan langsung dari sistem",
+    "paymentStatus": "Status Pembayaran",
+    "paymentStatusDesc": "Distribusi berdasarkan status pembayaran",
+    "total": "Total",
+    "recentOrders": "Pesanan Terbaru",
+    "recentOrdersDesc": "Pesanan terakhir dari sistem",
+    "viewAll": "Lihat Semua",
+    "table": {
+      "no": "No",
+      "customer": "Pelanggan",
+      "amount": "Jumlah",
+      "status": "Status",
+      "loading": "Memuat pesanan terbaru...",
+      "empty": "Tidak ada pesanan terbaru.",
+      "unknown": "Pelanggan Tidak Diketahui"
+    }
+  }
+}

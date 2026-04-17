@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '@/lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface DashboardSummaryResponse {
   status_code: number;
@@ -66,6 +67,8 @@ interface OrdersResponse {
 const COLORS = ['#F97316', '#FDBA74', '#FFEDD5', '#FED7AA', '#FB923C'];
 
 export default function OverviewPage() {
+  const { t } = useTranslation();
+
   const { data: summaryResponse, isLoading: summaryLoading } = useQuery({
     queryKey: ['admin-dashboard-summary'],
     queryFn: async () => {
@@ -89,33 +92,33 @@ export default function OverviewPage() {
   const stats = summary
     ? [
         {
-          label: 'Gross Revenue',
+          label: t('overview.grossRevenue'),
           value: `Rp ${summary.gross_revenue_paid_orders.toLocaleString('id-ID')}`,
-          helper: 'Paid orders revenue',
+          helper: t('overview.grossRevenueHelper'),
           icon: Wallet,
-          color: 'text-orange-600',
-          bg: 'bg-orange-50',
+          color: 'text-emerald-600',
+          bg: 'bg-emerald-50',
         },
         {
-          label: 'Total Orders',
+          label: t('overview.totalOrders'),
           value: summary.total_orders.toLocaleString('id-ID'),
-          helper: `${summary.total_pending_orders} pending orders`,
+          helper: `${summary.total_pending_orders} ${t('overview.totalOrdersHelper')}`,
           icon: ShoppingBag,
           color: 'text-blue-600',
           bg: 'bg-blue-50',
         },
         {
-          label: 'Active Users',
+          label: t('overview.activeUsers'),
           value: summary.total_active_users.toLocaleString('id-ID'),
-          helper: `${summary.total_users} total users`,
+          helper: `${summary.total_users} ${t('overview.activeUsersHelper')}`,
           icon: Users,
           color: 'text-green-600',
           bg: 'bg-green-50',
         },
         {
-          label: 'Pending Payments',
+          label: t('overview.pendingPayments'),
           value: summary.total_pending_payments.toLocaleString('id-ID'),
-          helper: `${summary.total_settlement_payments} settlement payments`,
+          helper: `${summary.total_settlement_payments} ${t('overview.pendingPaymentsHelper')}`,
           icon: Clock,
           color: 'text-purple-600',
           bg: 'bg-purple-50',
@@ -148,8 +151,8 @@ export default function OverviewPage() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
-        <p className="text-gray-500 mt-1">Monitor your internal business metrics and latest transactions.</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('overview.title')}</h1>
+        <p className="text-gray-500 mt-1">{t('overview.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -161,7 +164,7 @@ export default function OverviewPage() {
             ))
           : stats.map((stat) => (
               <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative">
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-tr from-gray-50 to-orange-500" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
 
                 <CardContent className="p-6 relative">
                   <div className="flex items-center justify-between">
@@ -190,8 +193,8 @@ export default function OverviewPage() {
         <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between pb-8 pt-8 px-8">
             <div>
-              <CardTitle className="text-lg font-bold tracking-tight">Order Status Overview</CardTitle>
-              <CardDescription>Status distribution from live backend summary</CardDescription>
+              <CardTitle className="text-lg font-bold tracking-tight">{t('overview.orderStatus')}</CardTitle>
+              <CardDescription>{t('overview.orderStatusDesc')}</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="px-4 pb-8">
@@ -227,8 +230,8 @@ export default function OverviewPage() {
 
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="pt-8 px-8">
-            <CardTitle className="text-lg font-bold tracking-tight">Payment Status</CardTitle>
-            <CardDescription>Distribution by payment state</CardDescription>
+            <CardTitle className="text-lg font-bold tracking-tight">{t('overview.paymentStatus')}</CardTitle>
+            <CardDescription>{t('overview.paymentStatusDesc')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center p-8">
             <div className="h-[250px] w-full relative">
@@ -244,7 +247,7 @@ export default function OverviewPage() {
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-xl font-bold">{paymentStatusChart.reduce((acc, item) => acc + item.value, 0)}</span>
-                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Total</span>
+                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{t('overview.total')}</span>
               </div>
             </div>
 
@@ -266,34 +269,34 @@ export default function OverviewPage() {
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between px-8 py-8">
           <div>
-            <CardTitle className="text-lg font-bold tracking-tight">Recent Orders</CardTitle>
-            <CardDescription>Latest orders from live backend</CardDescription>
+            <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
+            <CardDescription>{t('overview.recentOrdersDesc')}</CardDescription>
           </div>
           <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs h-9">
-            View All
+            {t('overview.viewAll')}
           </Button>
         </CardHeader>
         <CardContent className="px-4 pb-8">
           <Table>
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50">
-                <TableHead className="w-[80px] font-bold text-gray-400 text-[10px] uppercase tracking-wider">No</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">Customer</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">Amount</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">Status</TableHead>
+                <TableHead className="w-[80px] font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.no')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.customer')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.amount')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {ordersLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-gray-400 py-8">
-                    Loading recent orders...
+                    {t('overview.table.loading')}
                   </TableCell>
                 </TableRow>
               ) : recentOrders.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-gray-400 py-8">
-                    No recent orders found.
+                    {t('overview.table.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -302,7 +305,7 @@ export default function OverviewPage() {
                     <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{order.customer_name || 'Unknown Customer'}</p>
+                        <p className="font-bold text-gray-900 text-sm">{order.customer_name || t('overview.table.unknown')}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{new Date(order.created_at).toLocaleString('id-ID')}</p>
                       </div>
                     </TableCell>

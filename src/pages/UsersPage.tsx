@@ -126,14 +126,14 @@ export default function UsersPage() {
       value: filteredUsers.length,
       helper: 'User yang tampil di layar sekarang',
       icon: Users,
-      tone: 'bg-orange-50 text-orange-600',
+      tone: 'bg-emerald-50 text-emerald-600',
     },
     {
       label: 'Owners',
       value: ownerCount,
       helper: 'Akses tertinggi internal',
       icon: Shield,
-      tone: 'bg-orange-50 text-orange-600',
+      tone: 'bg-emerald-50 text-emerald-600',
     },
     {
       label: 'Admins',
@@ -158,7 +158,7 @@ export default function UsersPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">User Management</h1>
           <p className="text-gray-500 mt-1 mr-2">Area owner-only untuk monitoring akun internal dan customer sesuai batas tanggung jawab role.</p>
         </div>
-        <Button disabled className="bg-orange-500 hover:bg-orange-600 rounded-xl h-11 px-6 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60">
+        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60">
           Owner-only controls active
         </Button>
       </div>
@@ -234,7 +234,7 @@ export default function UsersPage() {
                     <TableRow key={u.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${u.role === 'owner' ? 'bg-orange-100 text-orange-600' : u.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${u.role === 'owner' ? 'bg-emerald-100 text-emerald-600' : u.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
                             {displayName.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -246,7 +246,7 @@ export default function UsersPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {u.role === 'owner' ? (
-                            <div className="flex items-center gap-1.5 text-orange-600">
+                            <div className="flex items-center gap-1.5 text-emerald-600">
                               <ShieldCheck className="w-3.5 h-3.5" />
                               <span className="text-xs font-bold uppercase tracking-wide">Owner</span>
                             </div>
@@ -306,19 +306,19 @@ export default function UsersPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
           <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
           <p className="text-gray-400 text-sm mt-2 leading-relaxed">
             Owner memonitor keseluruhan akun, tetapi write action tetap dibatasi hati-hati. Saat ini aksi sensitif yang aktif adalah kontrol status untuk akun customer, sementara akun internal tetap dilindungi.
           </p>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-          <h3 className="text-lg font-bold text-orange-900">Matrix alignment</h3>
-          <p className="text-orange-700 text-sm mt-2 leading-relaxed">
+        <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+          <h3 className="text-lg font-bold text-emerald-900">Matrix alignment</h3>
+          <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
             Halaman ini sengaja owner-only agar pengawasan user, pemisahan akun internal, dan kontrol customer account tetap terpusat pada role dengan otoritas tertinggi.
           </p>
-          <p className="mt-2 text-[10px] font-bold text-orange-800 uppercase tracking-wider">
+          <p className="mt-2 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
             Source: GET /admin/users + PATCH /admin/users/:id/status
           </p>
         </Card>

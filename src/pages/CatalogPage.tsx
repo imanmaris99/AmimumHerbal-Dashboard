@@ -162,11 +162,11 @@ export default function CatalogPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Catalog Management</h1>
           <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola submit product baru berdasarkan relasi database yang sudah ditetapkan.</p>
         </div>
-        <Badge className="bg-orange-50 text-orange-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-orange-50 text-orange-600"><Box className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Products</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredProducts.length}</p><p className="text-[11px] text-gray-400 mt-2">Produk yang sedang terpantau</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Box className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Products</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredProducts.length}</p><p className="text-[11px] text-gray-400 mt-2">Produk yang sedang terpantau</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">DB</span></div><p className="text-sm font-medium text-gray-500 mt-4">Brand / Productions</p><p className="text-2xl font-bold text-gray-900 mt-1">{productions.length}</p><p className="text-[11px] text-gray-400 mt-2">Source relasi untuk product_by_id</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Flow</span></div><p className="text-sm font-medium text-gray-500 mt-4">Variant Slots</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalVariants}</p><p className="text-[11px] text-gray-400 mt-2">Pack type mengikuti produk setelah submit</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PackagePlus className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matrix</span></div><p className="text-sm font-medium text-gray-500 mt-4">Submit Product</p><p className="text-2xl font-bold text-gray-900 mt-1">Enabled</p><p className="text-[11px] text-gray-400 mt-2">Shared internal, write action terkontrol</p></CardContent></Card>
@@ -226,7 +226,7 @@ export default function CatalogPage() {
 
               <div className="flex items-center justify-between gap-4 pt-2">
                 <p className="text-xs text-gray-500 leading-relaxed">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>.</p>
-                <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {createProductMutation.isPending ? 'Submitting...' : 'Submit Product Baru'}
                 </Button>
@@ -236,9 +236,9 @@ export default function CatalogPage() {
         </Card>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-            <h3 className="text-lg font-bold text-orange-900">Matrix submit product</h3>
-            <div className="mt-4 space-y-3 text-sm text-orange-800">
+          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+            <h3 className="text-lg font-bold text-emerald-900">Matrix submit product</h3>
+            <div className="mt-4 space-y-3 text-sm text-emerald-800">
               <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit product baru karena endpoint backend memakai <code>admin_access_required</code>.</p>
               <p><strong>Owner</strong> tetap memegang pengawasan strategis, tetapi operasional submit product boleh dibantu admin.</p>
               <p><strong>Category</strong> pada flow ini adalah <code>tag_categories</code> yang terhubung ke production/product layer, bukan kategori article/content.</p>

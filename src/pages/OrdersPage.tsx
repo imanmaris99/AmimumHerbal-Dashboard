@@ -78,7 +78,7 @@ export default function OrdersPage() {
       value: filteredOrders.length,
       helper: 'Order yang tampil di layar sekarang',
       icon: ShoppingBag,
-      tone: 'bg-orange-50 text-orange-600',
+      tone: 'bg-emerald-50 text-emerald-600',
     },
     {
       label: 'Pending Review',
@@ -110,7 +110,7 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Orders Management</h1>
           <p className="text-gray-500 mt-1">Area monitoring order untuk admin dan owner, agar operasional harian lebih mudah dipantau.</p>
         </div>
-        <Button disabled className="bg-orange-500 hover:bg-orange-600 rounded-xl h-11 px-6 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60">
+        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60">
           Shared internal access active
         </Button>
       </div>
@@ -224,9 +224,9 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-        <h3 className="text-lg font-bold text-orange-900">Peran halaman ini</h3>
-        <p className="text-orange-700 text-sm mt-2 leading-relaxed">
+      <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+        <h3 className="text-lg font-bold text-emerald-900">Peran halaman ini</h3>
+        <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
           Halaman orders disiapkan untuk monitoring harian oleh admin dan owner. Fokusnya adalah visibilitas order, status fulfilment, dan total nilai transaksi yang sedang dipantau.
         </p>
       </Card>

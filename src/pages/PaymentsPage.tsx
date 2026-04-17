@@ -86,7 +86,7 @@ export default function PaymentsPage() {
       value: filteredPayments.length,
       helper: 'Transaksi yang tampil saat ini',
       icon: CreditCard,
-      tone: 'bg-orange-50 text-orange-600',
+      tone: 'bg-emerald-50 text-emerald-600',
     },
     {
       label: 'Pending Payment',
@@ -118,7 +118,7 @@ export default function PaymentsPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Payments Monitoring</h1>
           <p className="text-gray-500 mt-1">Area monitoring transaksi untuk admin dan owner agar status pembayaran mudah dipantau dan diaudit.</p>
         </div>
-        <Button disabled className="bg-orange-500 hover:bg-orange-600 rounded-xl h-11 px-6 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60">
+        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60">
           Shared internal access active
         </Button>
       </div>
@@ -246,9 +246,9 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-        <h3 className="text-lg font-bold text-orange-900">Peran halaman ini</h3>
-        <p className="text-orange-700 text-sm mt-2 leading-relaxed">
+      <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+        <h3 className="text-lg font-bold text-emerald-900">Peran halaman ini</h3>
+        <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
           Halaman payments disiapkan untuk monitoring transaksi dan audit status pembayaran oleh admin maupun owner. Fokus utamanya adalah membaca health payment flow, status settlement, dan anomali fraud secara cepat.
         </p>
       </Card>

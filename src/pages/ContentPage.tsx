@@ -142,11 +142,11 @@ export default function ContentPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Content Management</h1>
           <p className="text-gray-500 mt-1">Shared internal module untuk memantau dan mengelola article layer. Category product dipisahkan ke flow katalog dan production.</p>
         </div>
-        <Badge className="bg-orange-50 text-orange-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-orange-50 text-orange-600"><FileText className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Articles</p><p className="text-2xl font-bold text-gray-900 mt-1">{articles.length}</p><p className="text-[11px] text-gray-400 mt-2">Artikel yang sudah terdaftar</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><FileText className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Articles</p><p className="text-2xl font-bold text-gray-900 mt-1">{articles.length}</p><p className="text-[11px] text-gray-400 mt-2">Artikel yang sudah terdaftar</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><LayoutList className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matrix</span></div><p className="text-sm font-medium text-gray-500 mt-4">Article Layer</p><p className="text-2xl font-bold text-gray-900 mt-1">Shared</p><p className="text-[11px] text-gray-400 mt-2">Admin dan owner sama-sama boleh kelola article</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PencilLine className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ops</span></div><p className="text-sm font-medium text-gray-500 mt-4">Create + Edit</p><p className="text-2xl font-bold text-gray-900 mt-1">Active</p><p className="text-[11px] text-gray-400 mt-2">POST /articles/create dan PUT /articles/update/:article_id</p></CardContent></Card>
       </div>
@@ -173,7 +173,7 @@ export default function ContentPage() {
                 <Label htmlFor="article-description">Description</Label>
                 <textarea id="article-description" value={articleForm.description} onChange={(e) => setArticleForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Isi atau ringkasan artikel" className="min-h-[140px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
               </div>
-              <Button type="submit" disabled={createArticleMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+              <Button type="submit" disabled={createArticleMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 {createArticleMutation.isPending ? 'Submitting...' : 'Submit Article'}
               </Button>
@@ -264,7 +264,7 @@ export default function ContentPage() {
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
         <h3 className="text-lg font-bold">QA structure untuk article layer</h3>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
           <div>
