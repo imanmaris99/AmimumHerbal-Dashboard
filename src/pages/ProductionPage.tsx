@@ -28,7 +28,7 @@ interface ProductionResponse {
 interface CategoryItem {
   id: number;
   name: string;
-  description?: string | null;
+  description_list?: string[];
   created_at: string;
 }
 
@@ -120,7 +120,7 @@ export default function ProductionPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Production / Brand Management</h1>
-          <p className="text-gray-500 mt-1">Shared internal module untuk mengelola brand/production yang menjadi sumber relasi katalog product.</p>
+          <p className="text-gray-500 mt-1">Shared internal module untuk mengelola brand/production yang menjadi sumber relasi katalog product. Category pada flow ini adalah category product layer, bukan category article.</p>
         </div>
         <Badge className="bg-orange-50 text-orange-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
@@ -147,9 +147,9 @@ export default function ProductionPage() {
                 <Input id="production-name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Contoh: Herbal Amimum Factory" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="production-category">Category</Label>
+                <Label htmlFor="production-category">Product category</Label>
                 <select id="production-category" value={form.herbal_category_id || ''} onChange={(e) => setForm((prev) => ({ ...prev, herbal_category_id: Number(e.target.value) }))} className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none w-full" required>
-                  <option value="">Pilih category</option>
+                  <option value="">Pilih product category</option>
                   {categories.map((category) => (
                     <option key={category.id} value={category.id}>{category.name}</option>
                   ))}
@@ -208,6 +208,9 @@ export default function ProductionPage() {
                 )}
               </TableBody>
             </Table>
+            <div className="px-4 pt-4 text-xs text-gray-500">
+              Category list diambil dari <code>tag_categories</code> dan dipakai untuk relasi product/production layer.
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -220,7 +223,7 @@ export default function ProductionPage() {
             <p className="font-semibold text-white mb-2">Frontend checks</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>admin dan owner bisa membuka halaman production</li>
-              <li>form create production tidak submit saat category belum dipilih</li>
+              <li>form create production tidak submit saat product category belum dipilih</li>
               <li>list production aman saat data kosong</li>
             </ul>
           </div>
@@ -229,7 +232,7 @@ export default function ProductionPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li><code>GET /brand/all</code> harus 200</li>
               <li><code>POST /brand/create</code> harus 201 untuk token internal valid</li>
-              <li><code>POST /brand/create</code> harus memakai <code>herbal_category_id</code> valid</li>
+              <li><code>POST /brand/create</code> harus memakai <code>herbal_category_id</code> valid dari <code>tag_categories</code></li>
               <li>customer tidak boleh mengakses flow internal production management</li>
             </ul>
           </div>

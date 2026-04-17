@@ -241,6 +241,7 @@ export default function CatalogPage() {
             <div className="mt-4 space-y-3 text-sm text-orange-800">
               <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit product baru karena endpoint backend memakai <code>admin_access_required</code>.</p>
               <p><strong>Owner</strong> tetap memegang pengawasan strategis, tetapi operasional submit product boleh dibantu admin.</p>
+              <p><strong>Category</strong> pada flow ini adalah <code>tag_categories</code> yang terhubung ke production/product layer, bukan kategori article/content.</p>
               <p>Flow database yang dipakai di form ini:</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>Pilih <strong>production / brand</strong> dari tabel <code>productions</code></li>
