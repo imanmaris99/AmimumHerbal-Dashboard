@@ -272,6 +272,7 @@ export default function ProductionPage() {
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Preview</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Category</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Description</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
@@ -279,9 +280,9 @@ export default function ProductionPage() {
             </TableHeader>
             <TableBody>
               {productionsLoading || categoriesLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Loading production data...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading production data...</TableCell></TableRow>
               ) : filteredProductions.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Tidak ada production yang cocok.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok.</TableCell></TableRow>
               ) : (
                 filteredProductions.slice(0, 8).map((production) => (
                   <TableRow key={production.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -290,6 +291,21 @@ export default function ProductionPage() {
                         <p className="font-bold text-gray-900 text-sm">{production.name}</p>
                         <p className="text-[10px] text-gray-400 font-medium">ID: {production.id}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {production.photo_url ? (
+                        <img
+                          src={production.photo_url}
+                          alt={production.name}
+                          className="h-12 w-12 rounded-xl object-cover border border-gray-100 bg-gray-50"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400">
+                          No img
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{production.category || '-'}</TableCell>
                     <TableCell className="text-sm text-gray-600">{production.description_list?.[0] || '-'}</TableCell>

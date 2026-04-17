@@ -450,6 +450,7 @@ export default function VariantsPage() {
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Preview</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
@@ -461,9 +462,9 @@ export default function VariantsPage() {
             </TableHeader>
             <TableBody>
               {variantsLoading || productsLoading ? (
-                <TableRow><TableCell colSpan={8} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
               ) : filteredVariants.length === 0 ? (
-                <TableRow><TableCell colSpan={8} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
               ) : (
                 filteredVariants.slice(0, 10).map((variant, index) => (
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -472,6 +473,21 @@ export default function VariantsPage() {
                         <p className="font-bold text-gray-900 text-sm">{variant.resolvedPackName}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{variant.variant || '-'}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {variant.img ? (
+                        <img
+                          src={variant.img}
+                          alt={variant.resolvedPackName}
+                          className="h-12 w-12 rounded-xl object-cover border border-gray-100 bg-gray-50"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400">
+                          No img
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{variant.resolvedProductName}</TableCell>
                     <TableCell>

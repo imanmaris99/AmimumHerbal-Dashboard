@@ -230,15 +230,16 @@ export default function ContentPage() {
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Article</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Preview</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Summary</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {articlesLoading ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Loading articles...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Loading articles...</TableCell></TableRow>
               ) : filteredArticles.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Tidak ada article yang cocok.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Tidak ada article yang cocok.</TableCell></TableRow>
               ) : (
                 filteredArticles.slice(0, 8).map((article, index) => (
                   <TableRow key={`${article.display_id || index}-${article.title}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -247,6 +248,21 @@ export default function ContentPage() {
                         <p className="font-bold text-gray-900 text-sm">{article.title}</p>
                         <p className="text-[10px] text-gray-400 font-medium">Display ID: {article.display_id || '-'}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {article.img ? (
+                        <img
+                          src={article.img}
+                          alt={article.title}
+                          className="h-12 w-16 rounded-xl object-cover border border-gray-100 bg-gray-50"
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="h-12 w-16 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400">
+                          No img
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{article.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
