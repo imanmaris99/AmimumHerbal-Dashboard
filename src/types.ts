@@ -6,6 +6,12 @@ export interface User {
   email: string;
   role: UserRole;
   isActive: boolean;
+  gender?: 'male' | 'female';
+  firstname?: string;
+  lastname?: string;
+  phone?: string;
+  address?: string;
+  photoUrl?: string;
 }
 
 export interface LoginResponse {
@@ -19,9 +25,12 @@ export interface LoginResponse {
     };
     user: {
       id: string;
+      firstname?: string | null;
+      lastname?: string | null;
       email: string;
       role: UserRole;
       is_active: boolean;
+      gender?: 'male' | 'female';
     };
   };
 }
@@ -29,6 +38,38 @@ export interface LoginResponse {
 export interface AuthState {
   user: User | null;
   token: string | null;
+}
+
+export interface AdminProfileResponse {
+  status_code: number;
+  message: string;
+  data: {
+    id: string;
+    firstname?: string | null;
+    lastname?: string | null;
+    gender?: 'male' | 'female' | null;
+    email: string;
+    phone?: string | null;
+    address?: string | null;
+    photo_url?: string | null;
+    role: UserRole;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export interface AdminProfileEditPayload {
+  fullname: string;
+  firstname: string;
+  lastname: string;
+  phone: string;
+  address: string;
+}
+
+export interface ChangePasswordPayload {
+  old_password: string;
+  new_password: string;
 }
 
 export interface Order {

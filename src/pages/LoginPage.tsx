@@ -36,7 +36,7 @@ export default function LoginPage() {
         throw new Error('Akun ini tidak memiliki akses ke dashboard internal.');
       }
 
-      const displayName = role === 'owner' ? 'Owner' : 'Admin';
+      const displayName = `${backendUser.firstname || ''} ${backendUser.lastname || ''}`.trim() || (role === 'owner' ? 'Owner' : 'Admin');
 
       setAuth(
         {
@@ -45,6 +45,9 @@ export default function LoginPage() {
           email: backendUser.email,
           role,
           isActive: backendUser.is_active,
+          gender: backendUser.gender,
+          firstname: backendUser.firstname || undefined,
+          lastname: backendUser.lastname || undefined,
         },
         payload.access_token.access_token
       );
