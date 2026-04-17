@@ -6,10 +6,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck } from 'lucide-react';
+import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ImagePlus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { getStatusStyle } from '@/lib/dashboard';
 
 interface ProductItem {
   id: string;
@@ -57,6 +56,11 @@ interface CreateVariantPayload {
   stock: number;
 }
 
+interface UpdateVariantPayload {
+  stock: number;
+  discount: number;
+}
+
 const initialForm: CreateVariantPayload = {
   product_id: '',
   name: '',
@@ -66,10 +70,17 @@ const initialForm: CreateVariantPayload = {
   stock: 0,
 };
 
+const initialUpdateForm: UpdateVariantPayload = {
+  stock: 0,
+  discount: 0,
+};
+
 export default function VariantsPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
+  const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
+  const [updateForm, setUpdateForm] = useState<UpdateVariantPayload>(initialUpdateForm);
 
   const { data: productsResponse, isLoading: productsLoading } = useQuery({
     queryKey: ['variant-products'],
@@ -106,6 +117,27 @@ export default function VariantsPage() {
     },
   });
 
+  const updateVariantMutation = useMutation({
+    mutationFn: async ({ variantId, payload }: { variantId: number; payload: UpdateVariantPayload }) => {
+      const response = await api.put(`/type/${variantId}`, {
+        type_id: variantId,
+        ...payload,
+      });
+      return response.data;
+    },
+    onSuccess: (response: any) => {
+      toast.success(response?.message || 'Stock/discount variant berhasil diperbarui.');
+      setEditingVariantId(null);
+      setUpdateForm(initialUpdateForm);
+      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
+    },
+    onError: (error: any) => {
+      const detail = error?.response?.data?.detail;
+      const message = detail?.message || detail || 'Gagal memperbarui variant.';
+      toast.error(String(message));
+    },
+  });
+
   const products = productsResponse?.data ?? [];
   const variants = variantsResponse?.data ?? [];
 
@@ -132,6 +164,13 @@ export default function VariantsPage() {
     }));
   };
 
+  const handleUpdateChange = (field: keyof UpdateVariantPayload, value: string) => {
+    setUpdateForm((prev) => ({
+      ...prev,
+      [field]: Number(value),
+    }));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -141,6 +180,28 @@ export default function VariantsPage() {
     }
 
     createVariantMutation.mutate(form);
+  };
+
+  const startEditing = (variant: VariantItem) => {
+    if (!variant.id) {
+      toast.error('Variant ini tidak memiliki id yang valid untuk diupdate.');
+      return;
+    }
+
+    setEditingVariantId(variant.id);
+    setUpdateForm({
+      stock: Number(variant.stock || 0),
+      discount: Number(variant.discount || 0),
+    });
+  };
+
+  const submitUpdate = () => {
+    if (!editingVariantId) return;
+
+    updateVariantMutation.mutate({
+      variantId: editingVariantId,
+      payload: updateForm,
+    });
   };
 
   return (
@@ -207,7 +268,7 @@ export default function VariantsPage() {
               </div>
 
               <div className="flex items-center justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed">Sesuai struktur backend saat ini, create variant memakai endpoint <strong>POST /type/create</strong>. Untuk update stock/discount dan image akan menyusul pada batch lanjutan.</p>
+                <p className="text-xs text-gray-500 leading-relaxed">Create variant sudah aktif lewat <strong>POST /type/create</strong>. Update stock/discount juga sudah mulai dihubungkan ke <strong>PUT /type/:type_id</strong>.</p>
                 <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
@@ -225,9 +286,9 @@ export default function VariantsPage() {
               <ul className="list-disc pl-5 space-y-1">
                 <li><code>GET /type/all</code> untuk monitoring variant</li>
                 <li><code>POST /type/create</code> untuk submit variant baru</li>
-                <li><code>PUT /type/:type_id</code> untuk update stock/discount, batch berikutnya</li>
-                <li><code>PUT /type/image/:type_id</code> untuk upload image, batch berikutnya</li>
-                <li><code>DELETE /type/delete/:type_id</code> untuk delete variant, akan diperlakukan hati-hati</li>
+                <li><code>PUT /type/:type_id</code> sudah mulai dipakai untuk update stock/discount</li>
+                <li><code>PUT /type/image/:type_id</code> dipetakan untuk batch image flow</li>
+                <li><code>DELETE /type/delete/:type_id</code> dipetakan sebagai delete flow sensitif</li>
               </ul>
               <p>Flow relasi DB yang dipakai: <strong>products.id to pack_types.product_id</strong></p>
             </div>
@@ -236,58 +297,115 @@ export default function VariantsPage() {
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="px-8 pt-8 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Existing variants</h2>
-                <p className="text-sm text-gray-500 mt-1">Pantau struktur variant yang sudah ada sebelum menambah pack type baru.</p>
-              </div>
-              <div className="relative mt-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
+                <h2 className="text-lg font-bold text-gray-900">Update stock / discount</h2>
+                <p className="text-sm text-gray-500 mt-1">Panel operasional cepat untuk variant yang dipilih dari list.</p>
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-8">
-              <Table>
-                <TableHeader className="bg-gray-50/50">
-                  <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Discount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {variantsLoading || productsLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
-                  ) : filteredVariants.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
-                  ) : (
-                    filteredVariants.slice(0, 10).map((variant, index) => (
-                      <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
-                        <TableCell>
-                          <div>
-                            <p className="font-bold text-gray-900 text-sm">{variant.name || '-'}</p>
-                            <p className="text-[10px] text-gray-400 font-medium">{variant.variant || '-'}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">{variant.product || '-'}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                            {variant.stock || 0} stock
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${Number(variant.discount || 0) > 0 ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-600'}`}>
-                            {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'no discount'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+            <CardContent className="px-8 pb-8 space-y-4">
+              {editingVariantId ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="update-stock">Stock</Label>
+                      <Input id="update-stock" type="number" min="0" value={updateForm.stock} onChange={(e) => handleUpdateChange('stock', e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="update-discount">Discount</Label>
+                      <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                      <PencilLine className="w-4 h-4 mr-2" />
+                      {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
+                    </Button>
+                    <Button variant="outline" onClick={() => { setEditingVariantId(null); setUpdateForm(initialUpdateForm); }} className="rounded-xl">
+                      Cancel
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit stock dan discount.</p>
+              )}
+
+              <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 space-y-2">
+                <p><strong>Image flow</strong> belum diaktifkan di UI, tapi endpoint target sudah dipetakan:</p>
+                <p><code>PUT /type/image/:type_id</code></p>
+                <p><strong>Delete flow</strong> juga belum diaktifkan agar aman, tapi endpoint target sudah dipetakan:</p>
+                <p><code>DELETE /type/delete/:type_id</code></p>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+        <CardHeader className="px-8 pt-8 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Existing variants</h2>
+            <p className="text-sm text-gray-500 mt-1">Pantau struktur variant yang sudah ada sebelum menambah pack type baru.</p>
+          </div>
+          <div className="relative mt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 pb-8">
+          <Table>
+            <TableHeader className="bg-gray-50/50">
+              <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Discount</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {variantsLoading || productsLoading ? (
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
+              ) : filteredVariants.length === 0 ? (
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
+              ) : (
+                filteredVariants.slice(0, 10).map((variant, index) => (
+                  <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
+                    <TableCell>
+                      <div>
+                        <p className="font-bold text-gray-900 text-sm">{variant.name || '-'}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{variant.variant || '-'}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">{variant.product || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
+                        {variant.stock || 0} stock
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${Number(variant.discount || 0) > 0 ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-600'}`}>
+                        {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'no discount'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="rounded-xl" onClick={() => startEditing(variant)}>
+                          <PencilLine className="w-4 h-4 mr-1" /> Edit
+                        </Button>
+                        <Button variant="outline" size="sm" className="rounded-xl" disabled>
+                          <ImagePlus className="w-4 h-4 mr-1" /> Image
+                        </Button>
+                        <Button variant="outline" size="sm" className="rounded-xl text-red-500" disabled>
+                          <Trash2 className="w-4 h-4 mr-1" /> Delete
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
@@ -299,7 +417,8 @@ export default function VariantsPage() {
               <li>admin login bisa buka halaman variants</li>
               <li>owner login bisa buka halaman variants</li>
               <li>form create variant hanya submit saat product dipilih</li>
-              <li>list variant tampil tanpa crash saat data kosong</li>
+              <li>edit stock/discount hanya aktif jika variant dipilih</li>
+              <li>button image dan delete belum aktif, tapi state-nya jelas</li>
             </ul>
           </div>
           <div>
@@ -307,6 +426,7 @@ export default function VariantsPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li><code>GET /type/all</code> harus 200</li>
               <li><code>POST /type/create</code> harus 201 untuk token internal valid</li>
+              <li><code>PUT /type/:type_id</code> harus 200 untuk update stock/discount</li>
               <li>customer tidak boleh mengakses flow internal ini</li>
               <li>variant baru harus nyambung ke <code>product_id</code> yang valid</li>
             </ul>

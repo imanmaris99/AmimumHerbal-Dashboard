@@ -97,4 +97,11 @@ Halaman/fitur yang hanya boleh diakses owner:
 - Submit product baru mengikuti diagram database utama: `products.product_by_id -> productions.id`, lalu tahap berikutnya melengkapi `pack_types.product_id -> products.id` untuk variant/kemasan/stok.
 - Matrix endpoint dashboard harus selalu mengikuti struktur backend: shared internal untuk endpoint dengan `admin_access_required`, owner-only hanya untuk area sensitif yang memang dipisah guard-nya.
 - QA dashboard harus memeriksa 3 hal: akses role, kontrak endpoint, dan kesesuaian relasi DB pada payload create/update.
+- Checklist QA catalog/variant minimum saat ini:
+  - admin dan owner bisa mengakses `/catalog` dan `/variants`
+  - customer tidak boleh masuk flow internal
+  - `POST /product/create` membuat product dengan `product_by_id` valid
+  - `POST /type/create` membuat variant dengan `product_id` valid
+  - `PUT /type/:type_id` memperbarui stock/discount dengan respons sukses
+  - empty state dan loading state frontend tidak boleh crash saat data kosong
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
