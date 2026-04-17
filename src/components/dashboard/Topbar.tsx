@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bell, Menu, ShieldCheck, Info } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -24,14 +24,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ProfileDialog } from './ProfileDialog';
 
 export function Topbar() {
   const { user } = useAuthStore();
   const { toggleSidebar } = useUiStore();
   const { t, i18n } = useTranslation();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
+
+  const getAvatarUrl = (name: string, gender?: 'male' | 'female') => {
+    if (gender === 'female') {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&top=longHair,longHairStraight,longHairCurly,longHairDreads,longHairCurvy,longHairNotTooLong,longHairMiaWallace&facialHairProbability=0`;
+    }
+    if (gender === 'male') {
+      return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}&top=shortHairShortFlat,shortHairSides,shortHairTheCaesar,shortHairShortWaved,shortHairShortCurly,shortHairShortRound&facialHairProbability=20&clothing=blazerAndShirt,blazerAndSweater,collarAndSweater,shirtCrewNeck,shirtVNeck`;
+    }
+    return `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+  };
 
   return (
     <header className="h-16 md:h-20 bg-white border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 gap-2 sm:gap-4">
@@ -92,13 +104,16 @@ export function Topbar() {
 
         <div className="h-8 w-px bg-gray-100 mx-1" />
 
-        <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2">
+        <div 
+          className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2 group cursor-pointer"
+          onClick={() => setIsProfileOpen(true)}
+        >
           <div className="text-right hidden md:block">
-            <p className="text-sm font-bold text-gray-900 leading-none">{displayName}</p>
+            <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors">{displayName}</p>
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
           </div>
-          <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-gray-100 ring-2 ring-transparent hover:ring-emerald-200 transition-all cursor-pointer">
-            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${displayName}`} />
+          <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-gray-100 ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
+            <AvatarImage src={getAvatarUrl(displayName, user?.gender)} />
             <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
@@ -107,6 +122,8 @@ export function Topbar() {
           <Menu className="w-6 h-6" />
         </Button>
       </div>
+
+      <ProfileDialog open={isProfileOpen} onOpenChange={setIsProfileOpen} />
     </header>
   );
 }

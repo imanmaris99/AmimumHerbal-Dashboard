@@ -294,15 +294,17 @@ export default function ProductionPage() {
                     </TableCell>
                     <TableCell>
                       {production.photo_url ? (
-                        <img
-                          src={production.photo_url}
-                          alt={production.name}
-                          className="h-12 w-12 rounded-xl object-cover border border-gray-100 bg-gray-50"
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                        />
+                        <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-gray-100 bg-white p-1 flex items-center justify-center overflow-hidden">
+                          <img
+                            src={production.photo_url}
+                            alt={production.name}
+                            className="max-h-full max-w-full object-contain"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
                       ) : (
-                        <div className="h-12 w-12 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400">
+                        <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400 text-center px-1">
                           No img
                         </div>
                       )}
