@@ -139,15 +139,15 @@ export default function SettingsPage() {
     },
   });
 
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
   }
 
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Owner Settings</h1>
-        <p className="text-gray-500 mt-1">Area sensitif untuk owner, sekarang sudah tersambung ke profile pribadi internal agar pengelolaan akun tidak perlu keluar dari dashboard.</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Internal Profile Settings</h1>
+        <p className="text-gray-500 mt-1">Area profile pribadi internal untuk owner dan admin, agar pengelolaan akun tidak perlu keluar dari dashboard.</p>
       </div>
 
       {profileQuery.isLoading ? (
@@ -169,7 +169,7 @@ export default function SettingsPage() {
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden xl:col-span-1">
               <CardContent className="p-8 space-y-6">
                 <div className="flex items-start justify-between gap-4">
-                  <Badge className="bg-emerald-50 text-emerald-600 border-none">Owner-only</Badge>
+                  <Badge className="bg-emerald-50 text-emerald-600 border-none">Admin + Owner</Badge>
                   <div className="rounded-2xl bg-slate-100 p-3 text-slate-600">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
