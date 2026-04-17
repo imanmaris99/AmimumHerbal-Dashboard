@@ -60,3 +60,11 @@ export interface DashboardSummary {
   revenueByDay: Array<{ date: string; value: number }>;
   ordersByStatus: Array<{ name: string; value: number }>;
 }
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  owner: 'Owner',
+  admin: 'Admin',
+  customer: 'Customer',
+};
+
+export const INTERNAL_ALLOWED_ROLES: UserRole[] = ['owner', 'admin'];

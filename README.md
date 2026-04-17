@@ -1,20 +1,85 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Amimum Herbal Dashboard
 
-# Run and deploy your AI Studio app
+Dashboard internal untuk operasional **Toko Herbal Amimum**.
 
-This contains everything you need to run your app locally.
+Fokus app ini adalah area internal terpisah dari storefront customer, sesuai keputusan arsitektur awal:
+- **frontend customer** untuk publik + customer flow
+- **frontend dashboard internal** untuk `admin` dan `owner`
 
-View your app in AI Studio: https://ai.studio/apps/369c1304-bb41-4f2d-bd0c-3584fdf2f20a
+## Stack
+- Vite
+- React
+- TypeScript
+- React Router
+- Zustand
+- TanStack Query
+- Axios
 
-## Run Locally
+## Environment
+Buat file `.env` lokal atau set environment di Vercel:
 
-**Prerequisites:**  Node.js
+```env
+VITE_API_URL="https://amimumprojectbe-production.up.railway.app"
+```
 
+## Run local
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Build production
+```bash
+npm run build
+```
+
+## Role access matrix
+Sesuai matrix yang sudah ditetapkan:
+
+### 1. Shared internal (`admin` + `owner`)
+Halaman/fitur yang boleh diakses:
+- `/overview`
+- `/orders`
+- `/payments`
+
+### 2. Owner-only
+Halaman/fitur yang hanya boleh diakses owner:
+- `/users`
+- `/settings`
+- aksi sensitif seperti status user owner-controlled
+
+### 3. Customer
+- tidak punya akses ke dashboard internal
+- customer flow tetap berada di frontend customer terpisah
+
+## Fitur yang sudah live
+- login internal via backend
+- overview live ke dashboard summary
+- orders live ke backend admin orders
+- payments live ke backend admin payments
+- users live ke backend admin users
+- owner-only visibility untuk area sensitif
+- topbar/sidebar sudah disejajarkan dengan role matrix internal
+
+## Endpoint backend yang dipakai
+- `POST /admin/login`
+- `GET /admin/dashboard/summary`
+- `GET /admin/orders`
+- `GET /admin/payments`
+- `GET /admin/users`
+- `PATCH /admin/users/{user_id}/status`
+
+## Deploy ke Vercel free
+1. Import repo ini ke Vercel
+2. Framework preset: **Vite**
+3. Set env:
+   - `VITE_API_URL=https://amimumprojectbe-production.up.railway.app`
+4. Build command:
+   - `npm run build`
+5. Output directory:
+   - `dist`
+
+## Catatan implementasi
+- Dashboard ini sengaja dipisah dari frontend customer agar boundary auth, UX, dan security tetap jelas.
+- Rollout owner-only write actions dibuat bertahap agar aman dan mudah diaudit.
+- Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.

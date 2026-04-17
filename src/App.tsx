@@ -12,8 +12,11 @@ import OverviewPage from './pages/OverviewPage';
 import UsersPage from './pages/UsersPage';
 import OrdersPage from './pages/OrdersPage';
 import PaymentsPage from './pages/PaymentsPage';
+import SettingsPage from './pages/SettingsPage';
+import HelpPage from './pages/HelpPage';
 import { DashboardLayout } from './components/dashboard/Layout';
 import { useAuthStore } from './store/authStore';
+import { INTERNAL_ALLOWED_ROLES } from './types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!user || (user.role !== 'admin' && user.role !== 'owner')) {
+  if (!user || !INTERNAL_ALLOWED_ROLES.includes(user.role)) {
     return <Navigate to="/login" replace />;
   }
 
@@ -49,8 +52,8 @@ export default function App() {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="/users" element={<UsersPage />} />
-            <Route path="/settings" element={<div className="p-8 text-center text-gray-500">Global Settings (Under Construction)</div>} />
-            <Route path="/help" element={<div className="p-8 text-center text-gray-500">Help & Support (Under Construction)</div>} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/help" element={<HelpPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/overview" replace />} />
