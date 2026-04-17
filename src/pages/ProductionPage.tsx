@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -44,28 +45,17 @@ interface CreateProductionPayload {
   description: string;
 }
 
-interface UpdateProductionPayload {
-  name?: string;
-  description?: string;
-}
-
 const initialCreateForm: CreateProductionPayload = {
   name: '',
   herbal_category_id: 0,
   description: '',
 };
 
-const initialEditForm: UpdateProductionPayload = {
-  name: '',
-  description: '',
-};
-
 export default function ProductionPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [createForm, setCreateForm] = useState(initialCreateForm);
-  const [editingProductionId, setEditingProductionId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState(initialEditForm);
 
   const { data: productionsResponse, isLoading: productionsLoading } = useQuery({
     queryKey: ['production-list'],
@@ -101,25 +91,6 @@ export default function ProductionPage() {
     },
   });
 
-  const updateProductionMutation = useMutation({
-    mutationFn: async ({ productionId, payload }: { productionId: number; payload: UpdateProductionPayload }) => {
-      const response = await api.put(`/brand/${productionId}`, payload);
-      return response.data;
-    },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || 'Brand / production berhasil diperbarui.');
-      setEditingProductionId(null);
-      setEditForm(initialEditForm);
-      queryClient.invalidateQueries({ queryKey: ['production-list'] });
-      queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
-    },
-    onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui brand / production.';
-      toast.error(String(message));
-    },
-  });
-
   const productions = productionsResponse?.data ?? [];
   const categories = categoriesResponse?.data ?? [];
 
@@ -135,14 +106,6 @@ export default function ProductionPage() {
     });
   }, [productions, search]);
 
-  const startEdit = (production: ProductionItem) => {
-    setEditingProductionId(production.id);
-    setEditForm({
-      name: production.name,
-      description: production.description_list?.join('\n') || '',
-    });
-  };
-
   const submitProduction = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -152,23 +115,6 @@ export default function ProductionPage() {
     }
 
     createProductionMutation.mutate(createForm);
-  };
-
-  const submitEditProduction = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!editingProductionId) {
-      toast.error('Pilih production yang ingin diedit terlebih dahulu.');
-      return;
-    }
-
-    updateProductionMutation.mutate({
-      productionId: editingProductionId,
-      payload: {
-        name: editForm.name?.trim() || undefined,
-        description: editForm.description?.trim() || undefined,
-      },
-    });
   };
 
   return (
@@ -188,7 +134,7 @@ export default function ProductionPage() {
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PencilLine className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ops</span></div><p className="text-sm font-medium text-gray-500 mt-4">Create + Edit</p><p className="text-2xl font-bold text-gray-900 mt-1">Active</p><p className="text-[11px] text-gray-400 mt-2">POST /brand/create dan PUT /brand/:production_id</p></CardContent></Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 2xl:grid-cols-[0.9fr_1.1fr] gap-8 items-start">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-8 pt-8 pb-4">
             <div>
@@ -223,36 +169,18 @@ export default function ProductionPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="px-8 pt-8 pb-4">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Edit brand / production</h2>
-              <p className="text-sm text-gray-500 mt-1">Tersambung ke endpoint backend <strong>PUT /brand/:production_id</strong>.</p>
-            </div>
-          </CardHeader>
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={submitEditProduction} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="editing-production">Selected production</Label>
-                <Input id="editing-production" value={editingProductionId ? String(editingProductionId) : ''} placeholder="Pilih dari tabel overview" disabled />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-production-name">Production name</Label>
-                <Input id="edit-production-name" value={editForm.name || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Nama production yang diperbarui" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-production-description">Description</Label>
-                <textarea id="edit-production-description" value={editForm.description || ''} onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Deskripsi production yang diperbarui" className="min-h-[120px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs text-gray-500">Klik tombol <strong>Edit</strong> pada tabel overview untuk memuat data ke form ini.</p>
-                <Button type="submit" disabled={updateProductionMutation.isPending || !editingProductionId} className="rounded-xl bg-slate-900 hover:bg-slate-800">
-                  <PencilLine className="w-4 h-4 mr-2" />
-                  {updateProductionMutation.isPending ? 'Updating...' : 'Update Production'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
+        <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+          <h3 className="text-lg font-bold text-emerald-900">Flow edit production sekarang</h3>
+          <div className="mt-4 space-y-3 text-sm text-emerald-800">
+            <p>CTA <strong>Edit</strong> sekarang langsung menuju halaman edit khusus agar flow create dan edit tidak bercampur.</p>
+            <ol className="list-decimal pl-5 space-y-1">
+              <li>Buka daftar production di overview</li>
+              <li>Klik <strong>Edit</strong> pada row yang dipilih</li>
+              <li>Masuk ke page edit production khusus</li>
+              <li>Simpan perubahan lalu kembali ke halaman production</li>
+            </ol>
+            <p className="pt-2 text-[11px] font-semibold text-emerald-900">Pattern ini diselaraskan dengan flow edit user agar UX dashboard lebih konsisten.</p>
+          </div>
         </Card>
       </div>
 
@@ -267,8 +195,8 @@ export default function ProductionPage() {
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari production atau category..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-4 pb-8 overflow-x-auto">
+          <Table className="min-w-[860px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
@@ -312,7 +240,7 @@ export default function ProductionPage() {
                     <TableCell className="text-sm text-gray-600">{production.category || '-'}</TableCell>
                     <TableCell className="text-sm text-gray-600">{production.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => startEdit(production)}>
+                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/productions/edit/${production.id}`)}>
                         <PencilLine className="w-4 h-4 mr-2" />
                         Edit
                       </Button>
@@ -337,7 +265,7 @@ export default function ProductionPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>admin dan owner bisa membuka halaman production</li>
               <li>form create production tidak submit saat product category belum dipilih</li>
-              <li>edit form hanya aktif setelah row production dipilih</li>
+              <li>CTA edit langsung masuk ke halaman edit production</li>
               <li>list production aman saat data kosong</li>
             </ul>
           </div>

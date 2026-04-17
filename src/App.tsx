@@ -20,6 +20,7 @@ const CatalogPage = React.lazy(() => import('./pages/CatalogPage'));
 const VariantsPage = React.lazy(() => import('./pages/VariantsPage'));
 const ContentPage = React.lazy(() => import('./pages/ContentPage'));
 const ProductionPage = React.lazy(() => import('./pages/ProductionPage'));
+const ProductionEditPage = React.lazy(() => import('./pages/ProductionEditPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const HelpPage = React.lazy(() => import('./pages/HelpPage'));
 
@@ -58,6 +59,7 @@ export default function App() {
               <Route path="/variants" element={<VariantsPage />} />
               <Route path="/content" element={<ContentPage />} />
               <Route path="/productions" element={<ProductionPage />} />
+              <Route path="/productions/edit/:productionId" element={<ProductionEditPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/users/edit/:userId" element={<UserEditPage />} />
               <Route path="/settings" element={<SettingsPage />} />
