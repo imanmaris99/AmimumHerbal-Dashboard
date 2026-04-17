@@ -31,6 +31,7 @@ interface ProductResponse {
 interface VariantItem {
   id?: number;
   product?: string;
+  product_id?: string;
   name?: string;
   img?: string | null;
   variant?: string | null;
@@ -167,18 +168,40 @@ export default function VariantsPage() {
   const products = productsResponse?.data ?? [];
   const variants = variantsResponse?.data ?? [];
 
+  const productLookup = useMemo(() => {
+    return new Map(products.map((product) => [String(product.id), product]));
+  }, [products]);
+
+  const enrichedVariants = useMemo(() => {
+    return variants.map((variant) => {
+      const matchedProduct = variant.product_id ? productLookup.get(String(variant.product_id)) : undefined;
+      const resolvedProductName =
+        typeof variant.product === 'string' && variant.product.trim().length > 0
+          ? variant.product
+          : matchedProduct?.name || '-';
+
+      const resolvedPackName = variant.name?.trim() || variant.variant?.trim() || '-';
+
+      return {
+        ...variant,
+        resolvedProductName,
+        resolvedPackName,
+      };
+    });
+  }, [variants, productLookup]);
+
   const filteredVariants = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    if (!keyword) return variants;
+    if (!keyword) return enrichedVariants;
 
-    return variants.filter((variant) => {
+    return enrichedVariants.filter((variant) => {
       return (
-        (variant.name || '').toLowerCase().includes(keyword) ||
-        (variant.product || '').toLowerCase().includes(keyword) ||
+        (variant.resolvedPackName || '').toLowerCase().includes(keyword) ||
+        (variant.resolvedProductName || '').toLowerCase().includes(keyword) ||
         (variant.variant || '').toLowerCase().includes(keyword)
       );
     });
-  }, [variants, search]);
+  }, [enrichedVariants, search]);
 
   const totalStock = filteredVariants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   const discountedVariants = filteredVariants.filter((variant) => Number(variant.discount || 0) > 0).length;
@@ -259,11 +282,11 @@ export default function VariantsPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Variant / Pack Type Management</h1>
           <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola variant setelah product dibuat, sesuai relasi tabel <strong>pack_types</strong> ke <strong>products</strong>.</p>
         </div>
-        <Badge className="bg-orange-50 text-orange-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-orange-50 text-orange-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredVariants.length}</p><p className="text-[11px] text-gray-400 mt-2">Variant yang sedang terpantau</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredVariants.length}</p><p className="text-[11px] text-gray-400 mt-2">Variant yang sedang terpantau</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Relation</span></div><p className="text-sm font-medium text-gray-500 mt-4">Products Ready</p><p className="text-2xl font-bold text-gray-900 mt-1">{products.length}</p><p className="text-[11px] text-gray-400 mt-2">Target foreign key untuk product_id</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Archive className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Stock</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Stock</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalStock}</p><p className="text-[11px] text-gray-400 mt-2">Akumulasi stock variant yang sedang terlihat</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><ShieldCheck className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">QA</span></div><p className="text-sm font-medium text-gray-500 mt-4">Discounted Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{discountedVariants}</p><p className="text-[11px] text-gray-400 mt-2">Monitoring cepat variant dengan promo</p></CardContent></Card>
@@ -317,7 +340,7 @@ export default function VariantsPage() {
 
               <div className="flex items-center justify-between gap-4 pt-2">
                 <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update stock/discount aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>.</p>
-                <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
                 </Button>
@@ -327,9 +350,9 @@ export default function VariantsPage() {
         </Card>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-            <h3 className="text-lg font-bold text-orange-900">Endpoint matrix alignment</h3>
-            <div className="mt-4 space-y-3 text-sm text-orange-800">
+          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+            <h3 className="text-lg font-bold text-emerald-900">Endpoint matrix alignment</h3>
+            <div className="mt-4 space-y-3 text-sm text-emerald-800">
               <p><strong>Shared internal</strong>: admin dan owner boleh mengakses area ini, karena backend memakai <code>admin_access_required</code>.</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li><code>GET /type/all</code> untuk monitoring variant</li>
@@ -365,7 +388,7 @@ export default function VariantsPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
                         <PencilLine className="w-4 h-4 mr-2" />
                         {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
                       </Button>
@@ -388,7 +411,7 @@ export default function VariantsPage() {
                       <Input id="variant-image" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                     </div>
                     <div className="flex items-center gap-3">
-                      <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-orange-500 hover:bg-orange-600">
+                      <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
                         <ImagePlus className="w-4 h-4 mr-2" />
                         {uploadVariantImageMutation.isPending ? 'Uploading...' : 'Upload Image'}
                       </Button>
@@ -444,11 +467,11 @@ export default function VariantsPage() {
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{variant.name || '-'}</p>
+                        <p className="font-bold text-gray-900 text-sm">{variant.resolvedPackName}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{variant.variant || '-'}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">{variant.product || '-'}</TableCell>
+                    <TableCell className="text-sm text-gray-600">{variant.resolvedProductName}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
                         {variant.stock || 0} stock
@@ -482,7 +505,7 @@ export default function VariantsPage() {
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
         <h3 className="text-lg font-bold">QA structure yang harus dipegang</h3>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
           <div>
