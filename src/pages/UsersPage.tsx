@@ -2,12 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { Navigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MoreVertical, Search, Filter, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { MoreVertical, Search, Filter, ShieldCheck, User as UserIcon, Users, UserCheck, Shield, UserX } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
 
 type DashboardUserRole = 'owner' | 'admin' | 'customer';
 
@@ -55,19 +56,12 @@ interface AdminUserStatusResponse {
   };
 }
 
-const roleBadgeMap: Record<DashboardUserRole, string> = {
-  owner: 'bg-orange-50 text-orange-600',
-  admin: 'bg-blue-50 text-blue-600',
-  customer: 'bg-gray-100 text-gray-600',
-};
-
 export default function UsersPage() {
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
 
   if (user?.role !== 'owner') {
-    toast.error('Access denied. Owner permissions required.');
     return <Navigate to="/overview" replace />;
   }
 
@@ -121,16 +115,70 @@ export default function UsersPage() {
     });
   };
 
+  const ownerCount = filteredUsers.filter((u) => u.role === 'owner').length;
+  const adminCount = filteredUsers.filter((u) => u.role === 'admin').length;
+  const customerCount = filteredUsers.filter((u) => u.role === 'customer').length;
+  const inactiveCount = filteredUsers.filter((u) => !u.is_active).length;
+
+  const summaryCards = [
+    {
+      label: 'Visible Users',
+      value: filteredUsers.length,
+      helper: 'User yang tampil di layar sekarang',
+      icon: Users,
+      tone: 'bg-orange-50 text-orange-600',
+    },
+    {
+      label: 'Owners',
+      value: ownerCount,
+      helper: 'Akses tertinggi internal',
+      icon: Shield,
+      tone: 'bg-orange-50 text-orange-600',
+    },
+    {
+      label: 'Admins',
+      value: adminCount,
+      helper: 'Operasional internal harian',
+      icon: UserCheck,
+      tone: 'bg-blue-50 text-blue-600',
+    },
+    {
+      label: 'Inactive Accounts',
+      value: inactiveCount,
+      helper: 'Perlu perhatian owner',
+      icon: UserX,
+      tone: 'bg-red-50 text-red-600',
+    },
+  ];
+
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">User Management</h1>
-          <p className="text-gray-500 mt-1 mr-2">Owner-only user visibility and account status control.</p>
+          <p className="text-gray-500 mt-1 mr-2">Area owner-only untuk monitoring akun internal dan customer sesuai batas tanggung jawab role.</p>
         </div>
         <Button disabled className="bg-orange-500 hover:bg-orange-600 rounded-xl h-11 px-6 shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60">
           Owner-only controls active
         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {summaryCards.map((card) => (
+          <Card key={card.label} className="border-none shadow-sm rounded-3xl">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className={`p-3 rounded-2xl ${card.tone}`}>
+                  <card.icon className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Owner</span>
+              </div>
+              <p className="text-sm font-medium text-gray-500 mt-4">{card.label}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1 break-words">{card.value}</p>
+              <p className="text-[11px] text-gray-400 mt-2">{card.label === 'Admins' ? `${customerCount} customer akun terpantau` : card.helper}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
@@ -148,7 +196,7 @@ export default function UsersPage() {
             <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" disabled className="rounded-xl border-gray-100 flex-1 md:flex-none">
                 <Filter className="w-4 h-4 mr-2" />
-                Filters (next batch)
+                Owner policy applied
               </Button>
             </div>
           </div>
@@ -203,15 +251,17 @@ export default function UsersPage() {
                               <span className="text-xs font-bold uppercase tracking-wide">Owner</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1.5 text-gray-600">
-                              <UserIcon className="w-3.5 h-3.5" />
-                              <span className="text-xs font-bold uppercase tracking-wide">{u.role}</span>
-                            </div>
+                            <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(userRoleStyles, u.role)}`}>
+                              <div className="flex items-center gap-1.5">
+                                <UserIcon className="w-3 h-3" />
+                                <span>{u.role}</span>
+                              </div>
+                            </Badge>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={`rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${u.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                        <Badge variant="secondary" className={`rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${u.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>
                           {u.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </TableCell>
@@ -257,16 +307,16 @@ export default function UsersPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
         <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
-          <h3 className="text-lg font-bold">Owner-only user control</h3>
+          <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
           <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-            Customer account status can be managed here. Internal admin/owner accounts remain protected from generic status actions.
+            Owner memonitor keseluruhan akun, tetapi write action tetap dibatasi hati-hati. Saat ini aksi sensitif yang aktif adalah kontrol status untuk akun customer, sementara akun internal tetap dilindungi.
           </p>
         </Card>
 
         <Card className="border-none shadow-sm rounded-3xl bg-orange-50 border-orange-100 overflow-hidden p-8">
-          <h3 className="text-lg font-bold text-orange-900">Live data mode</h3>
+          <h3 className="text-lg font-bold text-orange-900">Matrix alignment</h3>
           <p className="text-orange-700 text-sm mt-2 leading-relaxed">
-            This page is already connected to the backend live endpoint and follows the owner-only action policy agreed for the dashboard.
+            Halaman ini sengaja owner-only agar pengawasan user, pemisahan akun internal, dan kontrol customer account tetap terpusat pada role dengan otoritas tertinggi.
           </p>
           <p className="mt-2 text-[10px] font-bold text-orange-800 uppercase tracking-wider">
             Source: GET /admin/users + PATCH /admin/users/:id/status
