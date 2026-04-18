@@ -1,6 +1,6 @@
-# Amimum Herbal Dashboard
+# Dashboard Toko Herbal AmImUm
 
-Dashboard internal untuk operasional **Toko Herbal Amimum**.
+Dashboard internal untuk operasional **Toko Herbal AmImUm**.
 
 Fokus app ini adalah area internal terpisah dari storefront customer, sesuai keputusan arsitektur awal:
 - **frontend customer** untuk publik + customer flow

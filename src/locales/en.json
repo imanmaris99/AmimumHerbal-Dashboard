@@ -1,7 +1,7 @@
 {
   "topbar": {
-    "title": "Amimum Herbal Internal Dashboard",
-    "titleMobile": "Amimum Dashboard",
+    "title": "AmImUm Herbal Store Dashboard",
+    "titleMobile": "AmImUm Dashboard",
     "subtitle": "This area follows the internal access matrix: shared access for Admin and Owner, owner-only for sensitive actions.",
     "dialog": {
       "title": "Dashboard Information",

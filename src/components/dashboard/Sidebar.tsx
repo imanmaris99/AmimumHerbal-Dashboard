@@ -65,7 +65,7 @@ function SidebarContent() {
             <span className="text-white font-bold text-xl">U</span>
           </div>
           <div>
-            <span className="font-bold text-xl text-gray-900 tracking-tight block">AmImUm</span>
+            <span className="font-bold text-base text-gray-900 tracking-tight block leading-tight">Dashboard Toko Herbal AmImUm</span>
             <span className="text-xs text-gray-500">{t('sidebar.header.subtitle')}</span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 {
   "topbar": {
-    "title": "Dashboard Internal Toko Herbal Amimum",
-    "titleMobile": "Dashboard Amimum",
+    "title": "Dashboard Toko Herbal AmImUm",
+    "titleMobile": "Dashboard AmImUm",
     "subtitle": "Area ini mengikuti matriks akses internal: akses bersama untuk Admin dan Owner, khusus Owner untuk aksi sensitif.",
     "dialog": {
       "title": "Informasi Dashboard",
