@@ -62,7 +62,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
 
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
   }
 
@@ -161,10 +161,10 @@ export default function UsersPage() {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">User Management</h1>
-          <p className="text-gray-500 mt-1 mr-2">Area owner-only untuk monitoring akun internal dan customer sesuai batas tanggung jawab role.</p>
+          <p className="text-gray-500 mt-1 mr-2">Area monitoring user untuk admin dan owner. Action sensitif seperti edit user lain dan ubah status customer tetap dibatasi khusus owner.</p>
         </div>
         <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-4 sm:px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
-          Owner-only controls active
+          {user?.role === 'owner' ? 'Owner controls active' : 'Admin monitoring mode'}
         </Button>
       </div>
 
@@ -176,7 +176,7 @@ export default function UsersPage() {
                 <div className={`p-3 rounded-2xl ${card.tone}`}>
                   <card.icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Owner</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">{user?.role === 'owner' ? 'Owner' : 'Admin'}</span>
               </div>
               <p className="text-sm font-medium text-gray-500 mt-4">{card.label}</p>
               <p className="text-2xl font-bold text-gray-900 mt-1 break-words">{card.value}</p>
@@ -201,7 +201,7 @@ export default function UsersPage() {
             <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" disabled className="rounded-xl border-gray-100 flex-1 md:flex-none">
                 <Filter className="w-4 h-4 mr-2" />
-                Owner policy applied
+                {user?.role === 'owner' ? 'Owner policy applied' : 'Admin read policy applied'}
               </Button>
             </div>
           </div>
@@ -233,7 +233,8 @@ export default function UsersPage() {
               ) : (
                 filteredUsers.map((u) => {
                   const displayName = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || u.email;
-                  const canToggleStatus = u.role === 'customer';
+                  const canToggleStatus = user?.role === 'owner' && u.role === 'customer';
+                  const canEditUser = user?.role === 'owner';
 
                   return (
                     <TableRow key={u.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -284,10 +285,16 @@ export default function UsersPage() {
                             <DropdownMenuLabel>User Actions</DropdownMenuLabel>
                             <DropdownMenuItem className="cursor-default">Email: {u.email}</DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-gray-50" />
-                            <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
-                              <PencilLine className="w-4 h-4 mr-2" />
-                              Edit User Profile
-                            </DropdownMenuItem>
+                            {canEditUser ? (
+                              <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
+                                <PencilLine className="w-4 h-4 mr-2" />
+                                Edit User Profile
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem className="cursor-default text-gray-400">
+                                Edit user is owner-only
+                              </DropdownMenuItem>
+                            )}
                             {canToggleStatus ? (
                               <DropdownMenuItem
                                 className={`cursor-pointer font-medium ${u.is_active ? 'text-red-500 hover:text-red-600' : 'text-green-600 hover:text-green-700'}`}
@@ -316,16 +323,16 @@ export default function UsersPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-8">
         <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-5 sm:p-8 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
-          <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
+          <h3 className="text-lg font-bold">Batas tanggung jawab internal</h3>
           <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-            Owner memonitor keseluruhan akun dan sekarang juga bisa memperbarui data profil user melalui page edit khusus. Kontrol status customer tetap aktif, sementara role internal tetap dijaga terpisah agar tidak terjadi perubahan otoritas yang sembrono.
+            Admin dan owner sama-sama bisa memonitor daftar user dan membaca data customer untuk kebutuhan operasional. Khusus owner, action edit user lain dan kontrol status customer tetap aktif, sementara role internal tetap dijaga terpisah agar otoritas tidak tercampur.
           </p>
         </Card>
 
         <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-5 sm:p-8">
           <h3 className="text-lg font-bold text-emerald-900">Matrix alignment</h3>
           <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
-            Halaman ini sengaja owner-only agar pengawasan user, pemisahan akun internal, dan kontrol customer account tetap terpusat pada role dengan otoritas tertinggi.
+            Halaman ini mengikuti policy terbaru: admin dan owner boleh memonitor data customer, tetapi patch/edit user lain dan kontrol status customer tetap khusus owner.
           </p>
           <p className="mt-2 text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
             Source: GET /admin/users + GET /admin/users/:id + PUT /admin/users/:id + PATCH /admin/users/:id/status
