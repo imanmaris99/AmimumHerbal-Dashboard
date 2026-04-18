@@ -61,13 +61,14 @@ Halaman/fitur yang hanya boleh diakses owner:
 - overview live ke dashboard summary
 - orders live ke backend admin orders
 - payments live ke backend admin payments
-- catalog management awal untuk submit product baru
-- variant / pack type management awal sesuai struktur BE
-- content management untuk article layer, termasuk create dan update article
-- production / brand management untuk relasi katalog dan product category layer, termasuk create dan update production
-- users live ke backend admin users
+- catalog management untuk submit product baru dan dedicated edit page product
+- variant / pack type management sesuai struktur BE, termasuk update stock/discount dan upload image
+- content management untuk article layer, termasuk create dan dedicated edit page article yang sudah sinkron dengan real article id
+- production / brand management untuk relasi katalog dan product category layer, termasuk create dan dedicated edit page production
+- users live ke backend admin users dengan dedicated edit page owner-only
+- profile/settings internal untuk owner + admin, termasuk edit info, upload foto, dan ganti password
 - owner-only visibility untuk area sensitif
-- topbar/sidebar sudah disejajarkan dengan role matrix internal
+- topbar/sidebar/help page sudah disejajarkan dengan role matrix internal
 
 ## Endpoint backend yang dipakai
 - `POST /admin/login`
@@ -77,8 +78,12 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `GET /admin/users`
 - `PATCH /admin/users/{user_id}/status`
 - `GET /brand/all`
+- `POST /brand/create`
+- `PUT /brand/{production_id}`
 - `GET /product/all`
+- `GET /product/detail/{product_id}`
 - `POST /product/create`
+- `PUT /product/{product_id}`
 - `GET /type/all`
 - `POST /type/create`
 - `PUT /type/{type_id}`
@@ -89,9 +94,11 @@ Halaman/fitur yang hanya boleh diakses owner:
 - `PUT /articles/update/{article_id}`
 - `GET /categories/all` (product category / tag category layer)
 - `POST /categories/post` (product category / tag category layer)
-- `GET /brand/all`
-- `POST /brand/create`
-- `PUT /brand/{production_id}`
+- `GET /admin/profile`
+- `PUT /admin/edit-info`
+- `PUT /admin/edit-photo`
+- `PUT /admin/change-password`
+- `PUT /admin/users/{user_id}` (owner-only)
 
 ## Deploy ke Vercel free
 1. Import repo ini ke Vercel
@@ -109,18 +116,26 @@ Halaman/fitur yang hanya boleh diakses owner:
 - Submit product baru mengikuti diagram database utama: `products.product_by_id -> productions.id`, lalu tahap berikutnya melengkapi `pack_types.product_id -> products.id` untuk variant/kemasan/stok.
 - Matrix endpoint dashboard harus selalu mengikuti struktur backend: shared internal untuk endpoint dengan `admin_access_required`, owner-only hanya untuk area sensitif yang memang dipisah guard-nya.
 - QA dashboard harus memeriksa 3 hal: akses role, kontrak endpoint, dan kesesuaian relasi DB pada payload create/update.
-- Checklist QA catalog/variant minimum saat ini:
+- Dedicated edit page yang sudah resmi dipakai saat ini:
+  - `/users/edit/:userId`
+  - `/productions/edit/:productionId`
+  - `/content/edit/:articleId`
+  - `/catalog/edit/:productId`
+- Checklist QA catalog/variant/content/production minimum saat ini:
   - admin dan owner bisa mengakses `/catalog` dan `/variants`
   - customer tidak boleh masuk flow internal
   - `POST /product/create` membuat product dengan `product_by_id` valid
   - `POST /type/create` membuat variant dengan `product_id` valid
   - `PUT /type/:type_id` memperbarui stock/discount dengan respons sukses
   - `PUT /type/image/:type_id` menerima file valid untuk upload image variant
-  - `GET /articles/all` memberi data monitoring article layer
+  - `GET /articles/all` memberi data monitoring article layer dengan `id` internal yang dipakai dashboard edit
   - `POST /articles/create` membuat article dengan token internal valid
   - `PUT /articles/update/:article_id` memperbarui article dari dashboard internal
+  - route edit article harus memakai real article id, bukan display id
   - `GET /categories/all` dan `POST /categories/post` dipakai untuk product category / tag category layer
   - `POST /brand/create` membuat production dengan `herbal_category_id` valid
   - `PUT /brand/:production_id` memperbarui production dari dashboard internal
+  - `GET /product/detail/:product_id` dan `PUT /product/:product_id` dipakai dedicated product edit page
+  - badge variant di catalog harus merefleksikan variant valid, bukan raw relasi mentah yang masih null-heavy
   - empty state dan loading state frontend tidak boleh crash saat data kosong
 - Fokus saat ini adalah menyelesaikan internal operational MVP yang stabil dan siap deploy.
