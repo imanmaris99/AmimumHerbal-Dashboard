@@ -67,6 +67,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - production / brand management untuk relasi katalog dan product category layer, termasuk create dan dedicated edit page production
 - users live ke backend admin users dengan dedicated edit page owner-only
 - profile/settings internal untuk owner + admin, termasuk edit info, upload foto, dan ganti password
+- user management owner-only dengan dedicated edit page untuk edit user lain
 - owner-only visibility untuk area sensitif
 - topbar/sidebar/help page sudah disejajarkan dengan role matrix internal
 
@@ -121,7 +122,12 @@ Halaman/fitur yang hanya boleh diakses owner:
   - `/productions/edit/:productionId`
   - `/content/edit/:articleId`
   - `/catalog/edit/:productId`
-- Checklist QA catalog/variant/content/production minimum saat ini:
+- Checklist QA users/settings/catalog/variant/content/production minimum saat ini:
+  - owner dan admin bisa login ke dashboard internal
+  - `GET /admin/profile` harus 200 untuk owner dan admin
+  - `GET /admin/users` harus 200 untuk owner dan admin
+  - `GET /admin/users/{user_id}` saat ini bisa diakses owner dan admin untuk detail monitoring
+  - `PUT /admin/users/{user_id}` tetap owner-only untuk edit user lain
   - admin dan owner bisa mengakses `/catalog` dan `/variants`
   - customer tidak boleh masuk flow internal
   - `POST /product/create` membuat product dengan `product_by_id` valid
