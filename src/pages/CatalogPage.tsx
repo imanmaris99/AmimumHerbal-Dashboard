@@ -123,11 +123,31 @@ export default function CatalogPage() {
   const productions = productionsResponse?.data ?? [];
   const products = productsResponse?.data ?? [];
 
+  const normalizedProducts = useMemo(() => {
+    return products.map((product) => {
+      const validVariants = (product.all_variants || []).filter((variant) => {
+        return Boolean(
+          variant && (
+            variant.id ||
+            variant.variant ||
+            variant.stock != null ||
+            variant.discount != null
+          )
+        );
+      });
+
+      return {
+        ...product,
+        validVariants,
+      };
+    });
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    if (!keyword) return products;
+    if (!keyword) return normalizedProducts;
 
-    return products.filter((product) => {
+    return normalizedProducts.filter((product) => {
       const productionName = product.brand_info?.name?.toLowerCase() || '';
       return (
         product.name.toLowerCase().includes(keyword) ||
@@ -135,9 +155,9 @@ export default function CatalogPage() {
         product.id.toLowerCase().includes(keyword)
       );
     });
-  }, [products, search]);
+  }, [normalizedProducts, search]);
 
-  const totalVariants = filteredProducts.reduce((sum, product) => sum + (product.all_variants?.length || 0), 0);
+  const totalVariants = filteredProducts.reduce((sum, product) => sum + (product.validVariants?.length || 0), 0);
 
   const handleChange = (field: keyof CreateProductPayload, value: string) => {
     setForm((prev) => ({
@@ -297,7 +317,7 @@ export default function CatalogPage() {
                         <TableCell className="font-bold text-gray-900">Rp {Number(product.price || 0).toLocaleString('id-ID')}</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                            {product.all_variants?.length || 0} variants
+                            {product.validVariants?.length || 0} variants
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
