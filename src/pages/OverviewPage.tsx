@@ -149,13 +149,13 @@ export default function OverviewPage() {
   const recentOrders = ordersResponse?.data ?? [];
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-6 md:space-y-8 pb-10 max-w-full">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('overview.title')}</h1>
         <p className="text-gray-500 mt-1">{t('overview.subtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
         {summaryLoading
           ? Array.from({ length: 4 }).map((_, index) => (
               <Card key={index} className="border-none shadow-sm rounded-3xl">
@@ -189,7 +189,7 @@ export default function OverviewPage() {
             ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 xl:gap-8">
         <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-8 pt-8 px-6 sm:px-8">
             <div>
@@ -197,8 +197,8 @@ export default function OverviewPage() {
               <CardDescription>{t('overview.orderStatusDesc')}</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="px-2 sm:px-4 pb-8">
-            <div className="h-[300px] w-full">
+          <CardContent className="px-2 sm:px-4 pb-6 md:pb-8 overflow-hidden">
+            <div className="h-[260px] sm:h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={orderStatusChart} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
@@ -233,8 +233,8 @@ export default function OverviewPage() {
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.paymentStatus')}</CardTitle>
             <CardDescription>{t('overview.paymentStatusDesc')}</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center p-6 sm:p-8">
-            <div className="h-[250px] w-full relative">
+          <CardContent className="flex flex-col items-center justify-center p-5 sm:p-6 md:p-8 overflow-hidden">
+            <div className="h-[220px] sm:h-[250px] w-full relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={paymentStatusChart} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={8} dataKey="value">
@@ -272,12 +272,12 @@ export default function OverviewPage() {
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
             <CardDescription>{t('overview.recentOrdersDesc')}</CardDescription>
           </div>
-          <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs h-9">
+          <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs h-9 w-full sm:w-auto">
             {t('overview.viewAll')}
           </Button>
         </CardHeader>
         <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
-          <Table className="min-w-[640px]">
+          <Table className="min-w-[560px] md:min-w-[640px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50">
                 <TableHead className="w-[80px] font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.no')}</TableHead>

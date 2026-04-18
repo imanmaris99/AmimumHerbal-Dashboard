@@ -46,7 +46,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-8 py-3 md:py-4 flex items-center justify-between sticky top-0 z-10 gap-2 sm:gap-4 flex-wrap md:flex-nowrap">
+    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap md:flex-nowrap">
       <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 md:order-1 basis-full md:basis-auto">
         <Dialog>
           <DialogTrigger asChild>
@@ -75,7 +75,7 @@ export function Topbar() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-3 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0 max-w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 px-2 text-xs font-semibold text-gray-600 hover:text-emerald-600">
@@ -97,7 +97,7 @@ export function Topbar() {
           <span className="text-xs font-semibold">{roleLabel}</span>
         </div>
 
-        <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0">
+        <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
         </Button>
@@ -105,11 +105,11 @@ export function Topbar() {
         <div className="hidden sm:block h-8 w-px bg-gray-100 mx-1" />
 
         <div 
-          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 group cursor-pointer min-w-0"
+          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 group cursor-pointer min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-none"
           onClick={() => setIsProfileOpen(true)}
         >
-          <div className="text-right hidden lg:block min-w-0">
-            <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors">{displayName}</p>
+          <div className="text-right hidden lg:block min-w-0 max-w-[180px] xl:max-w-[240px]">
+            <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors truncate">{displayName}</p>
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
           </div>
           <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-gray-100 ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
@@ -118,7 +118,7 @@ export function Topbar() {
           </Avatar>
         </div>
 
-        <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={toggleSidebar}>
+        <Button variant="ghost" size="icon" className="md:hidden shrink-0 h-9 w-9" onClick={toggleSidebar}>
           <Menu className="w-6 h-6" />
         </Button>
       </div>

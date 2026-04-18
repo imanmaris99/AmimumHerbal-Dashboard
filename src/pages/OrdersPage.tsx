@@ -104,18 +104,18 @@ export default function OrdersPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 pb-10 max-w-full">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Orders Management</h1>
           <p className="text-gray-500 mt-1">Area monitoring order untuk admin dan owner, agar operasional harian lebih mudah dipantau.</p>
         </div>
-        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60">
+        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
           Shared internal access active
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
         {summaryCards.map((card) => (
           <Card key={card.label} className="border-none shadow-sm rounded-3xl">
             <CardContent className="p-6">
@@ -135,7 +135,7 @@ export default function OrdersPage() {
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+          <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
@@ -145,12 +145,12 @@ export default function OrdersPage() {
                 className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full"
               />
             </div>
-            <div className="flex gap-2 w-full md:w-auto items-center">
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto items-stretch sm:items-center">
               <Filter className="w-4 h-4 text-gray-400" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none w-full md:w-auto"
+                className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none w-full lg:w-auto"
               >
                 {orderStatusOptions.map((status) => (
                   <option key={status} value={status}>
@@ -162,7 +162,7 @@ export default function OrdersPage() {
           </div>
         </CardHeader>
         <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
-          <Table className="min-w-[860px]">
+          <Table className="min-w-[760px] lg:min-w-[860px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Order</TableHead>
