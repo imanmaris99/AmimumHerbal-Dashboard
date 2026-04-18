@@ -306,7 +306,7 @@ export default function CatalogPage() {
                   ) : filteredProducts.length === 0 ? (
                     <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Belum ada product yang cocok dengan filter.</TableCell></TableRow>
                   ) : (
-                    filteredProducts.slice(0, 8).map((product) => (
+                    filteredProducts.map((product) => (
                       <TableRow key={product.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
                         <TableCell>
                           <div>

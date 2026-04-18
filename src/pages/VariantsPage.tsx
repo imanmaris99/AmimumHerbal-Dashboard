@@ -122,10 +122,7 @@ export default function VariantsPage() {
 
   const updateVariantMutation = useMutation({
     mutationFn: async ({ variantId, payload }: { variantId: number; payload: UpdateVariantPayload }) => {
-      const response = await api.put(`/type/${variantId}`, {
-        type_id: variantId,
-        ...payload,
-      });
+      const response = await api.put(`/type/${variantId}`, payload);
       return response.data;
     },
     onSuccess: (response: any) => {

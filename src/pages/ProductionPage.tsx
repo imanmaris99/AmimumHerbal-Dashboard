@@ -213,7 +213,7 @@ export default function ProductionPage() {
               ) : filteredProductions.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok.</TableCell></TableRow>
               ) : (
-                filteredProductions.slice(0, 8).map((production) => (
+                filteredProductions.map((production) => (
                   <TableRow key={production.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
                     <TableCell>
                       <div>
