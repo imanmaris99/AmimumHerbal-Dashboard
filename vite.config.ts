@@ -21,12 +21,52 @@ export default defineConfig(({mode}) => {
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
 
-            if (id.includes('recharts')) {
+            const normalizedId = id.replace(/\\/g, '/');
+
+            if (normalizedId.includes('/recharts/')) {
               return 'charts-vendor';
             }
 
-            if (id.includes('i18next') || id.includes('react-i18next')) {
+            if (normalizedId.includes('/i18next/') || normalizedId.includes('/react-i18next/')) {
               return 'i18n-vendor';
+            }
+
+            if (normalizedId.includes('/@tanstack/react-query/')) {
+              return 'query-vendor';
+            }
+
+            if (normalizedId.includes('/axios/')) {
+              return 'http-vendor';
+            }
+
+            if (normalizedId.includes('/zustand/')) {
+              return 'state-vendor';
+            }
+
+            if (normalizedId.includes('/sonner/')) {
+              return 'toast-vendor';
+            }
+
+            if (normalizedId.includes('/lucide-react/')) {
+              return 'icons-vendor';
+            }
+
+            if (normalizedId.includes('/@base-ui/react/')) {
+              return 'base-ui-vendor';
+            }
+
+            if (normalizedId.includes('/@floating-ui/')) {
+              return 'floating-vendor';
+            }
+
+            if (
+              normalizedId.includes('/react-router/') ||
+              normalizedId.includes('/react-router-dom/') ||
+              normalizedId.includes('/react-dom/') ||
+              normalizedId.includes('/scheduler/') ||
+              normalizedId.includes('/react/')
+            ) {
+              return 'react-core-vendor';
             }
 
             return 'vendor';
