@@ -5,6 +5,7 @@ import { ArrowLeft, FileText, Loader2, PencilLine, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { extractApiErrorMessage } from '@/lib/error';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,9 +80,7 @@ export default function ContentEditPage() {
       navigate('/content');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui artikel.';
-      toast.error(String(message));
+      toast.error(extractApiErrorMessage(error, 'Gagal memperbarui artikel.'));
     },
   });
 
