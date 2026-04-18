@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes } from 'lucide-react';
+import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -81,6 +82,7 @@ const initialForm: CreateProductPayload = {
 };
 
 export default function CatalogPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
@@ -237,16 +239,18 @@ export default function CatalogPage() {
 
         <div className="space-y-8">
           <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
-            <h3 className="text-lg font-bold text-emerald-900">Matrix submit product</h3>
+            <h3 className="text-lg font-bold text-emerald-900">Matrix submit & edit product</h3>
             <div className="mt-4 space-y-3 text-sm text-emerald-800">
-              <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit product baru karena endpoint backend memakai <code>admin_access_required</code>.</p>
-              <p><strong>Owner</strong> tetap memegang pengawasan strategis, tetapi operasional submit product boleh dibantu admin.</p>
+              <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit dan edit product karena endpoint backend memakai <code>admin_access_required</code>.</p>
+              <p><strong>Owner</strong> tetap memegang pengawasan strategis, tetapi operasional product management bisa dibantu admin.</p>
               <p><strong>Category</strong> pada flow ini adalah <code>tag_categories</code> yang terhubung ke production/product layer, bukan kategori article/content.</p>
-              <p>Flow database yang dipakai di form ini:</p>
+              <p>Flow database dan endpoint yang dipakai di dashboard:</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>Pilih <strong>production / brand</strong> dari tabel <code>productions</code></li>
-                <li>Buat baris baru di tabel <code>products</code> dengan <code>product_by_id</code></li>
-                <li>Lanjutkan setup varian di tabel <code>pack_types</code> untuk kemasan/stok/discount</li>
+                <li>Buat baris baru di tabel <code>products</code> dengan <code>product_by_id</code> lewat <code>POST /product/create</code></li>
+                <li>Lihat detail product lewat <code>GET /product/detail/{'{product_id}'}</code></li>
+                <li>Edit product lewat dedicated page yang terhubung ke <code>PUT /product/{'{product_id}'}</code></li>
+                <li>Lanjutkan setup varian di tabel <code>pack_types</code> untuk kemasan, stok, dan discount</li>
               </ol>
             </div>
           </Card>
@@ -272,13 +276,14 @@ export default function CatalogPage() {
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Variants</TableHead>
+                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {productsLoading || productionsLoading ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
                   ) : filteredProducts.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-gray-400 py-8">Belum ada product yang cocok dengan filter.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Belum ada product yang cocok dengan filter.</TableCell></TableRow>
                   ) : (
                     filteredProducts.slice(0, 8).map((product) => (
                       <TableRow key={product.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -294,6 +299,12 @@ export default function CatalogPage() {
                           <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
                             {product.all_variants?.length || 0} variants
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/catalog/edit/${product.id}`)}>
+                            <PencilLine className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
