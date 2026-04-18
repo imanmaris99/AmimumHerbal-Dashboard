@@ -124,6 +124,9 @@ Halaman/fitur yang hanya boleh diakses owner:
   - `/catalog/edit/:productId`
 - Checklist QA users/settings/catalog/variant/content/production minimum saat ini:
   - owner dan admin bisa login ke dashboard internal
+  - `GET /admin/dashboard/summary` harus 200 untuk owner dan admin
+  - `GET /admin/orders` harus 200 untuk owner dan admin
+  - `GET /admin/payments` harus 200 untuk owner dan admin
   - `GET /admin/profile` harus 200 untuk owner dan admin
   - `GET /admin/users` harus 200 untuk owner dan admin
   - `GET /admin/users/{user_id}` saat ini bisa diakses owner dan admin untuk detail monitoring
