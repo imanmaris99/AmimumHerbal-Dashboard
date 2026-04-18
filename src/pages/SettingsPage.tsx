@@ -167,7 +167,7 @@ export default function SettingsPage() {
         <>
           <div className="grid grid-cols-1 2xl:grid-cols-3 gap-6 xl:gap-8">
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden 2xl:col-span-1">
-              <CardContent className="p-8 space-y-6">
+              <CardContent className="p-5 sm:p-8 space-y-6">
                 <div className="flex items-start justify-between gap-4">
                   <Badge className="bg-emerald-50 text-emerald-600 border-none">Admin + Owner</Badge>
                   <div className="rounded-2xl bg-slate-100 p-3 text-slate-600">
@@ -233,13 +233,13 @@ export default function SettingsPage() {
 
             <div className="2xl:col-span-2 space-y-8">
               <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+                <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">Profil pribadi internal</h2>
                     <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /admin/edit-info</strong>.</p>
                   </div>
                 </CardHeader>
-                <CardContent className="px-6 sm:px-8 pb-8">
+                <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
                   <form
                     className="space-y-5"
                     onSubmit={(e) => {
@@ -296,13 +296,13 @@ export default function SettingsPage() {
               </Card>
 
               <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+                <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-gray-900">Ganti password internal</h2>
                     <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /admin/change-password</strong>.</p>
                   </div>
                 </CardHeader>
-                <CardContent className="px-6 sm:px-8 pb-8">
+                <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
                   <form
                     className="space-y-5"
                     onSubmit={(e) => {

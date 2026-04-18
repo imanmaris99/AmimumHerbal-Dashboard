@@ -43,7 +43,7 @@ export default function HelpPage() {
         <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Owner + Admin guide</Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         <Card className="border-none shadow-sm rounded-3xl">
           <CardContent className="p-6 space-y-3">
             <h2 className="font-bold text-gray-900">Shared Internal</h2>
@@ -76,7 +76,7 @@ export default function HelpPage() {
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-        <CardContent className="p-6 md:p-8 space-y-4">
+        <CardContent className="p-5 sm:p-6 md:p-8 space-y-4">
           <div>
             <h2 className="font-bold text-gray-900 text-lg">Dedicated edit flow yang sudah resmi</h2>
             <p className="text-sm text-gray-500 mt-1">Pattern edit sekarang dipisahkan ke halaman khusus supaya create dan update tidak bercampur dalam satu layar.</p>
@@ -97,7 +97,7 @@ export default function HelpPage() {
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-gray-900 text-white">
-        <CardContent className="p-6 md:p-8 space-y-4">
+        <CardContent className="p-5 sm:p-6 md:p-8 space-y-4">
           <div>
             <h2 className="font-bold text-lg">Operational reminders</h2>
             <p className="text-sm text-gray-300 mt-1">Acuan singkat saat melakukan QA atau troubleshooting di dashboard internal.</p>

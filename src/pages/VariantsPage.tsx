@@ -277,7 +277,7 @@ export default function VariantsPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Variant / Pack Type Management</h1>
           <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola variant setelah product dibuat, sesuai relasi tabel <strong>pack_types</strong> ke <strong>products</strong>.</p>
@@ -285,22 +285,22 @@ export default function VariantsPage() {
         <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredVariants.length}</p><p className="text-[11px] text-gray-400 mt-2">Variant yang sedang terpantau</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Relation</span></div><p className="text-sm font-medium text-gray-500 mt-4">Products Ready</p><p className="text-2xl font-bold text-gray-900 mt-1">{products.length}</p><p className="text-[11px] text-gray-400 mt-2">Target foreign key untuk product_id</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Archive className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Stock</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Stock</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalStock}</p><p className="text-[11px] text-gray-400 mt-2">Akumulasi stock variant yang sedang terlihat</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><ShieldCheck className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">QA</span></div><p className="text-sm font-medium text-gray-500 mt-4">Discounted Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{discountedVariants}</p><p className="text-[11px] text-gray-400 mt-2">Monitoring cepat variant dengan promo</p></CardContent></Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-6 xl:gap-8">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="px-8 pt-8 pb-4">
+          <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Variant submit form</h2>
               <p className="text-sm text-gray-500 mt-1">Nyambung ke tabel <strong>pack_types</strong> dengan foreign key <strong>product_id</strong> ke tabel <strong>products</strong>.</p>
             </div>
           </CardHeader>
-          <CardContent className="px-8 pb-8">
+          <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
@@ -338,9 +338,9 @@ export default function VariantsPage() {
                 <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder="12/25/2026 atau format yang dipakai backend" required />
               </div>
 
-              <div className="flex items-center justify-between gap-4 pt-2">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
                 <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update stock/discount aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>.</p>
-                <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
+                <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
                 </Button>
@@ -350,7 +350,7 @@ export default function VariantsPage() {
         </Card>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-5 sm:p-8">
             <h3 className="text-lg font-bold text-emerald-900">Endpoint matrix alignment</h3>
             <div className="mt-4 space-y-3 text-sm text-emerald-800">
               <p><strong>Shared internal</strong>: admin dan owner boleh mengakses area ini, karena backend memakai <code>admin_access_required</code>.</p>
@@ -366,13 +366,13 @@ export default function VariantsPage() {
           </Card>
 
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-            <CardHeader className="px-8 pt-8 pb-4">
+            <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Operational action panels</h2>
                 <p className="text-sm text-gray-500 mt-1">Panel cepat untuk edit stock/discount dan upload image variant.</p>
               </div>
             </CardHeader>
-            <CardContent className="px-8 pb-8 space-y-6">
+            <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8 space-y-6">
               <div className="space-y-4">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Update stock / discount</h3>
                 {editingVariantId ? (
@@ -387,8 +387,8 @@ export default function VariantsPage() {
                         <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                         <PencilLine className="w-4 h-4 mr-2" />
                         {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
                       </Button>
@@ -410,8 +410,8 @@ export default function VariantsPage() {
                       <Label htmlFor="variant-image">Image file</Label>
                       <Input id="variant-image" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                         <ImagePlus className="w-4 h-4 mr-2" />
                         {uploadVariantImageMutation.isPending ? 'Uploading...' : 'Upload Image'}
                       </Button>
@@ -435,7 +435,7 @@ export default function VariantsPage() {
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-        <CardHeader className="px-8 pt-8 pb-4">
+        <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Existing variants</h2>
             <p className="text-sm text-gray-500 mt-1">Pantau struktur variant yang sudah ada sebelum menambah pack type baru.</p>
@@ -445,8 +445,9 @@ export default function VariantsPage() {
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
           </div>
         </CardHeader>
-        <CardContent className="px-4 pb-8">
-          <Table>
+        <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
+          <div className="overflow-x-auto">
+          <Table className="min-w-[980px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
@@ -515,7 +516,7 @@ export default function VariantsPage() {
                     <TableCell className="text-sm text-gray-600">{variant.expiration || '-'}</TableCell>
                     <TableCell className="text-sm text-gray-600">{variant.img ? 'Available' : 'No image'}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2 min-w-[220px]">
                         <Button variant="outline" size="sm" className="rounded-xl" onClick={() => startEditing(variant)}>
                           <PencilLine className="w-4 h-4 mr-1" /> Edit
                         </Button>
@@ -532,10 +533,11 @@ export default function VariantsPage() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
+      <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-5 sm:p-8 relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
         <h3 className="text-lg font-bold">QA structure yang harus dipegang</h3>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">

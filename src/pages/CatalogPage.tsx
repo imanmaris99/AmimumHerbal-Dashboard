@@ -179,7 +179,7 @@ export default function CatalogPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Catalog Management</h1>
           <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola submit product baru berdasarkan relasi database yang sudah ditetapkan.</p>
@@ -187,7 +187,7 @@ export default function CatalogPage() {
         <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Box className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Products</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredProducts.length}</p><p className="text-[11px] text-gray-400 mt-2">Produk yang sedang terpantau</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">DB</span></div><p className="text-sm font-medium text-gray-500 mt-4">Brand / Productions</p><p className="text-2xl font-bold text-gray-900 mt-1">{productions.length}</p><p className="text-[11px] text-gray-400 mt-2">Source relasi untuk product_by_id</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Flow</span></div><p className="text-sm font-medium text-gray-500 mt-4">Variant Slots</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalVariants}</p><p className="text-[11px] text-gray-400 mt-2">Pack type mengikuti produk setelah submit</p></CardContent></Card>
@@ -196,13 +196,13 @@ export default function CatalogPage() {
 
       <div className="grid grid-cols-1 2xl:grid-cols-[1.1fr_0.9fr] gap-6 xl:gap-8 items-start">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-          <CardHeader className="px-8 pt-8 pb-4">
+          <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Product submit form</h2>
               <p className="text-sm text-gray-500 mt-1">Nyambung ke tabel <strong>products</strong>, dengan foreign key <strong>product_by_id</strong> ke tabel <strong>productions</strong>.</p>
             </div>
           </CardHeader>
-          <CardContent className="px-8 pb-8">
+          <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
@@ -258,7 +258,7 @@ export default function CatalogPage() {
         </Card>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
+          <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-5 sm:p-8">
             <h3 className="text-lg font-bold text-emerald-900">Matrix submit & edit product</h3>
             <div className="mt-4 space-y-3 text-sm text-emerald-800">
               <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit dan edit product karena endpoint backend memakai <code>admin_access_required</code>.</p>
@@ -276,7 +276,7 @@ export default function CatalogPage() {
           </Card>
 
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-            <CardHeader className="px-8 pt-8 pb-4">
+            <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Existing products</h2>
@@ -288,7 +288,8 @@ export default function CatalogPage() {
                 <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama produk, production, atau id..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
               </div>
             </CardHeader>
-            <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+            <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
+              <div className="overflow-x-auto">
               <Table className="min-w-[640px]">
                 <TableHeader className="bg-gray-50/50">
                   <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
@@ -331,6 +332,7 @@ export default function CatalogPage() {
                   )}
                 </TableBody>
               </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -158,17 +158,17 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">User Management</h1>
           <p className="text-gray-500 mt-1 mr-2">Area owner-only untuk monitoring akun internal dan customer sesuai batas tanggung jawab role.</p>
         </div>
-        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60">
+        <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-4 sm:px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
           Owner-only controls active
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {summaryCards.map((card) => (
           <Card key={card.label} className="border-none shadow-sm rounded-3xl">
             <CardContent className="p-6">
@@ -313,8 +313,8 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-8 relative">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-8">
+        <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-5 sm:p-8 relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
           <h3 className="text-lg font-bold">Batas tanggung jawab owner</h3>
           <p className="text-gray-400 text-sm mt-2 leading-relaxed">
@@ -322,7 +322,7 @@ export default function UsersPage() {
           </p>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-8">
+        <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-5 sm:p-8">
           <h3 className="text-lg font-bold text-emerald-900">Matrix alignment</h3>
           <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
             Halaman ini sengaja owner-only agar pengawasan user, pemisahan akun internal, dan kontrol customer account tetap terpusat pada role dengan otoritas tertinggi.
