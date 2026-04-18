@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 
 interface ArticleItem {
+  id: number;
   display_id?: number;
   title: string;
   img?: string | null;
@@ -178,7 +179,7 @@ export default function ContentPage() {
                     </TableCell>
                     <TableCell className="text-sm text-gray-600">{article.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => article.display_id && navigate(`/content/edit/${article.display_id}`)} disabled={!article.display_id}>
+                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/content/edit/${article.id}`)}>
                         <PencilLine className="w-4 h-4 mr-2" />
                         Edit
                       </Button>

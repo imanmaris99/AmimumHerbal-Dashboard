@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface ArticleItem {
+  id: number;
   display_id?: number;
   title: string;
   img?: string | null;
@@ -51,7 +52,7 @@ export default function ContentEditPage() {
     queryFn: async () => {
       const response = await api.get<ArticleResponse>('/articles/all');
       const articles = response.data.data ?? [];
-      const target = articles.find((article) => String(article.display_id) === articleId);
+      const target = articles.find((article) => String(article.id) === articleId);
       if (!target) {
         throw new Error('Article tidak ditemukan.');
       }
@@ -145,7 +146,7 @@ export default function ContentEditPage() {
 
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{articleDetailQuery.data.title}</h2>
-                <p className="text-sm text-gray-500 mt-1">Display ID: {articleDetailQuery.data.display_id || '-'}</p>
+                <p className="text-sm text-gray-500 mt-1">Article ID: {articleDetailQuery.data.id} • Display ID: {articleDetailQuery.data.display_id || '-'}</p>
               </div>
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
