@@ -11,6 +11,8 @@ import { useAuthStore } from './store/authStore';
 import { INTERNAL_ALLOWED_ROLES } from './types';
 
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
 const OverviewPage = React.lazy(() => import('./pages/OverviewPage'));
 const UsersPage = React.lazy(() => import('./pages/UsersPage'));
 const UserEditPage = React.lazy(() => import('./pages/UserEditPage'));
@@ -51,6 +53,8 @@ export default function App() {
         >
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
               <Route path="/" element={<Navigate to="/overview" replace />} />

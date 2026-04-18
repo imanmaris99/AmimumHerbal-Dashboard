@@ -58,6 +58,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 
 ## Fitur yang sudah live
 - login internal via backend
+- forgot password internal end-to-end via email reset request dan halaman reset password dashboard
 - overview live ke dashboard summary
 - orders live ke backend admin orders
 - payments live ke backend admin payments
@@ -73,6 +74,8 @@ Halaman/fitur yang hanya boleh diakses owner:
 
 ## Endpoint backend yang dipakai
 - `POST /admin/login`
+- `POST /admin/forgot-password`
+- `POST /admin/password-reset/confirm`
 - `GET /admin/dashboard/summary`
 - `GET /admin/orders`
 - `GET /admin/payments`

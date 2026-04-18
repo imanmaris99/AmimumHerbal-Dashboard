@@ -72,6 +72,22 @@ export interface ChangePasswordPayload {
   new_password: string;
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  code: string;
+  new_password: string;
+}
+
+export interface BasicStatusResponse<T = unknown> {
+  status_code: number;
+  message: string;
+  data: T;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
