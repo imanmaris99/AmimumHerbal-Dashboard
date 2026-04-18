@@ -91,10 +91,7 @@ export default function ProductEditPage() {
 
   const updateProductMutation = useMutation({
     mutationFn: async (payload: UpdateProductPayload) => {
-      const response = await api.put(`/product/${productId}`, {
-        product_id: productId,
-        ...payload,
-      });
+      const response = await api.put(`/product/${productId}`, payload);
       return response.data;
     },
     onSuccess: (response: any) => {
