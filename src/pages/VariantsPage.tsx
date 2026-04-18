@@ -397,6 +397,9 @@ export default function VariantsPage() {
                 ) : (
                   <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit stock dan discount.</p>
                 )}
+                {editingVariantId ? (
+                  <p className="text-xs text-emerald-600 font-medium">Variant ID terpilih: {editingVariantId}</p>
+                ) : null}
               </div>
 
               <div className="space-y-4">
@@ -420,6 +423,9 @@ export default function VariantsPage() {
                 ) : (
                   <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk upload image baru.</p>
                 )}
+                {imageVariantId ? (
+                  <p className="text-xs text-blue-600 font-medium">Variant ID image target: {imageVariantId}</p>
+                ) : null}
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 space-y-2">
@@ -464,7 +470,7 @@ export default function VariantsPage() {
               ) : filteredVariants.length === 0 ? (
                 <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
               ) : (
-                filteredVariants.slice(0, 10).map((variant, index) => (
+                filteredVariants.map((variant, index) => (
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
                     <TableCell>
                       <div>
