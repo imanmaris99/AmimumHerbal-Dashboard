@@ -53,10 +53,10 @@ export default function LoginPage() {
         payload.access_token.access_token
       );
       
-      toast.success(`Welcome back, ${displayName}!`);
+      toast.success(`Selamat datang kembali, ${displayName}!`);
       navigate('/overview');
     } catch (err: any) {
-      const message = err?.response?.data?.detail?.message || err?.message || 'Login failed. Please check your credentials.';
+      const message = err?.response?.data?.detail?.message || err?.message || 'Login gagal. Silakan periksa kembali email dan password Anda.';
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -76,27 +76,30 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-300">
                <LayoutDashboard className="text-white w-7 h-7" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">AmImUm</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">Dashboard Toko Herbal AmImUm</h1>
+              <p className="text-sm text-gray-500 mt-1">Akses internal untuk owner dan admin</p>
+            </div>
           </div>
         </div>
 
         <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden">
           <CardHeader className="space-y-1 pb-2 pt-8">
-            <CardTitle className="text-2xl font-bold text-center">Admin Gatekeeper</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">Masuk ke dashboard</CardTitle>
             <CardDescription className="text-center text-gray-500">
-              Enter your credentials to access the dashboard
+              Masukkan email dan password akun internal Anda untuk mengakses Dashboard Toko Herbal AmImUm.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">Email internal</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@company.com"
+                    placeholder="owner@amimum.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 border-gray-100 bg-gray-50 focus:bg-white transition-colors rounded-xl"
@@ -108,7 +111,7 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   <Link to="/forgot-password" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600">
-                    Forgot Password?
+                    Lupa Password?
                   </Link>
                 </div>
                 <div className="relative">
@@ -141,10 +144,10 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Authenticating...
+                    Memverifikasi...
                   </>
                 ) : (
-                  'Sign In'
+                  'Masuk'
                 )}
               </Button>
             </form>
@@ -157,7 +160,7 @@ export default function LoginPage() {
         </Card>
         
         <p className="text-center mt-8 text-sm text-gray-400">
-          &copy; 2026 AmImUm System. All rights reserved.
+          &copy; 2026 Dashboard Toko Herbal AmImUm. All rights reserved.
         </p>
       </motion.div>
     </div>

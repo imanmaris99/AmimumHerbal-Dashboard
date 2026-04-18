@@ -43,6 +43,11 @@ export default function ForgotPasswordPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Toko Herbal AmImUm</h1>
+          <p className="text-sm text-gray-500 mt-2">Pemulihan akses internal untuk owner dan admin</p>
+        </div>
+
         <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden">
           <CardHeader className="space-y-2 pb-2 pt-8 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
@@ -105,6 +110,10 @@ export default function ForgotPasswordPage() {
             </Link>
           </CardFooter>
         </Card>
+
+        <p className="text-center mt-8 text-sm text-gray-400">
+          &copy; 2026 Dashboard Toko Herbal AmImUm. All rights reserved.
+        </p>
       </motion.div>
     </div>
   );
