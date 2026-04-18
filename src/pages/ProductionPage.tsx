@@ -146,7 +146,7 @@ export default function ProductionPage() {
             <form onSubmit={submitProduction} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="production-name">Production name</Label>
-                <Input id="production-name" value={createForm.name} onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Contoh: Herbal Amimum Factory" required />
+                <Input id="production-name" value={createForm.name} onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Contoh: Toko Herbal AmImUm Factory" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="production-category">Product category</Label>

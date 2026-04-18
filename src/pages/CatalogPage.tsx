@@ -207,7 +207,7 @@ export default function CatalogPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nama produk</Label>
-                  <Input id="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Contoh: Madu Herbal Amimum" required />
+                  <Input id="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Contoh: Madu Herbal AmImUm" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="product_by_id">Brand / production</Label>
