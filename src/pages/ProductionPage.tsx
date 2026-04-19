@@ -190,9 +190,19 @@ export default function ProductionPage() {
             <h2 className="text-lg font-bold text-gray-900">Production overview</h2>
             <p className="text-sm text-gray-500 mt-1">Pantau brand/production yang akan dipakai sebagai source relasi product.</p>
           </div>
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari production atau category..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
+          <div className="mt-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari production atau category..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full pr-24" />
+              {search ? (
+                <Button type="button" variant="ghost" className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg px-3 text-xs text-gray-500 hover:text-gray-700" onClick={() => setSearch('')}>
+                  Reset
+                </Button>
+              ) : null}
+            </div>
+            <p className="text-xs text-gray-500">
+              Menampilkan <strong>{filteredProductions.length}</strong> dari <strong>{productions.length}</strong> production.
+            </p>
           </div>
         </CardHeader>
         <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
@@ -211,7 +221,7 @@ export default function ProductionPage() {
               {productionsLoading || categoriesLoading ? (
                 <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading production data...</TableCell></TableRow>
               ) : filteredProductions.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
               ) : (
                 filteredProductions.map((production) => (
                   <TableRow key={production.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">

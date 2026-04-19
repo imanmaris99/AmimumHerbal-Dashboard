@@ -443,9 +443,19 @@ export default function VariantsPage() {
             <h2 className="text-lg font-bold text-gray-900">Existing variants</h2>
             <p className="text-sm text-gray-500 mt-1">Pantau struktur variant yang sudah ada sebelum menambah pack type baru.</p>
           </div>
-          <div className="relative mt-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
+          <div className="mt-4 space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full pr-24" />
+              {search ? (
+                <Button type="button" variant="ghost" className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg px-3 text-xs text-gray-500 hover:text-gray-700" onClick={() => setSearch('')}>
+                  Reset
+                </Button>
+              ) : null}
+            </div>
+            <p className="text-xs text-gray-500">
+              Menampilkan <strong>{filteredVariants.length}</strong> dari <strong>{enrichedVariants.length}</strong> variant.
+            </p>
           </div>
         </CardHeader>
         <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
@@ -468,7 +478,7 @@ export default function VariantsPage() {
               {variantsLoading || productsLoading ? (
                 <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
               ) : filteredVariants.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Belum ada variant yang cocok dengan filter.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Tidak ada variant yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
               ) : (
                 filteredVariants.map((variant, index) => (
                   <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">

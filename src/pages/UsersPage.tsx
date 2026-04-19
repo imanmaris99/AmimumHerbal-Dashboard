@@ -3,6 +3,14 @@ import { useAuthStore } from '@/store/authStore';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,8 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
@@ -60,6 +66,8 @@ export default function UsersPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [statusTarget, setStatusTarget] = useState<AdminUserInfo | null>(null);
+  const [detailTarget, setDetailTarget] = useState<AdminUserInfo | null>(null);
   const queryClient = useQueryClient();
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
@@ -83,9 +91,8 @@ export default function UsersPage() {
       });
       return response.data;
     },
-    onSuccess: (response) => {
-      toast.success(response.message || 'User status updated successfully.');
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    onSuccess: () => {
+      // handled per-call so dialog can close only after confirmed success
     },
     onError: (error: any) => {
       const message = error?.response?.data?.detail?.message || 'Failed to update user status.';
@@ -110,10 +117,25 @@ export default function UsersPage() {
   }, [users, search]);
 
   const handleToggleStatus = (targetUser: AdminUserInfo) => {
-    toggleUserStatusMutation.mutate({
-      userId: targetUser.id,
-      isActive: !targetUser.is_active,
-    });
+    setStatusTarget(targetUser);
+  };
+
+  const confirmToggleStatus = () => {
+    if (!statusTarget) return;
+
+    toggleUserStatusMutation.mutate(
+      {
+        userId: statusTarget.id,
+        isActive: !statusTarget.is_active,
+      },
+      {
+        onSuccess: (response) => {
+          toast.success(response.message || 'User status updated successfully.');
+          queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+          setStatusTarget(null);
+        },
+      }
+    );
   };
 
   const handleStartEdit = (targetUser: AdminUserInfo) => {
@@ -189,14 +211,24 @@ export default function UsersPage() {
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search by name, email, or role..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full"
-              />
+            <div className="flex-1 w-full space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Cari nama, email, atau role..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-10 pr-24 h-11 bg-gray-50 border-transparent rounded-xl w-full"
+                />
+                {search ? (
+                  <Button type="button" variant="ghost" className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg px-3 text-xs text-gray-500 hover:text-gray-700" onClick={() => setSearch('')}>
+                    Reset
+                  </Button>
+                ) : null}
+              </div>
+              <p className="text-xs text-gray-500">
+                Menampilkan <strong>{filteredUsers.length}</strong> dari <strong>{users.length}</strong> user.
+              </p>
             </div>
             <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" disabled className="rounded-xl border-gray-100 flex-1 md:flex-none">
@@ -227,7 +259,7 @@ export default function UsersPage() {
               ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-400 py-8">
-                    No users matched the current filter.
+                    Tidak ada user yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -275,41 +307,45 @@ export default function UsersPage() {
                         {new Date(u.updated_at).toLocaleString('id-ID')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg">
+                        <div className="flex items-center justify-end gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" />}>
                               <MoreVertical className="w-4 h-4 text-gray-400" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl shadow-gray-200/50">
-                            <DropdownMenuLabel>User Actions</DropdownMenuLabel>
-                            <DropdownMenuItem className="cursor-default">Email: {u.email}</DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-gray-50" />
-                            {canEditUser ? (
-                              <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
-                                <PencilLine className="w-4 h-4 mr-2" />
-                                Edit User Profile
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl shadow-gray-200/50">
+                              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">User Actions</div>
+                              <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => setDetailTarget(u)}>
+                                <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
+                                Lihat Detail User
                               </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem className="cursor-default text-gray-400">
-                                Edit user is owner-only
-                              </DropdownMenuItem>
-                            )}
-                            {canToggleStatus ? (
-                              <DropdownMenuItem
-                                className={`cursor-pointer font-medium ${u.is_active ? 'text-red-500 hover:text-red-600' : 'text-green-600 hover:text-green-700'}`}
-                                onClick={() => handleToggleStatus(u)}
-                                disabled={toggleUserStatusMutation.isPending}
-                              >
-                                {u.is_active ? 'Deactivate Account' : 'Activate Account'}
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem className="cursor-default text-gray-400">
-                                Internal role status is protected
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <div className="-mx-1 my-1 h-px bg-gray-50" />
+                              {canEditUser ? (
+                                <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
+                                  <PencilLine className="w-4 h-4 mr-2" />
+                                  Edit User Profile
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem className="cursor-default text-gray-400">
+                                  <PencilLine className="w-4 h-4 mr-2" />
+                                  Edit (Owner Only)
+                                </DropdownMenuItem>
+                              )}
+                              {canToggleStatus ? (
+                                <DropdownMenuItem
+                                  className={`cursor-pointer font-medium ${u.is_active ? 'text-red-500 hover:text-red-600' : 'text-emerald-600 hover:text-emerald-700'}`}
+                                  onClick={() => handleToggleStatus(u)}
+                                  disabled={toggleUserStatusMutation.isPending}
+                                >
+                                  {u.is_active ? 'Nonaktifkan Akun' : 'Aktifkan Akun'}
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem className="cursor-default text-gray-400">
+                                  Status Protected
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -319,6 +355,93 @@ export default function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={Boolean(statusTarget)} onOpenChange={(open) => { if (!open && !toggleUserStatusMutation.isPending) setStatusTarget(null); }}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>{statusTarget?.is_active ? 'Nonaktifkan customer ini?' : 'Aktifkan customer ini?'}</DialogTitle>
+            <DialogDescription>
+              {statusTarget ? (
+                <>
+                  Anda akan {statusTarget.is_active ? 'menonaktifkan' : 'mengaktifkan'} akun customer <strong>{`${statusTarget.firstname ?? ''} ${statusTarget.lastname ?? ''}`.trim() || statusTarget.email}</strong>.
+                  Tindakan ini khusus owner dan akan langsung memakai endpoint status backend.
+                </>
+              ) : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+            <p><strong>Email:</strong> {statusTarget?.email || '-'}</p>
+            <p className="mt-1"><strong>Status saat ini:</strong> {statusTarget?.is_active ? 'Active' : 'Inactive'}</p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="ghost" onClick={() => setStatusTarget(null)} disabled={toggleUserStatusMutation.isPending}>
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={confirmToggleStatus}
+              disabled={toggleUserStatusMutation.isPending}
+              className={statusTarget?.is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700'}
+            >
+              {toggleUserStatusMutation.isPending ? 'Menyimpan...' : statusTarget?.is_active ? 'Ya, nonaktifkan' : 'Ya, aktifkan'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(detailTarget)} onOpenChange={(open) => { if (!open) setDetailTarget(null); }}>
+        <DialogContent className="rounded-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detail User</DialogTitle>
+            <DialogDescription>
+              Informasi lengkap profil pengguna ini.
+            </DialogDescription>
+          </DialogHeader>
+          {detailTarget && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg ${detailTarget.role === 'owner' ? 'bg-emerald-100 text-emerald-600' : detailTarget.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                  {(`${detailTarget.firstname ?? ''} ${detailTarget.lastname ?? ''}`.trim() || detailTarget.email || '?').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">{`${detailTarget.firstname ?? ''} ${detailTarget.lastname ?? ''}`.trim() || detailTarget.email}</h3>
+                  <p className="text-sm text-gray-500">{detailTarget.email}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 p-4 rounded-xl">
+                <div>
+                  <p className="text-gray-500 mb-1">Role</p>
+                  <Badge variant="secondary" className="uppercase font-bold text-[10px] border-none">{detailTarget.role}</Badge>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Status</p>
+                  <Badge variant="secondary" className={`uppercase font-bold text-[10px] border-none ${detailTarget.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>{detailTarget.is_active ? 'Active' : 'Inactive'}</Badge>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Firstname</p>
+                  <p className="font-medium text-gray-900">{detailTarget.firstname || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 mb-1">Lastname</p>
+                  <p className="font-medium text-gray-900">{detailTarget.lastname || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-gray-500 mb-1">Phone</p>
+                  <p className="font-medium text-gray-900">{detailTarget.phone || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-gray-500 mb-1">Terakhir Diupdate</p>
+                  <p className="font-medium text-gray-900">{new Date(detailTarget.updated_at).toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setDetailTarget(null)}>Tutup</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-8">
         <Card className="border-none shadow-sm rounded-3xl bg-gray-900 text-white overflow-hidden p-5 sm:p-8 relative">
