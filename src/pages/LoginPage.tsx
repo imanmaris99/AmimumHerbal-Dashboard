@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { motion } from 'motion/react';
 import { KeyRound, Mail, LayoutDashboard, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const { t, i18n } = useTranslation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +55,7 @@ export default function LoginPage() {
         payload.access_token.access_token
       );
       
-      toast.success(`Selamat datang kembali, ${displayName}!`);
+      toast.success(t('login.welcomeBack', { name: displayName }));
       navigate('/overview');
     } catch (err: any) {
       const message = err?.response?.data?.detail?.message || err?.message || 'Login gagal. Silakan periksa kembali email dan password Anda.';
@@ -78,25 +80,28 @@ export default function LoginPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">Dashboard Toko Herbal AmImUm</h1>
-              <p className="text-sm text-gray-500 mt-1">Akses internal untuk owner dan admin</p>
+              <p className="text-sm text-gray-500 mt-1">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
             </div>
           </div>
         </div>
 
         <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden bg-white/95 backdrop-blur">
           <CardHeader className="space-y-1 pb-2 pt-8">
-            <CardTitle className="text-2xl font-bold text-center">Masuk ke dashboard</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">{t('login.title')}</CardTitle>
             <CardDescription className="text-center text-gray-500">
-              Masukkan email dan password akun internal Anda untuk mengakses Dashboard Toko Herbal AmImUm.
+              {t('login.subtitle')}
             </CardDescription>
-            <div className="mx-auto mt-4 inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-              Sesi internal akan berakhir otomatis setelah 4 jam tidak aktif
+            <div className="mx-auto mt-4 max-w-[320px] text-center text-xs text-emerald-700 leading-relaxed">
+              {t('login.languageIntro')}
+            </div>
+            <div className="mx-auto mt-3 inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+              {t('login.sessionNotice')}
             </div>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email">Email internal</Label>
+                <Label htmlFor="email">{t('login.emailLabel')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -113,9 +118,9 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                   <Link to="/forgot-password" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600">
-                    Lupa Password?
+                    {t('login.forgotPassword')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -149,17 +154,17 @@ export default function LoginPage() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Memverifikasi...
+                    {t('login.submitting')}
                   </>
                 ) : (
-                  'Masuk'
+                  t('login.submit')
                 )}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pb-8 pt-2">
             <p className="text-xs text-center text-gray-400 px-8 leading-relaxed">
-              Gunakan akun internal dengan role <strong>admin</strong> atau <strong>owner</strong> untuk masuk ke dashboard. Demi keamanan, sesi akan dimulai ulang jika dashboard lama tidak digunakan.
+              {t('login.footerNote')}
             </p>
           </CardFooter>
         </Card>

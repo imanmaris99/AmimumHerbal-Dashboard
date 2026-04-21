@@ -3,6 +3,8 @@
     "title": "AmImUm Herbal Store Dashboard",
     "titleMobile": "AmImUm Dashboard",
     "subtitle": "This area follows the internal access matrix: shared access for Admin and Owner, owner-only for sensitive actions.",
+    "languageSwitch": "Language",
+    "languageIntro": "Choose the dashboard language that best supports your internal workflow.",
     "dialog": {
       "title": "Dashboard Information",
       "shared": "Shared Internal",
@@ -45,6 +47,19 @@
       "settingsDesc": "Owner-only area for sensitive configurations"
     },
     "logout": "Log Out"
+  },
+  "login": {
+    "title": "Sign in to the dashboard",
+    "subtitle": "Enter your internal account email and password to access the AmImUm Herbal Dashboard.",
+    "languageIntro": "Available in Bahasa Indonesia and English to support internal team operations.",
+    "sessionNotice": "Your internal session will automatically expire after 4 hours of inactivity",
+    "emailLabel": "Internal email",
+    "passwordLabel": "Password",
+    "forgotPassword": "Forgot Password?",
+    "submit": "Sign In",
+    "submitting": "Verifying...",
+    "footerNote": "Use an internal account with admin or owner role to access the dashboard. For security, inactive sessions will require sign-in again.",
+    "welcomeBack": "Welcome back, {{name}}!"
   },
   "overview": {
     "title": "Dashboard Overview",

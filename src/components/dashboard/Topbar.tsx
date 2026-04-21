@@ -79,10 +79,13 @@ export function Topbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="hidden 2xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
-              Bahasa: {i18n.language === 'id' ? 'ID' : 'EN'}
+              {t('topbar.languageSwitch')}: {i18n.language === 'id' ? 'ID' : 'EN'}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
+          <DropdownMenuContent align="end" className="w-64 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
+            <div className="px-3 py-2 text-xs text-gray-500 leading-relaxed">
+              {t('topbar.languageIntro')}
+            </div>
             <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer">
               Indonesia (ID)
             </DropdownMenuItem>
@@ -103,8 +106,11 @@ export function Topbar() {
               <TimerReset className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
-            <div className="px-3 py-2 text-xs text-gray-500">
+          <DropdownMenuContent align="end" className="w-64 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
+            <div className="px-3 py-2 text-xs text-gray-500 leading-relaxed">
+              {t('topbar.languageIntro')}
+            </div>
+            <div className="px-3 py-2 text-xs text-gray-500 border-t border-gray-100">
               Sesi aktif terakhir: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
             </div>
             <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer">

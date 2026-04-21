@@ -3,6 +3,8 @@
     "title": "Dashboard Toko Herbal AmImUm",
     "titleMobile": "Dashboard AmImUm",
     "subtitle": "Area ini mengikuti matriks akses internal: akses bersama untuk Admin dan Owner, khusus Owner untuk aksi sensitif.",
+    "languageSwitch": "Bahasa",
+    "languageIntro": "Pilih bahasa tampilan dashboard sesuai kebutuhan kerja Anda.",
     "dialog": {
       "title": "Informasi Dashboard",
       "shared": "Shared Internal",
@@ -45,6 +47,19 @@
       "settingsDesc": "Area khusus Owner untuk pengaturan sensitif"
     },
     "logout": "Keluar"
+  },
+  "login": {
+    "title": "Masuk ke dashboard",
+    "subtitle": "Masukkan email dan password akun internal Anda untuk mengakses Dashboard Toko Herbal AmImUm.",
+    "languageIntro": "Tersedia dalam Bahasa Indonesia dan English untuk membantu operasional tim internal.",
+    "sessionNotice": "Sesi internal akan berakhir otomatis setelah 4 jam tidak aktif",
+    "emailLabel": "Email internal",
+    "passwordLabel": "Password",
+    "forgotPassword": "Lupa Password?",
+    "submit": "Masuk",
+    "submitting": "Memverifikasi...",
+    "footerNote": "Gunakan akun internal dengan role admin atau owner untuk masuk ke dashboard. Demi keamanan, sesi akan dimulai ulang jika dashboard lama tidak digunakan.",
+    "welcomeBack": "Selamat datang kembali, {{name}}!"
   },
   "overview": {
     "title": "Ringkasan Dashboard",
