@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, ShoppingBag, PackageCheck, Clock3, Wallet } from 'lucide-react';
+import { Search, Filter, ShoppingBag, PackageCheck, Clock3, Wallet, Truck, Store, Eye } from 'lucide-react';
 import api from '@/lib/api';
 import { getStatusStyle, orderStatusStyles } from '@/lib/dashboard';
 
@@ -32,13 +33,14 @@ interface AdminOrdersResponse {
   };
 }
 
-const orderStatusOptions = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed'];
+const orderStatusOptions = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'refund'];
 
 export default function OrdersPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: ordersResponse, isLoading } = useQuery({
+  const { data: ordersResponse, isLoading, isError, error } = useQuery({
     queryKey: ['admin-orders', statusFilter],
     queryFn: async () => {
       const response = await api.get<AdminOrdersResponse>('/admin/orders', {
@@ -68,6 +70,7 @@ export default function OrdersPage() {
   }, [orders, search]);
 
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + Number(order.total_price || 0), 0);
+  const totalOrders = ordersResponse?.meta?.count ?? filteredOrders.length;
   const pendingOrders = filteredOrders.filter((order) => order.status?.toLowerCase() === 'pending').length;
   const processingOrders = filteredOrders.filter((order) => order.status?.toLowerCase() === 'processing').length;
   const shippedOrders = filteredOrders.filter((order) => order.status?.toLowerCase() === 'shipped').length;
@@ -76,7 +79,7 @@ export default function OrdersPage() {
     {
       label: 'Visible Orders',
       value: filteredOrders.length,
-      helper: 'Order yang tampil di layar sekarang',
+      helper: `Menampilkan ${filteredOrders.length} order, total data ${totalOrders}`,
       icon: ShoppingBag,
       tone: 'bg-emerald-50 text-emerald-600',
     },
@@ -108,7 +111,7 @@ export default function OrdersPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Orders Management</h1>
-          <p className="text-gray-500 mt-1">Area monitoring order untuk admin dan owner, agar operasional harian lebih mudah dipantau.</p>
+          <p className="text-gray-500 mt-1">Area monitoring order untuk admin dan owner, agar operasional harian lebih mudah dipantau. Fokusnya saat ini masih di list monitoring, belum ke workflow detail penuh.</p>
         </div>
         <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
           Shared internal access active
@@ -146,6 +149,11 @@ export default function OrdersPage() {
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto items-stretch sm:items-center">
+              {isError ? (
+                <span className="text-xs text-red-500 font-medium max-w-[280px]">
+                  {String((error as any)?.response?.data?.detail?.message || (error as any)?.message || 'Gagal memuat order admin.')}
+                </span>
+              ) : null}
               <Filter className="w-4 h-4 text-gray-400" />
               <select
                 value={statusFilter}
@@ -171,6 +179,7 @@ export default function OrdersPage() {
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Total</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Status</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Created</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -178,6 +187,12 @@ export default function OrdersPage() {
                 <TableRow>
                   <TableCell colSpan={6} className="text-center text-gray-400 py-8">
                     Loading orders...
+                  </TableCell>
+                </TableRow>
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-red-500 py-8">
+                    Gagal memuat data orders. Coba refresh halaman atau cek koneksi API admin orders.
                   </TableCell>
                 </TableRow>
               ) : filteredOrders.length === 0 ? (
@@ -203,8 +218,15 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="text-sm text-gray-600 capitalize">{order.delivery_type}</p>
-                        <p className="text-[10px] text-gray-400">Shipping: Rp {Number(order.shipping_cost || 0).toLocaleString('id-ID')}</p>
+                        <p className="text-sm text-gray-600 capitalize flex items-center gap-2">
+                          {String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}
+                          {order.delivery_type}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {String(order.delivery_type).toLowerCase() === 'pickup'
+                            ? 'Tanpa shipment delivery'
+                            : `Shipping: Rp ${Number(order.shipping_cost || 0).toLocaleString('id-ID')}`}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell className="font-bold text-gray-900">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
@@ -215,6 +237,12 @@ export default function OrdersPage() {
                     </TableCell>
                     <TableCell className="text-xs font-medium text-gray-500">
                       {new Date(order.created_at).toLocaleString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Detail
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -227,7 +255,7 @@ export default function OrdersPage() {
       <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
         <h3 className="text-lg font-bold text-emerald-900">Peran halaman ini</h3>
         <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
-          Halaman orders disiapkan untuk monitoring harian oleh admin dan owner. Fokusnya adalah visibilitas order, status fulfilment, dan total nilai transaksi yang sedang dipantau.
+          Halaman orders disiapkan untuk monitoring harian oleh admin dan owner. Fokusnya adalah visibilitas order, status fulfilment, total nilai transaksi, dan penyaringan cepat berdasarkan status backend aktif.
         </p>
       </Card>
     </div>
