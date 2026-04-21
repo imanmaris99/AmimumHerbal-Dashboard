@@ -103,7 +103,7 @@ export default function OrderDetailPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
-      const response = await api.put<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
+      const response = await api.patch<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
       return response.data;
     },
     onSuccess: (response) => {
