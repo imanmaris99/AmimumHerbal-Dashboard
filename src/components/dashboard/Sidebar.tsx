@@ -59,7 +59,7 @@ function SidebarContent() {
 
   return (
     <>
-      <div className="p-6 border-b border-gray-50 shrink-0">
+      <div className="p-6 border-b border-gray-50 shrink-0 bg-white">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-100">
             <span className="text-white font-bold text-xl">U</span>
@@ -70,19 +70,19 @@ function SidebarContent() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl bg-emerald-50 border border-emerald-100 p-4">
+        <div className="mt-5 rounded-3xl bg-gradient-to-br from-emerald-50 via-emerald-50 to-teal-50 border border-emerald-100/80 p-4 shadow-sm shadow-emerald-100/50">
           <div className="flex items-center gap-2 text-emerald-700">
             <ShieldCheck className="w-4 h-4" />
             <p className="text-xs font-bold uppercase tracking-wide">{t('sidebar.roleCard.title')}</p>
           </div>
           <p className="mt-2 text-sm font-semibold text-emerald-900">{ROLE_LABELS[user?.role ?? 'admin']}</p>
-          <p className="mt-1 text-xs text-emerald-700 leading-relaxed">
+          <p className="mt-2 text-xs text-emerald-700 leading-relaxed">
             {t('sidebar.roleCard.desc')}
           </p>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+      <nav className="flex-1 px-4 py-5 space-y-6 overflow-y-auto bg-white">
         <div>
           <p className="px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">{t('sidebar.group.shared')}</p>
           <div className="space-y-1">
@@ -93,9 +93,9 @@ function SidebarContent() {
                 onClick={handleLinkClick}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-start gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group',
+                    'flex items-start gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group',
                     isActive
-                      ? 'bg-emerald-50 text-emerald-600 shadow-sm'
+                      ? 'bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100'
                       : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                   )
                 }
@@ -121,9 +121,9 @@ function SidebarContent() {
                   onClick={handleLinkClick}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-start gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group',
+                      'flex items-start gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group',
                       isActive
-                        ? 'bg-emerald-50 text-emerald-600 shadow-sm'
+                        ? 'bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100'
                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                     )
                   }

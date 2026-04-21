@@ -149,8 +149,8 @@ export default function OverviewPage() {
   const recentOrders = ordersResponse?.data ?? [];
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-10 max-w-full">
-      <div>
+    <div className="space-y-7 md:space-y-9 pb-10 max-w-full">
+      <div className="space-y-1">
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('overview.title')}</h1>
         <p className="text-gray-500 mt-1">{t('overview.subtitle')}</p>
       </div>
@@ -163,8 +163,8 @@ export default function OverviewPage() {
               </Card>
             ))
           : stats.map((stat) => (
-              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative">
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
+              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative bg-white">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.06] transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
 
                 <CardContent className="p-6 relative">
                   <div className="flex items-center justify-between">
@@ -173,9 +173,9 @@ export default function OverviewPage() {
                     </div>
                     <MoreVertical className="w-4 h-4 text-gray-300" />
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-5">
                     <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                    <div className="flex items-end justify-between mt-1 gap-3">
+                    <div className="flex items-end justify-between mt-1.5 gap-3">
                       <h3 className="text-xl font-bold text-gray-900 break-words">{stat.value}</h3>
                       <div className="flex items-center gap-1 text-xs font-bold text-green-600">
                         <ArrowUpRight className="w-3 h-3" />
@@ -183,14 +183,14 @@ export default function OverviewPage() {
                       </div>
                     </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 font-medium tracking-wide mt-2">{stat.helper}</p>
+                  <p className="text-[11px] text-gray-400 font-medium tracking-wide mt-2.5">{stat.helper}</p>
                 </CardContent>
               </Card>
             ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 xl:gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 md:gap-6 xl:gap-8">
+        <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-8 pt-8 px-6 sm:px-8">
             <div>
               <CardTitle className="text-lg font-bold tracking-tight">{t('overview.orderStatus')}</CardTitle>
@@ -228,7 +228,7 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+        <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
           <CardHeader className="pt-8 px-8">
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.paymentStatus')}</CardTitle>
             <CardDescription>{t('overview.paymentStatusDesc')}</CardDescription>
@@ -266,7 +266,7 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-8 py-8">
           <div>
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>

@@ -75,11 +75,11 @@ export function Topbar() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0 max-w-full">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0 max-w-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 px-2 text-xs font-semibold text-gray-600 hover:text-emerald-600">
-              {i18n.language === 'id' ? 'ID' : 'EN'}
+            <Button variant="ghost" className="hidden xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
+              Bahasa: {i18n.language === 'id' ? 'ID' : 'EN'}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-32 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
@@ -104,7 +104,7 @@ export function Topbar() {
           </span>
         </div>
 
-        <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10">
+        <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10 border border-transparent hover:border-emerald-100 hover:bg-emerald-50">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
         </Button>
@@ -112,10 +112,10 @@ export function Topbar() {
         <div className="hidden sm:block h-8 w-px bg-gray-100 mx-1" />
 
         <div 
-          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 group cursor-pointer min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-none"
+          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 pr-0 xl:pr-1 group cursor-pointer min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-none"
           onClick={() => setIsProfileOpen(true)}
         >
-          <div className="text-right hidden lg:block min-w-0 max-w-[180px] xl:max-w-[240px]">
+          <div className="text-right hidden lg:block min-w-0 max-w-[180px] xl:max-w-[220px]">
             <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors truncate">{displayName}</p>
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
           </div>
