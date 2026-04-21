@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Menu, ShieldCheck, Info } from 'lucide-react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -27,7 +27,7 @@ import {
 import { ProfileDialog } from './ProfileDialog';
 
 export function Topbar() {
-  const { user } = useAuthStore();
+  const { user, lastActivityAt } = useAuthStore();
   const { toggleSidebar } = useUiStore();
   const { t, i18n } = useTranslation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -95,6 +95,13 @@ export function Topbar() {
         <div className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
           <ShieldCheck className="w-4 h-4" />
           <span className="text-xs font-semibold">{roleLabel}</span>
+        </div>
+
+        <div className="hidden 2xl:flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">
+          <TimerReset className="w-4 h-4" />
+          <span className="text-xs font-medium">
+            Aktif terakhir {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
+          </span>
         </div>
 
         <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10">

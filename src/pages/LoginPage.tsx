@@ -83,12 +83,15 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden">
+        <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden bg-white/95 backdrop-blur">
           <CardHeader className="space-y-1 pb-2 pt-8">
             <CardTitle className="text-2xl font-bold text-center">Masuk ke dashboard</CardTitle>
             <CardDescription className="text-center text-gray-500">
               Masukkan email dan password akun internal Anda untuk mengakses Dashboard Toko Herbal AmImUm.
             </CardDescription>
+            <div className="mx-auto mt-4 inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+              Sesi internal akan berakhir otomatis setelah 4 jam tidak aktif
+            </div>
           </CardHeader>
           <CardContent className="pt-6">
             <form onSubmit={handleLogin} className="space-y-5">
@@ -103,6 +106,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 border-gray-100 bg-gray-50 focus:bg-white transition-colors rounded-xl"
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -123,6 +127,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-11 h-12 border-gray-100 bg-gray-50 focus:bg-white transition-colors rounded-xl"
+                    autoComplete="current-password"
                     required
                   />
                   <button
@@ -153,8 +158,8 @@ export default function LoginPage() {
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pb-8 pt-2">
-            <p className="text-xs text-center text-gray-400 px-8">
-              Gunakan akun internal dengan role <strong>admin</strong> atau <strong>owner</strong> untuk masuk ke dashboard.
+            <p className="text-xs text-center text-gray-400 px-8 leading-relaxed">
+              Gunakan akun internal dengan role <strong>admin</strong> atau <strong>owner</strong> untuk masuk ke dashboard. Demi keamanan, sesi akan dimulai ulang jika dashboard lama tidak digunakan.
             </p>
           </CardFooter>
         </Card>
