@@ -37,6 +37,7 @@ interface VariantItem {
   variant?: string | null;
   expiration?: string | null;
   stock?: number;
+  price?: number | null;
   discount?: number | null;
   discounted_price?: number | null;
   updated_at: string;
@@ -55,10 +56,15 @@ interface CreateVariantPayload {
   variant: string;
   expiration: string;
   stock: number;
+  price: number;
 }
 
 interface UpdateVariantPayload {
+  name: string;
+  variant: string;
+  expiration: string;
   stock: number;
+  price: number;
   discount: number;
 }
 
@@ -69,10 +75,15 @@ const initialForm: CreateVariantPayload = {
   variant: '',
   expiration: '',
   stock: 0,
+  price: 0,
 };
 
 const initialUpdateForm: UpdateVariantPayload = {
+  name: '',
+  variant: '',
+  expiration: '',
   stock: 0,
+  price: 0,
   discount: 0,
 };
 
@@ -126,14 +137,14 @@ export default function VariantsPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Stock/discount variant berhasil diperbarui.');
+      toast.success(response?.message || 'Variant berhasil diperbarui.');
       setEditingVariantId(null);
       setUpdateForm(initialUpdateForm);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui variant.';
+      const message = detail?.message || detail || 'Gagal memperbarui data variant.';
       toast.error(String(message));
     },
   });
@@ -206,14 +217,14 @@ export default function VariantsPage() {
   const handleChange = (field: keyof CreateVariantPayload, value: string) => {
     setForm((prev) => ({
       ...prev,
-      [field]: field === 'min_amount' || field === 'stock' ? Number(value) : value,
+      [field]: field === 'min_amount' || field === 'stock' || field === 'price' ? Number(value) : value,
     }));
   };
 
   const handleUpdateChange = (field: keyof UpdateVariantPayload, value: string) => {
     setUpdateForm((prev) => ({
       ...prev,
-      [field]: Number(value),
+      [field]: field === 'stock' || field === 'price' || field === 'discount' ? Number(value) : value,
     }));
   };
 
@@ -236,7 +247,11 @@ export default function VariantsPage() {
 
     setEditingVariantId(variant.id);
     setUpdateForm({
+      name: variant.name?.trim() || '',
+      variant: variant.variant?.trim() || '',
+      expiration: variant.expiration?.trim() || '',
       stock: Number(variant.stock || 0),
+      price: Number(variant.price || variant.discounted_price || 0),
       discount: Number(variant.discount || 0),
     });
   };
@@ -315,7 +330,7 @@ export default function VariantsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
                 <div className="space-y-2">
                   <Label htmlFor="variant">Variant</Label>
                   <Input id="variant" value={form.variant} onChange={(e) => handleChange('variant', e.target.value)} placeholder="Original / Mint / Jahe" required />
@@ -328,6 +343,10 @@ export default function VariantsPage() {
                   <Label htmlFor="stock">Stock</Label>
                   <Input id="stock" type="number" min="0" value={form.stock || ''} onChange={(e) => handleChange('stock', e.target.value)} placeholder="100" required />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price</Label>
+                  <Input id="price" type="number" min="0" value={form.price || ''} onChange={(e) => handleChange('price', e.target.value)} placeholder="25000" required />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -336,7 +355,7 @@ export default function VariantsPage() {
               </div>
 
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update stock/discount aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>.</p>
+                <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update detail variant aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>. Variant diperlakukan sebagai unit jual dengan harga sendiri.</p>
                 <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
@@ -371,18 +390,36 @@ export default function VariantsPage() {
             </CardHeader>
             <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8 space-y-6">
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Update stock / discount</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Update variant details</h3>
                 {editingVariantId ? (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="update-name">Pack type name</Label>
+                        <Input id="update-name" value={updateForm.name} onChange={(e) => handleUpdateChange('name', e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="update-variant">Variant</Label>
+                        <Input id="update-variant" value={updateForm.variant} onChange={(e) => handleUpdateChange('variant', e.target.value)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="update-stock">Stock</Label>
                         <Input id="update-stock" type="number" min="0" value={updateForm.stock} onChange={(e) => handleUpdateChange('stock', e.target.value)} />
                       </div>
                       <div className="space-y-2">
+                        <Label htmlFor="update-price">Price</Label>
+                        <Input id="update-price" type="number" min="0" value={updateForm.price} onChange={(e) => handleUpdateChange('price', e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
                         <Label htmlFor="update-discount">Discount</Label>
                         <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
                       </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="update-expiration">Expiration</Label>
+                      <Input id="update-expiration" value={updateForm.expiration} onChange={(e) => handleUpdateChange('expiration', e.target.value)} />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
@@ -395,7 +432,7 @@ export default function VariantsPage() {
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit stock dan discount.</p>
+                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit nama pack, variant, stock, price, discount, dan expiration.</p>
                 )}
                 {editingVariantId ? (
                   <p className="text-xs text-emerald-600 font-medium">Variant ID terpilih: {editingVariantId}</p>
@@ -514,11 +551,15 @@ export default function VariantsPage() {
                     <TableCell>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">
-                          {typeof variant.discounted_price === 'number'
-                            ? `Rp ${Number(variant.discounted_price).toLocaleString('id-ID')}`
+                          {typeof variant.price === 'number'
+                            ? `Rp ${Number(variant.price).toLocaleString('id-ID')}`
                             : '-'}
                         </p>
-                        <p className="text-[10px] text-gray-400 font-medium">discounted price</p>
+                        <p className="text-[10px] text-gray-400 font-medium">
+                          {typeof variant.discounted_price === 'number'
+                            ? `setelah diskon: Rp ${Number(variant.discounted_price).toLocaleString('id-ID')}`
+                            : 'harga variant'}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -560,7 +601,8 @@ export default function VariantsPage() {
               <li>admin login bisa buka halaman variants</li>
               <li>owner login bisa buka halaman variants</li>
               <li>form create variant hanya submit saat product dipilih</li>
-              <li>edit stock/discount hanya aktif jika variant dipilih</li>
+              <li>create variant wajib mengirim harga variant</li>
+              <li>edit detail variant hanya aktif jika variant dipilih</li>
               <li>upload image hanya aktif jika variant dipilih dan file tersedia</li>
               <li>button delete tetap nonaktif sampai flow aman dibuka</li>
             </ul>
@@ -570,7 +612,7 @@ export default function VariantsPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li><code>GET /type/all</code> harus 200</li>
               <li><code>POST /type/create</code> harus 201 untuk token internal valid</li>
-              <li><code>PUT /type/:type_id</code> harus 200 untuk update stock/discount</li>
+              <li><code>PUT /type/:type_id</code> harus 200 untuk update detail variant</li>
               <li><code>PUT /type/image/:type_id</code> harus sukses untuk file valid</li>
               <li>customer tidak boleh mengakses flow internal ini</li>
               <li>variant baru harus nyambung ke <code>product_id</code> yang valid</li>
