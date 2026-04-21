@@ -46,8 +46,8 @@ export function Topbar() {
   };
 
   return (
-    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap md:flex-nowrap">
-      <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 md:order-1 basis-full md:basis-auto">
+    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-5 xl:px-7 2xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap lg:flex-nowrap">
+      <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 lg:order-1 basis-full lg:basis-auto">
         <Dialog>
           <DialogTrigger asChild>
             <button className="text-left w-full focus:outline-none min-w-0 rounded-md group block">
@@ -75,10 +75,10 @@ export function Topbar() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0 max-w-full">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0 order-1 lg:order-2 ml-auto lg:ml-0 max-w-full w-full lg:w-auto justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="hidden xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
+            <Button variant="ghost" className="hidden 2xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
               Bahasa: {i18n.language === 'id' ? 'ID' : 'EN'}
             </Button>
           </DropdownMenuTrigger>
@@ -92,12 +92,12 @@ export function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
+        <div className="hidden xl:flex 2xl:hidden items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
           <ShieldCheck className="w-4 h-4" />
           <span className="text-xs font-semibold">{roleLabel}</span>
         </div>
 
-        <div className="hidden 2xl:flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">
+        <div className="hidden 3xl:flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">
           <TimerReset className="w-4 h-4" />
           <span className="text-xs font-medium">
             Aktif terakhir {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
@@ -112,10 +112,10 @@ export function Topbar() {
         <div className="hidden sm:block h-8 w-px bg-gray-100 mx-1" />
 
         <div 
-          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 pr-0 xl:pr-1 group cursor-pointer min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-none"
+          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 pr-0 xl:pr-1 group cursor-pointer min-w-0 max-w-[170px] sm:max-w-[210px] lg:max-w-none"
           onClick={() => setIsProfileOpen(true)}
         >
-          <div className="text-right hidden lg:block min-w-0 max-w-[180px] xl:max-w-[220px]">
+          <div className="text-right hidden xl:block min-w-0 max-w-[180px] 2xl:max-w-[220px]">
             <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors truncate">{displayName}</p>
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
           </div>
