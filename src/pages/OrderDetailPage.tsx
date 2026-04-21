@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AxiosError } from 'axios';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ClipboardList, Loader2, MapPinned, Package2, Save, Truck } from 'lucide-react';
@@ -103,8 +104,20 @@ export default function OrderDetailPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
-      const response = await api.patch<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
-      return response.data;
+      try {
+        const response = await api.patch<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
+        return response.data;
+      } catch (error) {
+        const axiosError = error as AxiosError<any>;
+        const responseStatus = axiosError.response?.status;
+
+        if (responseStatus === 404 || responseStatus === 405) {
+          const fallbackResponse = await api.put<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
+          return fallbackResponse.data;
+        }
+
+        throw error;
+      }
     },
     onSuccess: (response) => {
       toast.success(response.message || 'Status order berhasil diperbarui.');
@@ -114,8 +127,9 @@ export default function OrderDetailPage() {
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui status order.';
-      toast.error(String(message));
+      const responseStatus = error?.response?.status;
+      const message = detail?.message || detail || error?.message || 'Gagal memperbarui status order.';
+      toast.error(responseStatus ? `(${responseStatus}) ${String(message)}` : String(message));
     },
   });
 
