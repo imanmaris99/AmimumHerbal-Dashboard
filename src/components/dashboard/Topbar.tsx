@@ -46,8 +46,8 @@ export function Topbar() {
   };
 
   return (
-    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap md:flex-nowrap">
-      <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 md:order-1 basis-full md:basis-auto">
+    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap xl:flex-nowrap">
+      <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 xl:order-1 basis-full xl:basis-auto max-w-full">
         <Dialog>
           <DialogTrigger asChild>
             <button className="text-left w-full focus:outline-none min-w-0 rounded-md group block">
@@ -58,7 +58,7 @@ export function Topbar() {
                 </p>
                 <Info className="w-3.5 h-3.5 text-gray-400 shrink-0 md:hidden group-hover:text-emerald-500 transition-colors" />
               </div>
-              <p className="text-xs text-gray-500 mt-1 hidden md:block truncate">
+              <p className="text-xs text-gray-500 mt-1 hidden 2xl:block truncate max-w-[720px]">
                 {t('topbar.subtitle')}
               </p>
             </button>
@@ -75,10 +75,10 @@ export function Topbar() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0 order-1 md:order-2 ml-auto md:ml-0 max-w-full">
+      <div className="flex items-center gap-2 shrink-0 order-1 xl:order-2 ml-auto xl:ml-0 max-w-full w-full xl:w-auto justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="hidden xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
+            <Button variant="ghost" className="hidden 2xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
               Bahasa: {i18n.language === 'id' ? 'ID' : 'EN'}
             </Button>
           </DropdownMenuTrigger>
@@ -97,27 +97,39 @@ export function Topbar() {
           <span className="text-xs font-semibold">{roleLabel}</span>
         </div>
 
-        <div className="hidden 2xl:flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-600">
-          <TimerReset className="w-4 h-4" />
-          <span className="text-xs font-medium">
-            Aktif terakhir {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
-          </span>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="hidden 2xl:inline-flex h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50">
+              <TimerReset className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
+            <div className="px-3 py-2 text-xs text-gray-500">
+              Sesi aktif terakhir: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
+            </div>
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer">
+              Indonesia (ID)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer">
+              English (EN)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10 border border-transparent hover:border-emerald-100 hover:bg-emerald-50">
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
         </Button>
 
-        <div className="hidden sm:block h-8 w-px bg-gray-100 mx-1" />
+        <div className="hidden 2xl:block h-8 w-px bg-gray-100 mx-1" />
 
         <div 
-          className="flex items-center gap-2 sm:gap-3 pl-0 sm:pl-2 pr-0 xl:pr-1 group cursor-pointer min-w-0 max-w-[180px] sm:max-w-[220px] md:max-w-none"
+          className="flex items-center gap-2 sm:gap-3 pl-0 xl:pl-2 pr-0 group cursor-pointer min-w-0 max-w-[168px] sm:max-w-[210px] xl:max-w-none"
           onClick={() => setIsProfileOpen(true)}
         >
-          <div className="text-right hidden lg:block min-w-0 max-w-[180px] xl:max-w-[220px]">
+          <div className="text-right hidden 2xl:block min-w-0 max-w-[180px] xl:max-w-[220px]">
             <p className="text-sm font-bold text-gray-900 leading-none group-hover:text-emerald-600 transition-colors truncate">{displayName}</p>
-            <p className="text-xs font-medium text-gray-500 capitalize mt-1">{roleLabel}</p>
+            <p className="text-xs font-medium text-gray-500 capitalize mt-1">Akun internal</p>
           </div>
           <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-gray-100 ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
             <AvatarImage src={getAvatarUrl(displayName, user?.gender)} />

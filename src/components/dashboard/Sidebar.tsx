@@ -158,12 +158,12 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex w-72 bg-white border-r border-gray-100 flex-col h-[100dvh] sticky top-0 shrink-0">
+      <aside className="hidden md:flex w-60 xl:w-72 bg-white border-r border-gray-100 flex-col h-[100dvh] sticky top-0 shrink-0">
         <SidebarContent />
       </aside>
 
       <Sheet open={isSidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-72 flex flex-col h-full bg-white [&>button]:top-5 [&>button]:right-4 border-r-0">
+        <SheetContent side="left" className="p-0 w-[88vw] max-w-72 flex flex-col h-full bg-white [&>button]:top-5 [&>button]:right-4 border-r-0">
           <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
           <SidebarContent />
         </SheetContent>
