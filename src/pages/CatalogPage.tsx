@@ -30,6 +30,8 @@ interface ProductItem {
   id: string;
   name: string;
   price: number;
+  min_variant_price?: number | null;
+  max_variant_price?: number | null;
   created_at: string;
   brand_info?: {
     id?: number;
@@ -40,6 +42,7 @@ interface ProductItem {
     id: number;
     variant?: string | null;
     stock?: number | null;
+    price?: number | null;
     discount?: number | null;
   }>;
 }
@@ -136,9 +139,20 @@ export default function CatalogPage() {
         );
       });
 
+      const minVariantPrice = Number(product.min_variant_price ?? product.price ?? 0);
+      const maxVariantPrice = Number(product.max_variant_price ?? product.price ?? 0);
+      const priceSummary = validVariants.length
+        ? minVariantPrice === maxVariantPrice
+          ? `Rp ${minVariantPrice.toLocaleString('id-ID')}`
+          : `Rp ${minVariantPrice.toLocaleString('id-ID')} - Rp ${maxVariantPrice.toLocaleString('id-ID')}`
+        : `Rp ${Number(product.price || 0).toLocaleString('id-ID')}`;
+
       return {
         ...product,
         validVariants,
+        minVariantPrice,
+        maxVariantPrice,
+        priceSummary,
       };
     });
   }, [products]);
@@ -222,8 +236,9 @@ export default function CatalogPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Harga dasar</Label>
+                  <Label htmlFor="price">Harga dasar product</Label>
                   <Input id="price" type="number" min="0" value={form.price || ''} onChange={(e) => handleChange('price', e.target.value)} placeholder="50000" required />
+                  <p className="text-xs text-gray-500">Harga ini dipakai sebagai layer dasar product. Harga jual final per kemasan/variant dilanjutkan di modul Variants.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="weight">Berat (gram)</Label>
@@ -247,7 +262,7 @@ export default function CatalogPage() {
               </div>
 
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed lg:max-w-xl">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>.</p>
+                <p className="text-xs text-gray-500 leading-relaxed lg:max-w-xl">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>. Di sana harga jual per variant bisa dibuat lebih presisi.</p>
                 <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PlusCircle className="w-4 h-4 mr-2" />
                   {createProductMutation.isPending ? 'Submitting...' : 'Submit Product Baru'}
@@ -264,6 +279,7 @@ export default function CatalogPage() {
               <p><strong>Admin</strong> dan <strong>owner</strong> boleh submit dan edit product karena endpoint backend memakai <code>admin_access_required</code>.</p>
               <p><strong>Owner</strong> tetap memegang pengawasan strategis, tetapi operasional product management bisa dibantu admin.</p>
               <p><strong>Category</strong> pada flow ini adalah <code>tag_categories</code> yang terhubung ke production/product layer, bukan kategori article/content.</p>
+              <p><strong>Harga product</strong> diposisikan sebagai layer dasar katalog. Harga operasional penjualan mengikuti variant/pack type setelah product selesai dibuat.</p>
               <p>Flow database dan endpoint yang dipakai di dashboard:</p>
               <ol className="list-decimal pl-5 space-y-1">
                 <li>Pilih <strong>production / brand</strong> dari tabel <code>productions</code></li>
@@ -325,7 +341,16 @@ export default function CatalogPage() {
                           </div>
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">{product.brand_info?.name || '-'}</TableCell>
-                        <TableCell className="font-bold text-gray-900">Rp {Number(product.price || 0).toLocaleString('id-ID')}</TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-bold text-gray-900">{product.priceSummary}</p>
+                            <p className="text-[10px] text-gray-400 font-medium">
+                              {product.validVariants?.length
+                                ? 'range harga variant'
+                                : 'harga dasar product'}
+                            </p>
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
                             {product.validVariants?.length || 0} variants

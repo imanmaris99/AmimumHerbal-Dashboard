@@ -16,6 +16,7 @@ interface ProductDetailVariant {
   id: number;
   variant?: string | null;
   stock?: number | null;
+  price?: number | null;
   discount?: number | null;
   discounted_price?: number | null;
 }
@@ -28,6 +29,8 @@ interface ProductDetailData {
   description_list?: string[];
   instructions_list?: string[];
   price: number;
+  min_variant_price?: number | null;
+  max_variant_price?: number | null;
   is_active: boolean;
   company?: string | null;
   created_at: string;
@@ -110,6 +113,23 @@ export default function ProductEditPage() {
   const variantCount = useMemo(() => productDetailQuery.data?.variants_list?.length || 0, [productDetailQuery.data]);
   const summaryDescription = useMemo(() => productDetailQuery.data?.description_list?.[0] || '-', [productDetailQuery.data]);
   const summaryInstruction = useMemo(() => productDetailQuery.data?.instructions_list?.[0] || '-', [productDetailQuery.data]);
+  const variantPriceSummary = useMemo(() => {
+    const data = productDetailQuery.data;
+    if (!data) return '-';
+
+    const minPrice = Number(data.min_variant_price ?? data.price ?? 0);
+    const maxPrice = Number(data.max_variant_price ?? data.price ?? 0);
+
+    if (!variantCount) {
+      return `Belum ada variant, harga dasar product Rp ${minPrice.toLocaleString('id-ID')}`;
+    }
+
+    if (minPrice === maxPrice) {
+      return `Semua variant di Rp ${minPrice.toLocaleString('id-ID')}`;
+    }
+
+    return `Rp ${minPrice.toLocaleString('id-ID')} - Rp ${maxPrice.toLocaleString('id-ID')}`;
+  }, [productDetailQuery.data, variantCount]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -196,6 +216,10 @@ export default function ProductEditPage() {
                   <strong className="text-slate-900 text-right max-w-[220px]">{productDetailQuery.data.company || '-'}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
+                  <span>Range harga variant</span>
+                  <strong className="text-slate-900 text-right max-w-[220px]">{variantPriceSummary}</strong>
+                </div>
+                <div className="flex items-start justify-between gap-3">
                   <span>Ringkasan deskripsi</span>
                   <strong className="text-slate-900 text-right max-w-[220px]">{summaryDescription}</strong>
                 </div>
@@ -206,7 +230,7 @@ export default function ProductEditPage() {
               </div>
 
               <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-sm text-emerald-800">
-                Product ini saat ini terhubung ke <strong>{variantCount}</strong> variant / pack type. Edit product menjaga layer inti, sedangkan pengelolaan variant tetap dilanjutkan di modul Variants.
+                Product ini saat ini terhubung ke <strong>{variantCount}</strong> variant / pack type. Edit product menjaga layer inti katalog, sedangkan harga jual operasional per variant tetap dikelola di modul Variants.
               </div>
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
@@ -238,8 +262,9 @@ export default function ProductEditPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-product-price-page">Harga dasar</Label>
+                    <Label htmlFor="edit-product-price-page">Harga dasar product</Label>
                     <Input id="edit-product-price-page" type="number" min="0" value={form.price || ''} onChange={(e) => setForm((prev) => ({ ...prev, price: Number(e.target.value) }))} required />
+                    <p className="text-xs text-gray-500">Harga ini menjaga layer dasar product. Harga jual utama per pack/variant tetap dikelola di halaman Variants.</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-product-weight-page">Berat (gram)</Label>
@@ -272,7 +297,7 @@ export default function ProductEditPage() {
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-xs text-gray-500">Setelah simpan berhasil, halaman akan kembali ke daftar catalog.</p>
+                  <p className="text-xs text-gray-500">Setelah simpan berhasil, halaman akan kembali ke daftar catalog. Untuk mengubah harga jual per variant, lanjutkan dari modul Variants.</p>
                   <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
                     <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/catalog')}>
                       Batal
