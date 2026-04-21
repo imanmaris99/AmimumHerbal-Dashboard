@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Filter, CreditCard, Clock3, ShieldAlert, Wallet } from 'lucide-react';
+import { Search, Filter, CreditCard, Clock3, ShieldAlert, Wallet, Eye } from 'lucide-react';
 import api from '@/lib/api';
 import { getStatusStyle, paymentStatusStyles } from '@/lib/dashboard';
 
@@ -35,13 +36,14 @@ interface AdminPaymentsResponse {
   };
 }
 
-const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture'];
+const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture', 'authorize', 'challenge', 'partial_refund'];
 
 export default function PaymentsPage() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data: paymentsResponse, isLoading } = useQuery({
+  const { data: paymentsResponse, isLoading, isError, error } = useQuery({
     queryKey: ['admin-payments', statusFilter],
     queryFn: async () => {
       const response = await api.get<AdminPaymentsResponse>('/admin/payments', {
@@ -73,6 +75,7 @@ export default function PaymentsPage() {
   }, [payments, search]);
 
   const grossVisible = filteredPayments.reduce((sum, payment) => sum + Number(payment.gross_amount || 0), 0);
+  const totalPayments = paymentsResponse?.meta?.count ?? filteredPayments.length;
   const pendingPayments = filteredPayments.filter((payment) => payment.transaction_status?.toLowerCase() === 'pending').length;
   const settledPayments = filteredPayments.filter((payment) => payment.transaction_status?.toLowerCase() === 'settlement').length;
   const flaggedPayments = filteredPayments.filter((payment) => {
@@ -84,7 +87,7 @@ export default function PaymentsPage() {
     {
       label: 'Visible Payments',
       value: filteredPayments.length,
-      helper: 'Transaksi yang tampil saat ini',
+      helper: `Menampilkan ${filteredPayments.length} transaksi, total data ${totalPayments}`,
       icon: CreditCard,
       tone: 'bg-emerald-50 text-emerald-600',
     },
@@ -116,7 +119,7 @@ export default function PaymentsPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Payments Monitoring</h1>
-          <p className="text-gray-500 mt-1">Area monitoring transaksi untuk admin dan owner agar status pembayaran mudah dipantau dan diaudit.</p>
+          <p className="text-gray-500 mt-1">Area monitoring transaksi untuk admin dan owner agar status pembayaran mudah dipantau dan diaudit. Fokus awalnya masih monitoring dan penelusuran cepat per transaksi.</p>
         </div>
         <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
           Shared internal access active
@@ -162,6 +165,11 @@ export default function PaymentsPage() {
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto items-stretch sm:items-center">
+              {isError ? (
+                <span className="text-xs text-red-500 font-medium max-w-[280px]">
+                  {String((error as any)?.response?.data?.detail?.message || (error as any)?.message || 'Gagal memuat payment admin.')}
+                </span>
+              ) : null}
               <Filter className="w-4 h-4 text-gray-400" />
               <select
                 value={statusFilter}
@@ -188,18 +196,25 @@ export default function PaymentsPage() {
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Status</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Order Status</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Updated</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-400 py-8">
+                  <TableCell colSpan={8} className="text-center text-gray-400 py-8">
                     Loading payments...
+                  </TableCell>
+                </TableRow>
+              ) : isError ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-red-500 py-8">
+                    Gagal memuat data payments. Coba refresh halaman atau cek koneksi API admin payments.
                   </TableCell>
                 </TableRow>
               ) : filteredPayments.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-400 py-8">
+                  <TableCell colSpan={8} className="text-center text-gray-400 py-8">
                     No payments matched the current filter.
                   </TableCell>
                 </TableRow>
@@ -226,7 +241,9 @@ export default function PaymentsPage() {
                           {payment.transaction_status}
                         </Badge>
                         {payment.fraud_status ? (
-                          <p className="text-[10px] text-gray-400 uppercase">Fraud: {payment.fraud_status}</p>
+                          <p className={`text-[10px] uppercase ${String(payment.fraud_status).toLowerCase() === 'accept' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            Fraud: {payment.fraud_status}
+                          </p>
                         ) : null}
                       </div>
                     </TableCell>
@@ -237,6 +254,12 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell className="text-xs font-medium text-gray-500">
                       {new Date(payment.updated_at).toLocaleString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Detail
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
