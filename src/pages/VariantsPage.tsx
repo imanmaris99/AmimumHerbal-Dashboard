@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,7 @@ const initialUpdateForm: UpdateVariantPayload = {
 
 export default function VariantsPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
@@ -129,24 +131,6 @@ export default function VariantsPage() {
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
       const message = detail?.message || detail || t('variantsPage.messages.createError');
-      toast.error(String(message));
-    },
-  });
-
-  const updateVariantMutation = useMutation({
-    mutationFn: async ({ variantId, payload }: { variantId: number; payload: UpdateVariantPayload }) => {
-      const response = await api.put(`/type/${variantId}`, payload);
-      return response.data;
-    },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('variantsPage.messages.updateSuccess'));
-      setEditingVariantId(null);
-      setUpdateForm(initialUpdateForm);
-      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
-    },
-    onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('variantsPage.messages.updateError');
       toast.error(String(message));
     },
   });
@@ -223,13 +207,6 @@ export default function VariantsPage() {
     }));
   };
 
-  const handleUpdateChange = (field: keyof UpdateVariantPayload, value: string) => {
-    setUpdateForm((prev) => ({
-      ...prev,
-      [field]: field === 'stock' || field === 'price' || field === 'discount' ? Number(value) : value,
-    }));
-  };
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -247,24 +224,7 @@ export default function VariantsPage() {
       return;
     }
 
-    setEditingVariantId(variant.id);
-    setUpdateForm({
-      name: variant.name?.trim() || '',
-      variant: variant.variant?.trim() || '',
-      expiration: variant.expiration?.trim() || '',
-      stock: Number(variant.stock || 0),
-      price: Number(variant.price || variant.discounted_price || 0),
-      discount: Number(variant.discount || 0),
-    });
-  };
-
-  const submitUpdate = () => {
-    if (!editingVariantId) return;
-
-    updateVariantMutation.mutate({
-      variantId: editingVariantId,
-      payload: updateForm,
-    });
+    navigate(`/variants/edit/${variant.id}`);
   };
 
   const openImageFlow = (variant: VariantItem) => {
@@ -391,54 +351,8 @@ export default function VariantsPage() {
               </div>
             </CardHeader>
             <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8 space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Update variant details</h3>
-                {editingVariantId ? (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="update-name">Pack type name</Label>
-                        <Input id="update-name" value={updateForm.name} onChange={(e) => handleUpdateChange('name', e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="update-variant">Variant</Label>
-                        <Input id="update-variant" value={updateForm.variant} onChange={(e) => handleUpdateChange('variant', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="update-stock">Stock</Label>
-                        <Input id="update-stock" type="number" min="0" value={updateForm.stock} onChange={(e) => handleUpdateChange('stock', e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="update-price">Price</Label>
-                        <Input id="update-price" type="number" min="0" value={updateForm.price} onChange={(e) => handleUpdateChange('price', e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="update-discount">Discount</Label>
-                        <Input id="update-discount" type="number" min="0" step="0.1" value={updateForm.discount} onChange={(e) => handleUpdateChange('discount', e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="update-expiration">Expiration</Label>
-                      <Input id="update-expiration" value={updateForm.expiration} onChange={(e) => handleUpdateChange('expiration', e.target.value)} />
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
-                        <PencilLine className="w-4 h-4 mr-2" />
-                        {updateVariantMutation.isPending ? t('variantsPage.actions.updating') : t('variantsPage.actions.update')}
-                      </Button>
-                      <Button variant="outline" onClick={() => { setEditingVariantId(null); setUpdateForm(initialUpdateForm); }} className="rounded-xl">
-                        {t('variantsPage.actions.cancel')}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500">{t('variantsPage.actions.updateEmpty')}</p>
-                )}
-                {editingVariantId ? (
-                  <p className="text-xs text-emerald-600 font-medium">{t('variantsPage.actions.selectedVariant')}: {editingVariantId}</p>
-                ) : null}
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
+                Klik <strong>Edit</strong> pada variant yang dipilih untuk masuk ke halaman edit khusus. Ini bikin konteks update lebih jelas dan tidak tercampur dengan create flow.
               </div>
 
               <div className="space-y-4">
