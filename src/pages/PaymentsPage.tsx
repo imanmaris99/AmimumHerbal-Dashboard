@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,8 @@ const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel'
 
 export default function PaymentsPage() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'id-ID';
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -85,30 +88,30 @@ export default function PaymentsPage() {
 
   const summaryCards = [
     {
-      label: 'Visible Payments',
+      label: t('paymentsPage.summary.visiblePayments'),
       value: filteredPayments.length,
-      helper: `Menampilkan ${filteredPayments.length} transaksi, total data ${totalPayments}`,
+      helper: t('paymentsPage.summary.visiblePaymentsHelper', { visible: filteredPayments.length, total: totalPayments }),
       icon: CreditCard,
       tone: 'bg-emerald-50 text-emerald-600',
     },
     {
-      label: 'Pending Payment',
+      label: t('paymentsPage.summary.pendingPayment'),
       value: pendingPayments,
-      helper: 'Perlu monitoring lanjutan',
+      helper: t('paymentsPage.summary.pendingPaymentHelper'),
       icon: Clock3,
       tone: 'bg-amber-50 text-amber-600',
     },
     {
-      label: 'Settlement',
+      label: t('paymentsPage.summary.settlement'),
       value: settledPayments,
-      helper: 'Pembayaran sudah settle',
+      helper: t('paymentsPage.summary.settlementHelper'),
       icon: Wallet,
       tone: 'bg-green-50 text-green-600',
     },
     {
-      label: 'Fraud Watch',
+      label: t('paymentsPage.summary.fraudWatch'),
       value: flaggedPayments,
-      helper: 'Status fraud non-accept',
+      helper: t('paymentsPage.summary.fraudWatchHelper'),
       icon: ShieldAlert,
       tone: 'bg-rose-50 text-rose-600',
     },
@@ -118,11 +121,11 @@ export default function PaymentsPage() {
     <div className="space-y-6 md:space-y-8 pb-10 max-w-full">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Payments Monitoring</h1>
-          <p className="text-gray-500 mt-1">Area monitoring transaksi untuk admin dan owner agar status pembayaran mudah dipantau dan diaudit. Fokus awalnya masih monitoring dan penelusuran cepat per transaksi.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('paymentsPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('paymentsPage.subtitle')}</p>
         </div>
         <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
-          Shared internal access active
+          {t('paymentsPage.accessBadge')}
         </Button>
       </div>
 
@@ -145,10 +148,10 @@ export default function PaymentsPage() {
       </div>
 
       <Card className="border-none shadow-sm rounded-3xl bg-green-50 border-green-100 overflow-hidden p-5 sm:p-6 md:p-8">
-        <h3 className="text-lg font-bold text-green-900">Visible gross amount</h3>
+        <h3 className="text-lg font-bold text-green-900">{t('paymentsPage.grossTitle')}</h3>
         <p className="text-2xl sm:text-3xl font-bold text-green-700 mt-2 break-words">Rp {grossVisible.toLocaleString('id-ID')}</p>
         <p className="text-green-700 text-sm mt-2 leading-relaxed">
-          Ini adalah total gross amount untuk transaksi yang sedang terlihat berdasarkan filter aktif, agar admin dan owner bisa cepat membaca nilai pembayaran yang sedang dipantau.
+          {t('paymentsPage.grossDescription')}
         </p>
       </Card>
 
@@ -158,7 +161,7 @@ export default function PaymentsPage() {
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
-                placeholder="Search by order, transaction, customer, or status..."
+                placeholder={t('paymentsPage.searchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full"
@@ -167,7 +170,7 @@ export default function PaymentsPage() {
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto items-stretch sm:items-center">
               {isError ? (
                 <span className="text-xs text-red-500 font-medium max-w-[280px]">
-                  {String((error as any)?.response?.data?.detail?.message || (error as any)?.message || 'Gagal memuat payment admin.')}
+                  {String((error as any)?.response?.data?.detail?.message || (error as any)?.message || t('paymentsPage.loadErrorInline'))}
                 </span>
               ) : null}
               <Filter className="w-4 h-4 text-gray-400" />
@@ -178,7 +181,7 @@ export default function PaymentsPage() {
               >
                 {paymentStatusOptions.map((status) => (
                   <option key={status} value={status}>
-                    {status === 'all' ? 'All Statuses' : status}
+                    {status === 'all' ? t('paymentsPage.allStatuses') : status}
                   </option>
                 ))}
               </select>
@@ -189,33 +192,33 @@ export default function PaymentsPage() {
           <Table className="min-w-[860px] xl:min-w-[1020px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Transaction</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Customer</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Payment Type</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Gross Amount</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Status</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Order Status</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Updated</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.transaction')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.customer')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.paymentType')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.grossAmount')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.status')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.orderStatus')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.updated')}</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">{t('paymentsPage.table.action')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-gray-400 py-8">
-                    Loading payments...
+                    {t('paymentsPage.table.loading')}
                   </TableCell>
                 </TableRow>
               ) : isError ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-red-500 py-8">
-                    Gagal memuat data payments. Coba refresh halaman atau cek koneksi API admin payments.
+                    {t('paymentsPage.table.error')}
                   </TableCell>
                 </TableRow>
               ) : filteredPayments.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-gray-400 py-8">
-                    No payments matched the current filter.
+                    {t('paymentsPage.table.empty')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -224,12 +227,12 @@ export default function PaymentsPage() {
                     <TableCell>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">{payment.transaction_id}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">Order: {payment.order_id}</p>
+                        <p className="text-[10px] text-gray-400 font-medium">{t('paymentsPage.table.order')}: {payment.order_id}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium text-gray-800 text-sm">{payment.customer_name || 'Unknown Customer'}</p>
+                        <p className="font-medium text-gray-800 text-sm">{payment.customer_name || t('paymentsPage.table.unknownCustomer')}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{payment.customer_email || '-'}</p>
                       </div>
                     </TableCell>
@@ -242,7 +245,7 @@ export default function PaymentsPage() {
                         </Badge>
                         {payment.fraud_status ? (
                           <p className={`text-[10px] uppercase ${String(payment.fraud_status).toLowerCase() === 'accept' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            Fraud: {payment.fraud_status}
+                            {t('paymentsPage.table.fraud')}: {payment.fraud_status}
                           </p>
                         ) : null}
                       </div>
@@ -253,12 +256,12 @@ export default function PaymentsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs font-medium text-gray-500">
-                      {new Date(payment.updated_at).toLocaleString('id-ID')}
+                      {new Date(payment.updated_at).toLocaleString(locale)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}>
                         <Eye className="w-4 h-4 mr-2" />
-                        Detail
+                        {t('paymentsPage.table.detail')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -270,9 +273,9 @@ export default function PaymentsPage() {
       </Card>
 
       <Card className="border-none shadow-sm rounded-3xl bg-emerald-50 border-emerald-100 overflow-hidden p-6 sm:p-8">
-        <h3 className="text-lg font-bold text-emerald-900">Peran halaman ini</h3>
+        <h3 className="text-lg font-bold text-emerald-900">{t('paymentsPage.roleTitle')}</h3>
         <p className="text-emerald-700 text-sm mt-2 leading-relaxed">
-          Halaman payments disiapkan untuk monitoring transaksi dan audit status pembayaran oleh admin maupun owner. Fokus utamanya adalah membaca health payment flow, status settlement, dan anomali fraud secara cepat.
+          {t('paymentsPage.roleDescription')}
         </p>
       </Card>
     </div>

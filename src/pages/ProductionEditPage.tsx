@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Factory, Loader2, PencilLine, Save, Tags } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,6 +35,7 @@ interface UpdateProductionPayload {
 
 export default function ProductionEditPage() {
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { productionId } = useParams<{ productionId: string }>();
@@ -54,7 +56,7 @@ export default function ProductionEditPage() {
       const productions = response.data.data ?? [];
       const target = productions.find((production) => String(production.id) === productionId);
       if (!target) {
-        throw new Error('Production tidak ditemukan.');
+        throw new Error(t('productionEditPage.notFound'));
       }
       return target;
     },
@@ -75,7 +77,7 @@ export default function ProductionEditPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Brand / production berhasil diperbarui.');
+      toast.success(response?.message || t('productionEditPage.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['production-list'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
       queryClient.invalidateQueries({ queryKey: ['production-edit-detail', productionId] });
@@ -83,7 +85,7 @@ export default function ProductionEditPage() {
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui brand / production.';
+      const message = detail?.message || detail || t('productionEditPage.updateError');
       toast.error(String(message));
     },
   });
@@ -97,7 +99,7 @@ export default function ProductionEditPage() {
     const description = form.description?.trim() || '';
 
     if (!name || !description) {
-      toast.error('Nama production dan description wajib diisi.');
+      toast.error(t('productionEditPage.validation.required'));
       return;
     }
 
@@ -114,26 +116,26 @@ export default function ProductionEditPage() {
           <div className="flex items-center gap-3 mb-2">
             <Button type="button" variant="outline" className="rounded-xl border-gray-200" onClick={() => navigate('/productions')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Productions
+              {t('productionEditPage.back')}
             </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit Brand / Production</h1>
-          <p className="text-gray-500 mt-1">CTA edit sekarang langsung menuju halaman edit khusus agar flow production lebih fokus dan tidak tercampur dengan create form.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('productionEditPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('productionEditPage.subtitle')}</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Admin + Owner edit page</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">{t('productionEditPage.badge')}</Badge>
       </div>
 
       {productionDetailQuery.isLoading ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Memuat detail production...
+            {t('productionEditPage.loading')}
           </CardContent>
         </Card>
       ) : productionDetailQuery.isError || !productionDetailQuery.data ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat data production. Silakan kembali ke halaman production dan coba lagi.
+            {t('productionEditPage.loadError')}
           </CardContent>
         </Card>
       ) : (

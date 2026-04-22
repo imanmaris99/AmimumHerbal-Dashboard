@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages } from 'lucide-react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -86,11 +86,13 @@ export function Topbar() {
             <div className="px-3 py-2 text-xs text-gray-500 leading-relaxed">
               {t('topbar.languageIntro')}
             </div>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer">
-              Indonesia (ID)
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer flex items-center justify-between gap-3">
+              <span>Indonesia (ID)</span>
+              {i18n.language === 'id' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer">
-              English (EN)
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer flex items-center justify-between gap-3">
+              <span>English (EN)</span>
+              {i18n.language === 'en' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -113,11 +115,13 @@ export function Topbar() {
             <div className="px-3 py-2 text-xs text-gray-500 border-t border-gray-100">
               Sesi aktif terakhir: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
             </div>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer">
-              Indonesia (ID)
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer flex items-center justify-between gap-3">
+              <span>Indonesia (ID)</span>
+              {i18n.language === 'id' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer">
-              English (EN)
+            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer flex items-center justify-between gap-3">
+              <span>English (EN)</span>
+              {i18n.language === 'en' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

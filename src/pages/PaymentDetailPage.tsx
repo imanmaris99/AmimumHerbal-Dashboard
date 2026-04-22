@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CreditCard, Loader2, ShieldAlert, Wallet } from 'lucide-react';
 
 import api from '@/lib/api';
@@ -35,6 +36,8 @@ export default function PaymentDetailPage() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const { paymentId } = useParams<{ paymentId: string }>();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'id-ID';
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -59,11 +62,11 @@ export default function PaymentDetailPage() {
           <div className="flex items-center gap-3 mb-2">
             <Button type="button" variant="outline" className="rounded-xl border-gray-200" onClick={() => navigate('/payments')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Payments
+              {t('paymentDetailPage.back')}
             </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Payment Detail</h1>
-          <p className="text-gray-500 mt-1">Detail transaksi payment untuk membantu admin dan owner membaca konteks pembayaran secara lebih utuh.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('paymentDetailPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('paymentDetailPage.subtitle')}</p>
         </div>
         {payment ? (
           <Badge className={`border-none px-3 py-2 rounded-xl ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
@@ -76,13 +79,13 @@ export default function PaymentDetailPage() {
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Memuat detail payment...
+            {t('paymentDetailPage.loading')}
           </CardContent>
         </Card>
       ) : paymentDetailQuery.isError || !payment ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat detail payment. Coba kembali ke halaman payments dan ulangi dari sana.
+            {t('paymentDetailPage.loadError')}
           </CardContent>
         </Card>
       ) : (
@@ -93,39 +96,39 @@ export default function PaymentDetailPage() {
                 <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
                   <CreditCard className="w-5 h-5" />
                 </div>
-                <Badge className="bg-slate-100 text-slate-700 border-none">Admin payment view</Badge>
+                <Badge className="bg-slate-100 text-slate-700 border-none">{t('paymentDetailPage.adminView')}</Badge>
               </div>
 
               <div>
                 <h2 className="text-lg font-bold text-gray-900 break-all">{payment.transaction_id}</h2>
-                <p className="text-sm text-gray-500 mt-1">Payment ID: {payment.id}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('paymentDetailPage.paymentId')}: {payment.id}</p>
               </div>
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
-                  <span>Order ID</span>
+                  <span>{t('paymentDetailPage.orderId')}</span>
                   <strong className="text-slate-900 text-right max-w-[220px] break-all">{payment.order_id}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Customer</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{payment.customer_name || 'Unknown Customer'}</strong>
+                  <span>{t('paymentDetailPage.customer')}</span>
+                  <strong className="text-slate-900 text-right max-w-[220px]">{payment.customer_name || t('paymentDetailPage.unknownCustomer')}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <span>Email</span>
+                  <span>{t('paymentDetailPage.email')}</span>
                   <strong className="text-slate-900 text-right max-w-[220px] break-all">{payment.customer_email || '-'}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Payment type</span>
+                  <span>{t('paymentDetailPage.paymentType')}</span>
                   <strong className="text-slate-900 uppercase">{payment.payment_type || 'N/A'}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Gross amount</span>
+                  <span>{t('paymentDetailPage.grossAmount')}</span>
                   <strong className="text-slate-900">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</strong>
                 </div>
               </div>
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2"><Wallet className="w-4 h-4" />Order status terkait</span>
+                <span className="flex items-center gap-2"><Wallet className="w-4 h-4" />{t('paymentDetailPage.relatedOrderStatus')}</span>
                 <strong>{payment.order_status || 'unknown'}</strong>
               </div>
             </CardContent>
@@ -135,38 +138,38 @@ export default function PaymentDetailPage() {
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
               <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Transaction health</h2>
-                  <p className="text-sm text-gray-500 mt-1">Ringkasan status transaksi dan fraud monitoring.</p>
+                  <h2 className="text-lg font-bold text-gray-900">{t('paymentDetailPage.transactionHealth')}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{t('paymentDetailPage.transactionHealthSubtitle')}</p>
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8 space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4 space-y-3 text-sm text-slate-700">
                   <div className="flex items-center justify-between gap-3">
-                    <span>Transaction status</span>
+                    <span>{t('paymentDetailPage.transactionStatus')}</span>
                     <Badge className={`border-none px-3 py-1 rounded-xl ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
                       {payment.transaction_status}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span>Order status</span>
+                    <span>{t('paymentDetailPage.orderStatus')}</span>
                     <Badge className={`border-none px-3 py-1 rounded-xl ${getStatusStyle(orderStatusStyles, payment.order_status || 'unknown')}`}>
                       {payment.order_status || 'unknown'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span>Fraud status</span>
+                    <span>{t('paymentDetailPage.fraudStatus')}</span>
                     <Badge className={`border-none px-3 py-1 rounded-xl ${fraudStatus && fraudStatus !== 'accept' ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {payment.fraud_status || 'not provided'}
+                      {payment.fraud_status || t('paymentDetailPage.fraudMissing')}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-600 space-y-2">
-                  <div className="flex items-center gap-2 font-semibold text-slate-900"><ShieldAlert className="w-4 h-4" />Fraud watch notes</div>
+                  <div className="flex items-center gap-2 font-semibold text-slate-900"><ShieldAlert className="w-4 h-4" />{t('paymentDetailPage.fraudNotes')}</div>
                   <p>
                     {fraudStatus && fraudStatus !== 'accept'
-                      ? 'Transaksi ini perlu perhatian karena fraud status bukan accept. Cocokkan dengan response Midtrans dan status order terkait.'
-                      : 'Tidak ada anomali fraud yang terlihat dari data transaksi ini saat ini.'}
+                      ? t('paymentDetailPage.fraudWarning')
+                      : t('paymentDetailPage.fraudSafe')}
                   </p>
                 </div>
               </CardContent>
@@ -175,19 +178,19 @@ export default function PaymentDetailPage() {
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
               <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Timeline snapshot</h2>
-                  <p className="text-sm text-gray-500 mt-1">Waktu pembuatan dan update terakhir transaksi.</p>
+                  <h2 className="text-lg font-bold text-gray-900">{t('paymentDetailPage.timeline')}</h2>
+                  <p className="text-sm text-gray-500 mt-1">{t('paymentDetailPage.timelineSubtitle')}</p>
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8">
                 <div className="rounded-2xl bg-slate-50 p-4 space-y-3 text-sm text-slate-700">
                   <div className="flex items-center justify-between gap-3">
-                    <span>Created at</span>
-                    <strong className="text-slate-900">{new Date(payment.created_at).toLocaleString('id-ID')}</strong>
+                    <span>{t('paymentDetailPage.createdAt')}</span>
+                    <strong className="text-slate-900">{new Date(payment.created_at).toLocaleString(locale)}</strong>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span>Updated at</span>
-                    <strong className="text-slate-900">{new Date(payment.updated_at).toLocaleString('id-ID')}</strong>
+                    <span>{t('paymentDetailPage.updatedAt')}</span>
+                    <strong className="text-slate-900">{new Date(payment.updated_at).toLocaleString(locale)}</strong>
                   </div>
                 </div>
               </CardContent>

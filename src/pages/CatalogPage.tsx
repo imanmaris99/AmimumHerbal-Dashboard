@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -86,6 +87,7 @@ const initialForm: CreateProductPayload = {
 
 export default function CatalogPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
@@ -112,13 +114,13 @@ export default function CatalogPage() {
       return response.data;
     },
     onSuccess: (response) => {
-      toast.success(response.message || 'Produk baru berhasil dibuat.');
+      toast.success(response.message || t('catalogPage.errors.createSuccess'));
       setForm(initialForm);
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal membuat produk baru.';
+      const message = detail?.message || detail || t('catalogPage.errors.createFailed');
       toast.error(String(message));
     },
   });
@@ -184,7 +186,7 @@ export default function CatalogPage() {
     event.preventDefault();
 
     if (!form.product_by_id) {
-      toast.error('Pilih brand/production terlebih dahulu.');
+      toast.error(t('catalogPage.errors.selectProduction'));
       return;
     }
 
@@ -195,10 +197,10 @@ export default function CatalogPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Catalog Management</h1>
-          <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola submit product baru berdasarkan relasi database yang sudah ditetapkan.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('catalogPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('catalogPage.subtitle')}</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">{t('catalogPage.badge')}</Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">

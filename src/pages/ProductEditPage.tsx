@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Box, Boxes, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,6 +55,7 @@ interface UpdateProductPayload {
 
 export default function ProductEditPage() {
   const user = useAuthStore((state) => state.user);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { productId } = useParams<{ productId: string }>();
@@ -98,14 +100,14 @@ export default function ProductEditPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Product berhasil diperbarui.');
+      toast.success(response?.message || t('productEditPage.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-product-detail', productId] });
       navigate('/catalog');
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui product.';
+      const message = detail?.message || detail || t('productEditPage.updateError');
       toast.error(String(message));
     },
   });
@@ -142,12 +144,12 @@ export default function ProductEditPage() {
     const weight = Number(form.weight || 0);
 
     if (!name || !info || !description || !instructions) {
-      toast.error('Nama, info, deskripsi, dan instruksi wajib diisi.');
+      toast.error(t('productEditPage.validation.required'));
       return;
     }
 
     if (!price || price < 0) {
-      toast.error('Harga product harus valid.');
+      toast.error(t('productEditPage.validation.price'));
       return;
     }
 
@@ -168,26 +170,26 @@ export default function ProductEditPage() {
           <div className="flex items-center gap-3 mb-2">
             <Button type="button" variant="outline" className="rounded-xl border-gray-200" onClick={() => navigate('/catalog')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Catalog
+              {t('productEditPage.back')}
             </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit Product</h1>
-          <p className="text-gray-500 mt-1">Halaman edit product khusus agar flow submit dan update product tidak bercampur, sekaligus memaksimalkan endpoint product yang sudah tersedia di backend.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('productEditPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('productEditPage.subtitle')}</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Admin + Owner edit page</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">{t('productEditPage.badge')}</Badge>
       </div>
 
       {productDetailQuery.isLoading ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Memuat detail product...
+            {t('productEditPage.loading')}
           </CardContent>
         </Card>
       ) : productDetailQuery.isError || !productDetailQuery.data ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat data product. Silakan kembali ke halaman catalog dan coba lagi.
+            {t('productEditPage.loadError')}
           </CardContent>
         </Card>
       ) : (

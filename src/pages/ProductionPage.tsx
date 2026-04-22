@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -53,6 +54,7 @@ const initialCreateForm: CreateProductionPayload = {
 
 export default function ProductionPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [createForm, setCreateForm] = useState(initialCreateForm);
@@ -79,14 +81,14 @@ export default function ProductionPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Brand / production baru berhasil dibuat.');
+      toast.success(response?.message || t('productionPage.errors.createSuccess'));
       setCreateForm(initialCreateForm);
       queryClient.invalidateQueries({ queryKey: ['production-list'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal membuat brand / production baru.';
+      const message = detail?.message || detail || t('productionPage.errors.createFailed');
       toast.error(String(message));
     },
   });
@@ -110,7 +112,7 @@ export default function ProductionPage() {
     event.preventDefault();
 
     if (!createForm.herbal_category_id) {
-      toast.error('Pilih product category terlebih dahulu.');
+      toast.error(t('productionPage.errors.selectCategory'));
       return;
     }
 
@@ -121,10 +123,10 @@ export default function ProductionPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Production / Brand Management</h1>
-          <p className="text-gray-500 mt-1">Shared internal module untuk mengelola brand/production yang menjadi sumber relasi katalog product. Category pada flow ini adalah category product layer, bukan category article.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('productionPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('productionPage.subtitle')}</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">{t('productionPage.badge')}</Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">

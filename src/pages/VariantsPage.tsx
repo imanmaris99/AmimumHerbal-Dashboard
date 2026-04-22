@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -89,6 +90,7 @@ const initialUpdateForm: UpdateVariantPayload = {
 
 export default function VariantsPage() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
   const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
@@ -118,7 +120,7 @@ export default function VariantsPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Variant baru berhasil dibuat.');
+      toast.success(response?.message || t('variantsPage.messages.createSuccess'));
       setForm(initialForm);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
@@ -126,7 +128,7 @@ export default function VariantsPage() {
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal membuat variant baru.';
+      const message = detail?.message || detail || t('variantsPage.messages.createError');
       toast.error(String(message));
     },
   });
@@ -137,14 +139,14 @@ export default function VariantsPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Variant berhasil diperbarui.');
+      toast.success(response?.message || t('variantsPage.messages.updateSuccess'));
       setEditingVariantId(null);
       setUpdateForm(initialUpdateForm);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal memperbarui data variant.';
+      const message = detail?.message || detail || t('variantsPage.messages.updateError');
       toast.error(String(message));
     },
   });
@@ -161,14 +163,14 @@ export default function VariantsPage() {
       return response.data;
     },
     onSuccess: (response: any) => {
-      toast.success(response?.message || 'Image variant berhasil diperbarui.');
+      toast.success(response?.message || t('variantsPage.messages.imageSuccess'));
       setImageVariantId(null);
       setImageFile(null);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal upload image variant.';
+      const message = detail?.message || detail || t('variantsPage.messages.imageError');
       toast.error(String(message));
     },
   });
@@ -232,7 +234,7 @@ export default function VariantsPage() {
     event.preventDefault();
 
     if (!form.product_id) {
-      toast.error('Pilih product terlebih dahulu.');
+      toast.error(t('variantsPage.messages.selectProduct'));
       return;
     }
 
@@ -241,7 +243,7 @@ export default function VariantsPage() {
 
   const startEditing = (variant: VariantItem) => {
     if (!variant.id) {
-      toast.error('Variant ini tidak memiliki id yang valid untuk diupdate.');
+      toast.error(t('variantsPage.messages.invalidUpdateId'));
       return;
     }
 
@@ -267,7 +269,7 @@ export default function VariantsPage() {
 
   const openImageFlow = (variant: VariantItem) => {
     if (!variant.id) {
-      toast.error('Variant ini tidak memiliki id yang valid untuk upload image.');
+      toast.error(t('variantsPage.messages.invalidImageId'));
       return;
     }
 
@@ -277,7 +279,7 @@ export default function VariantsPage() {
 
   const submitImageUpload = () => {
     if (!imageVariantId || !imageFile) {
-      toast.error('Pilih file image terlebih dahulu.');
+      toast.error(t('variantsPage.messages.selectImage'));
       return;
     }
 
@@ -291,71 +293,71 @@ export default function VariantsPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Variant / Pack Type Management</h1>
-          <p className="text-gray-500 mt-1">Shared internal module untuk admin dan owner mengelola variant setelah product dibuat, sesuai relasi tabel <strong>pack_types</strong> ke <strong>products</strong>.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('variantsPage.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('variantsPage.subtitle')}</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">Admin + Owner</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">{t('variantsPage.badge')}</Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredVariants.length}</p><p className="text-[11px] text-gray-400 mt-2">Variant yang sedang terpantau</p></CardContent></Card>
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Relation</span></div><p className="text-sm font-medium text-gray-500 mt-4">Products Ready</p><p className="text-2xl font-bold text-gray-900 mt-1">{products.length}</p><p className="text-[11px] text-gray-400 mt-2">Target foreign key untuk product_id</p></CardContent></Card>
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Archive className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Stock</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Stock</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalStock}</p><p className="text-[11px] text-gray-400 mt-2">Akumulasi stock variant yang sedang terlihat</p></CardContent></Card>
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><ShieldCheck className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">QA</span></div><p className="text-sm font-medium text-gray-500 mt-4">Discounted Variants</p><p className="text-2xl font-bold text-gray-900 mt-1">{discountedVariants}</p><p className="text-[11px] text-gray-400 mt-2">Monitoring cepat variant dengan promo</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">{t('variantsPage.summary.visibleVariants')}</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredVariants.length}</p><p className="text-[11px] text-gray-400 mt-2">{t('variantsPage.summary.visibleVariantsHelper')}</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Relation</span></div><p className="text-sm font-medium text-gray-500 mt-4">{t('variantsPage.summary.productsReady')}</p><p className="text-2xl font-bold text-gray-900 mt-1">{products.length}</p><p className="text-[11px] text-gray-400 mt-2">{t('variantsPage.summary.productsReadyHelper')}</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Archive className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Stock</span></div><p className="text-sm font-medium text-gray-500 mt-4">{t('variantsPage.summary.visibleStock')}</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalStock}</p><p className="text-[11px] text-gray-400 mt-2">{t('variantsPage.summary.visibleStockHelper')}</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><ShieldCheck className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">QA</span></div><p className="text-sm font-medium text-gray-500 mt-4">{t('variantsPage.summary.discountedVariants')}</p><p className="text-2xl font-bold text-gray-900 mt-1">{discountedVariants}</p><p className="text-[11px] text-gray-400 mt-2">{t('variantsPage.summary.discountedVariantsHelper')}</p></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-6 xl:gap-8">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Variant submit form</h2>
-              <p className="text-sm text-gray-500 mt-1">Nyambung ke tabel <strong>pack_types</strong> dengan foreign key <strong>product_id</strong> ke tabel <strong>products</strong>.</p>
+              <h2 className="text-lg font-bold text-gray-900">{t('variantsPage.form.title')}</h2>
+              <p className="text-sm text-gray-500 mt-1">{t('variantsPage.form.subtitle')}</p>
             </div>
           </CardHeader>
           <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="product_id">Product</Label>
+                  <Label htmlFor="product_id">{t('variantsPage.form.product')}</Label>
                   <select id="product_id" value={form.product_id} onChange={(e) => handleChange('product_id', e.target.value)} className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none w-full" required>
-                    <option value="">Pilih product</option>
+                    <option value="">{t('variantsPage.form.selectProduct')}</option>
                     {products.map((product) => (
                       <option key={product.id} value={product.id}>{product.name}{product.brand_info?.name ? ` - ${product.brand_info.name}` : ''}</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Pack type name</Label>
+                  <Label htmlFor="name">{t('variantsPage.form.packTypeName')}</Label>
                   <Input id="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Botol / Sachet / Box" required />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
                 <div className="space-y-2">
-                  <Label htmlFor="variant">Variant</Label>
+                  <Label htmlFor="variant">{t('variantsPage.form.variant')}</Label>
                   <Input id="variant" value={form.variant} onChange={(e) => handleChange('variant', e.target.value)} placeholder="Original / Mint / Jahe" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="min_amount">Minimum amount</Label>
+                  <Label htmlFor="min_amount">{t('variantsPage.form.minimumAmount')}</Label>
                   <Input id="min_amount" type="number" min="1" value={form.min_amount || ''} onChange={(e) => handleChange('min_amount', e.target.value)} placeholder="1" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="stock">Stock</Label>
+                  <Label htmlFor="stock">{t('variantsPage.form.stock')}</Label>
                   <Input id="stock" type="number" min="0" value={form.stock || ''} onChange={(e) => handleChange('stock', e.target.value)} placeholder="100" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price</Label>
+                  <Label htmlFor="price">{t('variantsPage.form.price')}</Label>
                   <Input id="price" type="number" min="0" value={form.price || ''} onChange={(e) => handleChange('price', e.target.value)} placeholder="25000" required />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expiration">Expiration</Label>
-                <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder="12/25/2026 atau format yang dipakai backend" required />
+                <Label htmlFor="expiration">{t('variantsPage.form.expiration')}</Label>
+                <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder={t('variantsPage.form.expirationPlaceholder')} required />
               </div>
 
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
-                <p className="text-xs text-gray-500 leading-relaxed">Create variant aktif lewat <strong>POST /type/create</strong>, update detail variant aktif lewat <strong>PUT /type/:type_id</strong>, dan image flow sudah mulai dihubungkan ke <strong>PUT /type/image/:type_id</strong>. Variant diperlakukan sebagai unit jual dengan harga sendiri.</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{t('variantsPage.form.helper')}</p>
                 <Button type="submit" disabled={createVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {createVariantMutation.isPending ? 'Submitting...' : 'Submit Variant Baru'}
@@ -424,50 +426,50 @@ export default function VariantsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <Button onClick={submitUpdate} disabled={updateVariantMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                         <PencilLine className="w-4 h-4 mr-2" />
-                        {updateVariantMutation.isPending ? 'Updating...' : 'Update Variant'}
+                        {updateVariantMutation.isPending ? t('variantsPage.actions.updating') : t('variantsPage.actions.update')}
                       </Button>
                       <Button variant="outline" onClick={() => { setEditingVariantId(null); setUpdateForm(initialUpdateForm); }} className="rounded-xl">
-                        Cancel
+                        {t('variantsPage.actions.cancel')}
                       </Button>
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk mengedit nama pack, variant, stock, price, discount, dan expiration.</p>
+                  <p className="text-sm text-gray-500">{t('variantsPage.actions.updateEmpty')}</p>
                 )}
                 {editingVariantId ? (
-                  <p className="text-xs text-emerald-600 font-medium">Variant ID terpilih: {editingVariantId}</p>
+                  <p className="text-xs text-emerald-600 font-medium">{t('variantsPage.actions.selectedVariant')}: {editingVariantId}</p>
                 ) : null}
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Upload image variant</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">{t('variantsPage.actions.uploadTitle')}</h3>
                 {imageVariantId ? (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="variant-image">Image file</Label>
+                      <Label htmlFor="variant-image">{t('variantsPage.actions.imageFile')}</Label>
                       <Input id="variant-image" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <Button onClick={submitImageUpload} disabled={uploadVariantImageMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                         <ImagePlus className="w-4 h-4 mr-2" />
-                        {uploadVariantImageMutation.isPending ? 'Uploading...' : 'Upload Image'}
+                        {uploadVariantImageMutation.isPending ? t('variantsPage.actions.uploading') : t('variantsPage.actions.upload')}
                       </Button>
                       <Button variant="outline" onClick={() => { setImageVariantId(null); setImageFile(null); }} className="rounded-xl">
-                        Cancel
+                        {t('variantsPage.actions.cancel')}
                       </Button>
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500">Pilih variant dari tabel di bawah untuk upload image baru.</p>
+                  <p className="text-sm text-gray-500">{t('variantsPage.actions.uploadEmpty')}</p>
                 )}
                 {imageVariantId ? (
-                  <p className="text-xs text-blue-600 font-medium">Variant ID image target: {imageVariantId}</p>
+                  <p className="text-xs text-blue-600 font-medium">{t('variantsPage.actions.imageTarget')}: {imageVariantId}</p>
                 ) : null}
               </div>
 
               <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600 space-y-2">
-                <p><strong>Delete flow</strong> tetap belum diaktifkan di UI agar rollout aman.</p>
-                <p>Endpoint target yang dipetakan: <code>DELETE /type/delete/:type_id</code></p>
+                <p>{t('variantsPage.actions.deleteFlow')}</p>
+                <p>{t('variantsPage.actions.deleteEndpoint')}</p>
               </div>
             </CardContent>
           </Card>
@@ -477,21 +479,21 @@ export default function VariantsPage() {
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Existing variants</h2>
-            <p className="text-sm text-gray-500 mt-1">Pantau struktur variant yang sudah ada sebelum menambah pack type baru.</p>
+            <h2 className="text-lg font-bold text-gray-900">{t('variantsPage.table.title')}</h2>
+            <p className="text-sm text-gray-500 mt-1">{t('variantsPage.table.subtitle')}</p>
           </div>
           <div className="mt-4 space-y-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product, nama variant, atau pack type..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full pr-24" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('variantsPage.table.searchPlaceholder')} className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full pr-24" />
               {search ? (
                 <Button type="button" variant="ghost" className="absolute right-2 top-1/2 h-8 -translate-y-1/2 rounded-lg px-3 text-xs text-gray-500 hover:text-gray-700" onClick={() => setSearch('')}>
-                  Reset
+                  {t('variantsPage.table.reset')}
                 </Button>
               ) : null}
             </div>
             <p className="text-xs text-gray-500">
-              Menampilkan <strong>{filteredVariants.length}</strong> dari <strong>{enrichedVariants.length}</strong> variant.
+              {t('variantsPage.table.showing', { visible: filteredVariants.length, total: enrichedVariants.length })}
             </p>
           </div>
         </CardHeader>
