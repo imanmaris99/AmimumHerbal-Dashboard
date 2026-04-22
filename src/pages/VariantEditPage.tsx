@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Boxes, Loader2, PencilLine, Save } from 'lucide-react';
+import { ArrowLeft, Boxes, ImagePlus, Loader2, Save, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
@@ -58,6 +58,7 @@ export default function VariantEditPage() {
     price: 0,
     discount: 0,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -89,6 +90,11 @@ export default function VariantEditPage() {
     });
   }, [variantDetailQuery.data]);
 
+  const invalidateVariantData = () => {
+    queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
+    queryClient.invalidateQueries({ queryKey: ['variant-detail', variantId] });
+  };
+
   const updateVariantMutation = useMutation({
     mutationFn: async (payload: UpdateVariantPayload) => {
       const response = await api.put(`/type/${variantId}`, payload);
@@ -96,13 +102,56 @@ export default function VariantEditPage() {
     },
     onSuccess: (response: any) => {
       toast.success(response?.message || t('variantsPage.messages.updateSuccess'));
-      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
-      queryClient.invalidateQueries({ queryKey: ['variant-detail', variantId] });
+      invalidateVariantData();
       navigate('/variants');
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
       const message = detail?.message || detail || t('variantsPage.messages.updateError');
+      toast.error(String(message));
+    },
+  });
+
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await api.put(`/type/image/${variantId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    },
+    onSuccess: (response: any) => {
+      toast.success(response?.message || t('variantsPage.messages.imageSuccess'));
+      setImageFile(null);
+      invalidateVariantData();
+    },
+    onError: (error: any) => {
+      const detail = error?.response?.data?.detail;
+      const message = detail?.message || detail || t('variantsPage.messages.imageError');
+      toast.error(String(message));
+    },
+  });
+
+  const deleteVariantMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.delete(`/type/delete/${variantId}`, {
+        data: {
+          type_id: Number(variantId),
+        },
+      });
+      return response.data;
+    },
+    onSuccess: (response: any) => {
+      toast.success(response?.message || 'Variant berhasil dihapus.');
+      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
+      navigate('/variants');
+    },
+    onError: (error: any) => {
+      const detail = error?.response?.data?.detail;
+      const message = detail?.message || detail || 'Gagal menghapus variant.';
       toast.error(String(message));
     },
   });
@@ -121,6 +170,20 @@ export default function VariantEditPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     updateVariantMutation.mutate(form);
+  };
+
+  const handleImageUpload = () => {
+    if (!imageFile) {
+      toast.error(t('variantsPage.messages.selectImage'));
+      return;
+    }
+    uploadImageMutation.mutate(imageFile);
+  };
+
+  const handleDelete = () => {
+    const confirmed = window.confirm('Yakin ingin menghapus variant ini? Jika variant masih dipakai cart atau order history, backend akan menolak.');
+    if (!confirmed) return;
+    deleteVariantMutation.mutate();
   };
 
   return (
@@ -168,6 +231,22 @@ export default function VariantEditPage() {
                 <p className="text-sm text-gray-500 mt-1">Variant ID: {variantDetailQuery.data.id}</p>
               </div>
 
+              {variantDetailQuery.data.img ? (
+                <div className="h-36 rounded-3xl border border-gray-100 bg-white p-3 flex items-center justify-center overflow-hidden shadow-sm">
+                  <img
+                    src={variantDetailQuery.data.img}
+                    alt={variantDetailQuery.data.name || variantDetailQuery.data.variant || 'variant'}
+                    className="max-h-full max-w-full object-contain"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ) : (
+                <div className="h-36 rounded-3xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-400">
+                  No preview image
+                </div>
+              )}
+
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
                   <span>Product</span>
@@ -193,64 +272,106 @@ export default function VariantEditPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-            <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Form edit variant</h2>
-                <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /type/{'{type_id}'}</strong>.</p>
-              </div>
-            </CardHeader>
-            <CardContent className="px-6 sm:px-8 pb-8">
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-variant-name-page">Pack type name</Label>
-                    <Input id="edit-variant-name-page" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-variant-variant-page">Variant</Label>
-                    <Input id="edit-variant-variant-page" value={form.variant} onChange={(e) => setForm((prev) => ({ ...prev, variant: e.target.value }))} required />
-                  </div>
+          <div className="space-y-6">
+            <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+              <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Form edit variant</h2>
+                  <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /type/{'{type_id}'}</strong>.</p>
                 </div>
+              </CardHeader>
+              <CardContent className="px-6 sm:px-8 pb-8">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-variant-name-page">Pack type name</Label>
+                      <Input id="edit-variant-name-page" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-variant-variant-page">Variant</Label>
+                      <Input id="edit-variant-variant-page" value={form.variant} onChange={(e) => setForm((prev) => ({ ...prev, variant: e.target.value }))} required />
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-variant-stock-page">Stock</Label>
-                    <Input id="edit-variant-stock-page" type="number" min="0" value={form.stock} onChange={(e) => setForm((prev) => ({ ...prev, stock: Number(e.target.value) }))} required />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-variant-stock-page">Stock</Label>
+                      <Input id="edit-variant-stock-page" type="number" min="0" value={form.stock} onChange={(e) => setForm((prev) => ({ ...prev, stock: Number(e.target.value) }))} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-variant-price-page">Price</Label>
+                      <Input id="edit-variant-price-page" type="number" min="0" value={form.price} onChange={(e) => setForm((prev) => ({ ...prev, price: Number(e.target.value) }))} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-variant-discount-page">Discount</Label>
+                      <Input id="edit-variant-discount-page" type="number" min="0" step="0.1" value={form.discount} onChange={(e) => setForm((prev) => ({ ...prev, discount: Number(e.target.value) }))} />
+                    </div>
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="edit-variant-price-page">Price</Label>
-                    <Input id="edit-variant-price-page" type="number" min="0" value={form.price} onChange={(e) => setForm((prev) => ({ ...prev, price: Number(e.target.value) }))} required />
+                    <Label htmlFor="edit-variant-expiration-page">Expiration</Label>
+                    <Input id="edit-variant-expiration-page" value={form.expiration} onChange={(e) => setForm((prev) => ({ ...prev, expiration: e.target.value }))} required />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-variant-discount-page">Discount</Label>
-                    <Input id="edit-variant-discount-page" type="number" min="0" step="0.1" value={form.discount} onChange={(e) => setForm((prev) => ({ ...prev, discount: Number(e.target.value) }))} />
+
+                  <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+                    <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar variants.</p>
+                    <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
+                      <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/variants')}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateVariantMutation.isPending}>
+                        {updateVariantMutation.isPending ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</>
+                        ) : (
+                          <><Save className="w-4 h-4 mr-2" />Update Variant</>
+                        )}
+                      </Button>
+                    </div>
                   </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+              <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Update image variant</h2>
+                  <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /type/image/{'{type_id}'}</strong>.</p>
                 </div>
-
+              </CardHeader>
+              <CardContent className="px-6 sm:px-8 pb-8 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-variant-expiration-page">Expiration</Label>
-                  <Input id="edit-variant-expiration-page" value={form.expiration} onChange={(e) => setForm((prev) => ({ ...prev, expiration: e.target.value }))} required />
+                  <Label htmlFor="edit-variant-image-page">Image file</Label>
+                  <Input id="edit-variant-image-page" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
                 </div>
+                <Button type="button" onClick={handleImageUpload} disabled={uploadImageMutation.isPending} className="rounded-xl bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
+                  {uploadImageMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>
+                  ) : (
+                    <><ImagePlus className="w-4 h-4 mr-2" />Upload Image</>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
 
-                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar variants.</p>
-                  <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
-                    <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/variants')}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateVariantMutation.isPending}>
-                      {updateVariantMutation.isPending ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</>
-                      ) : (
-                        <><Save className="w-4 h-4 mr-2" />Update Variant</>
-                      )}
-                    </Button>
-                  </div>
+            <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
+              <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-red-900">Delete variant</h2>
+                  <p className="text-sm text-red-700 mt-1">Aksi ini permanen. Backend akan menolak jika variant masih dipakai cart items atau order history.</p>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="px-6 sm:px-8 pb-8">
+                <Button type="button" variant="outline" onClick={handleDelete} disabled={deleteVariantMutation.isPending} className="rounded-xl text-red-600 border-red-200 hover:bg-red-100">
+                  {deleteVariantMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Deleting...</>
+                  ) : (
+                    <><Trash2 className="w-4 h-4 mr-2" />Delete Variant</>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </div>
