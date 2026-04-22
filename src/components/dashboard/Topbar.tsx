@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Menu, ShieldCheck, Info, TimerReset } from 'lucide-react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -78,8 +78,8 @@ export function Topbar() {
       <div className="flex items-center gap-2 shrink-0 order-1 xl:order-2 ml-auto xl:ml-0 max-w-full w-full xl:w-auto justify-end">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="hidden 2xl:inline-flex h-9 rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-500 hover:text-emerald-600 hover:border-emerald-200">
-              {t('topbar.languageSwitch')}: {i18n.language === 'id' ? 'ID' : 'EN'}
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50" aria-label={t('topbar.languageSwitch')}>
+              <Languages className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
