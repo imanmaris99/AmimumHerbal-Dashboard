@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ImagePlus, Trash2, ChevronDown } from 'lucide-react';
+import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ImagePlus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -99,7 +99,6 @@ export default function VariantsPage() {
   const [updateForm, setUpdateForm] = useState<UpdateVariantPayload>(initialUpdateForm);
   const [imageVariantId, setImageVariantId] = useState<number | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [openActionMenuId, setOpenActionMenuId] = useState<number | null>(null);
 
   const { data: productsResponse, isLoading: productsLoading } = useQuery({
     queryKey: ['variant-products'],
@@ -160,26 +159,6 @@ export default function VariantsPage() {
     },
   });
 
-  const deleteVariantMutation = useMutation({
-    mutationFn: async (variantId: number) => {
-      const response = await api.delete(`/type/delete/${variantId}`, {
-        data: {
-          type_id: variantId,
-        },
-      });
-      return response.data;
-    },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || 'Variant berhasil dihapus.');
-      queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
-      queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
-    },
-    onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal menghapus variant.';
-      toast.error(String(message));
-    },
-  });
 
   const products = productsResponse?.data ?? [];
   const variants = variantsResponse?.data ?? [];
@@ -269,21 +248,6 @@ export default function VariantsPage() {
       variantId: imageVariantId,
       file: imageFile,
     });
-  };
-
-  const handleDeleteVariant = (variant: VariantItem & { resolvedPackName?: string }) => {
-    if (!variant.id) {
-      toast.error(t('variantsPage.messages.invalidUpdateId'));
-      return;
-    }
-
-    const firstConfirm = window.confirm(`Yakin ingin menghapus variant "${variant.resolvedPackName || variant.name || variant.variant || variant.id}"?`);
-    if (!firstConfirm) return;
-
-    const secondConfirm = window.confirm('Peringatan terakhir: variant akan dihapus permanen. Jika masih dipakai cart atau order history, backend akan menolak. Lanjutkan?');
-    if (!secondConfirm) return;
-
-    deleteVariantMutation.mutate(variant.id);
   };
 
   return (
@@ -523,54 +487,15 @@ export default function VariantsPage() {
                     <TableCell className="text-sm text-gray-600">{variant.expiration || '-'}</TableCell>
                     <TableCell className="text-sm text-gray-600">{variant.img ? 'Available' : 'No image'}</TableCell>
                     <TableCell>
-                      <div className="relative flex justify-end min-w-[160px]">
+                      <div className="flex justify-end min-w-[140px]">
                         <Button
                           variant="outline"
                           size="sm"
                           className="rounded-xl"
-                          onClick={() => setOpenActionMenuId(openActionMenuId === variant.id ? null : (variant.id ?? null))}
+                          onClick={() => startEditing(variant)}
                         >
                           <PencilLine className="w-4 h-4 mr-2" /> Edit
-                          <ChevronDown className="w-4 h-4 ml-2" />
                         </Button>
-
-                        {openActionMenuId === variant.id ? (
-                          <div className="absolute right-0 top-12 z-20 w-52 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl shadow-gray-200/60">
-                            <button
-                              type="button"
-                              className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              onClick={() => {
-                                setOpenActionMenuId(null);
-                                startEditing(variant);
-                              }}
-                            >
-                              <PencilLine className="w-4 h-4" />
-                              Update data
-                            </button>
-                            <button
-                              type="button"
-                              className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              onClick={() => {
-                                setOpenActionMenuId(null);
-                                openImageFlow(variant);
-                              }}
-                            >
-                              <ImagePlus className="w-4 h-4" />
-                              Update image
-                            </button>
-                            <button
-                              type="button"
-                              className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                              onClick={() => {
-                                setOpenActionMenuId(null);
-                                handleDeleteVariant(variant);
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Delete variant
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
                     </TableCell>
                   </TableRow>
