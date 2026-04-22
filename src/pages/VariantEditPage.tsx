@@ -188,27 +188,25 @@ export default function VariantEditPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="space-y-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 w-fit"
-            onClick={() => navigate('/variants')}
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Variants
-          </Button>
+      <div className="flex flex-col gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 w-fit"
+          onClick={() => navigate('/variants')}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Variants
+        </Button>
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight">Edit Variant</h1>
             <p className="text-sm text-gray-500 mt-1 max-w-3xl">
-              Rapikan data, gambar, dan status variant dari satu halaman kerja yang fokus agar proses update tetap jelas dan konsisten.
+              Kelola data, gambar, dan status variant dari satu halaman kerja yang lebih ringkas dan fokus.
             </p>
           </div>
+          <p className="text-xs font-medium text-emerald-600">Admin & Owner access</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-2 rounded-xl w-fit font-medium">
-          Admin & Owner access
-        </Badge>
       </div>
 
       {variantDetailQuery.isLoading ? (
@@ -225,56 +223,56 @@ export default function VariantEditPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-6 xl:gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-[320px_minmax(0,1fr)] gap-6 xl:gap-8 items-start">
           <Card className="border border-gray-100 shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardContent className="p-6 sm:p-7 space-y-6">
+            <CardContent className="p-5 sm:p-6 space-y-5">
               <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
-                    <Boxes className="w-5 h-5" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2.5 rounded-2xl bg-emerald-50 text-emerald-600 shrink-0">
+                    <Boxes className="w-4 h-4" />
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Variant overview</p>
-                    <h2 className="text-xl font-semibold text-gray-900 mt-1 break-all">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400">Variant</p>
+                    <h2 className="text-lg font-semibold text-gray-900 mt-1 break-all">
                       {variantDetailQuery.data.name || variantDetailQuery.data.variant || '-'}
                     </h2>
                   </div>
                 </div>
-                <Badge className="bg-slate-100 text-slate-700 border-none rounded-xl">ID {variantDetailQuery.data.id}</Badge>
+                <span className="text-[11px] font-medium text-gray-400 shrink-0">ID {variantDetailQuery.data.id}</span>
               </div>
 
-              <div className="rounded-[28px] border border-gray-100 bg-gradient-to-b from-gray-50 to-white p-4 min-h-[220px] flex items-center justify-center overflow-hidden">
+              <div className="rounded-3xl border border-gray-100 bg-gray-50 p-4 min-h-[180px] flex items-center justify-center overflow-hidden">
                 {variantDetailQuery.data.img ? (
                   <img
                     src={variantDetailQuery.data.img}
                     alt={variantDetailQuery.data.name || variantDetailQuery.data.variant || 'variant'}
-                    className="max-h-[180px] max-w-full object-contain"
+                    className="max-h-[140px] max-w-full object-contain"
                     loading="lazy"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="h-full w-full rounded-[22px] border border-dashed border-gray-200 bg-white/70 flex items-center justify-center text-sm text-gray-400">
+                  <div className="h-full w-full rounded-[22px] border border-dashed border-gray-200 bg-white flex items-center justify-center text-sm text-gray-400">
                     No preview image
                   </div>
                 )}
               </div>
 
-              <div className="rounded-2xl border border-gray-100 bg-slate-50 p-4 divide-y divide-gray-200/70">
-                <div className="flex items-start justify-between gap-4 py-3 first:pt-0">
+              <div className="rounded-2xl bg-slate-50 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-4">
                   <span className="text-sm text-gray-500">Product</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[180px]">{variantDetailQuery.data.product || '-'}</strong>
+                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{variantDetailQuery.data.product || '-'}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-4 py-3">
-                  <span className="text-sm text-gray-500">Current stock</span>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-sm text-gray-500">Stock</span>
                   <strong className="text-sm text-gray-900">{Number(variantDetailQuery.data.stock || 0)}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-4 py-3">
-                  <span className="text-sm text-gray-500">Current price</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[180px]">{summaryPrice}</strong>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-sm text-gray-500">Price</span>
+                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{summaryPrice}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-4 pt-3 last:pb-0">
-                  <span className="text-sm text-gray-500">Expiration</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[180px]">{variantDetailQuery.data.expiration || '-'}</strong>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-sm text-gray-500">Expiry</span>
+                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{variantDetailQuery.data.expiration || '-'}</strong>
                 </div>
               </div>
             </CardContent>
@@ -282,15 +280,14 @@ export default function VariantEditPage() {
 
           <div className="space-y-6">
             <Card className="border border-gray-100 shadow-sm rounded-3xl overflow-hidden bg-white">
-              <CardHeader className="px-6 sm:px-8 pt-7 pb-4 border-b border-gray-100">
+              <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-gray-100">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Primary action</p>
-                  <h2 className="text-xl font-semibold text-gray-900 mt-2">Update variant data</h2>
-                  <p className="text-sm text-gray-500 mt-1">Perbarui atribut utama variant dari form ini, lalu simpan perubahan ke endpoint <strong>PUT /type/{'{type_id}'}</strong>.</p>
+                  <h2 className="text-lg font-semibold text-gray-900">Update variant data</h2>
+                  <p className="text-sm text-gray-500 mt-1">Perbarui data utama variant lalu simpan perubahan.</p>
                 </div>
               </CardHeader>
-              <CardContent className="px-6 sm:px-8 py-7">
-                <form onSubmit={handleSubmit} className="space-y-6">
+              <CardContent className="px-6 sm:px-8 py-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="edit-variant-name-page">Pack type name</Label>
@@ -342,14 +339,13 @@ export default function VariantEditPage() {
             </Card>
 
             <Card className="border border-gray-100 shadow-sm rounded-3xl overflow-hidden bg-white">
-              <CardHeader className="px-6 sm:px-8 pt-7 pb-4 border-b border-gray-100">
+              <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-gray-100">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">Secondary action</p>
-                  <h2 className="text-xl font-semibold text-gray-900 mt-2">Update variant image</h2>
-                  <p className="text-sm text-gray-500 mt-1">Ganti atau tambahkan gambar variant melalui endpoint <strong>PUT /type/image/{'{type_id}'}</strong>.</p>
+                  <h2 className="text-lg font-semibold text-gray-900">Update variant image</h2>
+                  <p className="text-sm text-gray-500 mt-1">Ganti atau tambahkan gambar variant.</p>
                 </div>
               </CardHeader>
-              <CardContent className="px-6 sm:px-8 py-7 space-y-5">
+              <CardContent className="px-6 sm:px-8 py-6 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-variant-image-page">Image file</Label>
                   <Input id="edit-variant-image-page" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
@@ -367,18 +363,17 @@ export default function VariantEditPage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-red-100 bg-red-50/70 shadow-sm rounded-3xl overflow-hidden">
-              <CardHeader className="px-6 sm:px-8 pt-7 pb-4 border-b border-red-100">
+            <Card className="border border-red-100 bg-red-50/60 shadow-sm rounded-3xl overflow-hidden">
+              <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-red-100">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">Danger zone</p>
-                  <h2 className="text-xl font-semibold text-red-900 mt-2">Delete variant</h2>
-                  <p className="text-sm text-red-700 mt-1">Gunakan hanya jika variant memang tidak dibutuhkan. Backend tetap akan menolak penghapusan jika variant sudah terhubung ke cart items atau order history.</p>
+                  <h2 className="text-lg font-semibold text-red-900">Delete variant</h2>
+                  <p className="text-sm text-red-700 mt-1">Hapus hanya jika variant memang tidak lagi dibutuhkan.</p>
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 py-7">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm text-red-700 max-w-2xl">
-                    Aksi ini permanen dan tidak boleh dipakai sembarangan. Pastikan variant memang aman untuk dihapus.
+                    Backend tetap akan menolak penghapusan jika variant masih dipakai di cart atau order history.
                   </p>
                   <Button type="button" variant="outline" onClick={handleDelete} disabled={deleteVariantMutation.isPending} className="rounded-xl text-red-700 border-red-200 hover:bg-red-100 w-full md:w-auto">
                     {deleteVariantMutation.isPending ? (
