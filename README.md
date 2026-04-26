@@ -19,7 +19,7 @@ Fokus app ini adalah area internal terpisah dari storefront customer, sesuai kep
 Buat file `.env` lokal atau set environment di Vercel:
 
 ```env
-VITE_API_URL="https://amimumprojectbe-production.up.railway.app"
+VITE_API_URL="https://api.103-174-114-183.sslip.io"
 ```
 
 ## Run local
@@ -108,7 +108,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 1. Import repo ini ke Vercel
 2. Framework preset: **Vite**
 3. Set env:
-   - `VITE_API_URL=https://amimumprojectbe-production.up.railway.app`
+   - `VITE_API_URL=https://api.103-174-114-183.sslip.io`
 4. Build command:
    - `npm run build`
 5. Output directory:

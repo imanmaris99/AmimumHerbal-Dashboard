@@ -3,7 +3,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://amimumprojectbe-production.up.railway.app',
+  baseURL: import.meta.env.VITE_API_URL || 'https://api.103-174-114-183.sslip.io',
 });
 
 export const dashboardQueryClient = new QueryClient({

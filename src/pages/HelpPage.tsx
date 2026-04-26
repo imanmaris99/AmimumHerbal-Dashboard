@@ -27,8 +27,8 @@ const editFlows = [
 
 const deployNotes = [
   'Dashboard target deploy di Vercel free',
-  'Backend source of truth tetap Railway',
-  'Gunakan VITE_API_URL ke https://amimumprojectbe-production.up.railway.app',
+  'Backend source of truth sekarang VPS API (sslip.io)',
+  'Gunakan VITE_API_URL ke https://api.103-174-114-183.sslip.io',
   'SPA rewrite harus aktif lewat vercel.json',
 ];
 
@@ -107,7 +107,7 @@ export default function HelpPage() {
             <li className="rounded-2xl bg-white/5 border border-white/10 p-4">Jika update gagal, cek apakah route edit memakai <strong>real id</strong>, bukan display id atau label tampilan.</li>
             <li className="rounded-2xl bg-white/5 border border-white/10 p-4">Untuk issue artikel, source of truth update sekarang adalah <strong>GET /articles/all</strong> + <strong>PUT /articles/update/{'{article_id}'}</strong>.</li>
             <li className="rounded-2xl bg-white/5 border border-white/10 p-4">Product dan category image jangan dipaksa tampil kalau backend contract resmi belum menyediakannya.</li>
-            <li className="rounded-2xl bg-white/5 border border-white/10 p-4">Jika Vercel route bermasalah, cek <strong>vercel.json</strong>, env <strong>VITE_API_URL</strong>, dan CORS backend Railway.</li>
+            <li className="rounded-2xl bg-white/5 border border-white/10 p-4">Jika Vercel route bermasalah, cek <strong>vercel.json</strong>, env <strong>VITE_API_URL</strong>, dan CORS backend VPS API.</li>
           </ul>
         </CardContent>
       </Card>
