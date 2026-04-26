@@ -15,7 +15,6 @@ import {
   Factory,
   ShoppingCart,
   Activity,
-  ArrowLeftRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RoleGuard } from '../RoleGuard';
@@ -36,7 +35,6 @@ const useSharedNavItems = () => {
     { icon: FileText, label: t('sidebar.nav.content'), path: '/content', description: t('sidebar.nav.contentDesc') },
     { icon: ShoppingCart, label: t('sidebar.nav.cashier'), path: '/cashier', description: t('sidebar.nav.cashierDesc') },
     { icon: Activity, label: t('sidebar.nav.inventoryMonitor'), path: '/inventory-monitor', description: t('sidebar.nav.inventoryMonitorDesc') },
-    { icon: ArrowLeftRight, label: t('sidebar.nav.stockMovements'), path: '/stock-movements', description: t('sidebar.nav.stockMovementsDesc') },
   ], [t]);
 };
 

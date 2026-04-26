@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Boxes, PackageCheck, Search } from 'lucide-react';
+import { AlertTriangle, Boxes, PackageCheck, Search, ArrowLeftRight } from 'lucide-react';
 import api from '@/lib/api';
+import { getStockMovements } from '@/lib/posInventory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,6 +14,7 @@ type VariantItem = {
   product?: string;
   name?: string;
   variant?: string | null;
+  img?: string | null;
   stock?: number;
   updated_at?: string;
 };
@@ -33,6 +35,18 @@ export default function InventoryMonitorPage() {
   const { data: variantsResponse, isLoading, isError } = useQuery({
     queryKey: ['inventory-variants'],
     queryFn: async () => (await api.get<VariantResponse>('/type/all')).data,
+  });
+
+  const movementQuery = useQuery({
+    queryKey: ['inventory-movements'],
+    queryFn: async () => {
+      try {
+        const response = await getStockMovements({ page: 1, limit: 50 });
+        return { mode: 'real' as const, rows: response.data.items };
+      } catch {
+        return { mode: 'fallback' as const, rows: [] as any[] };
+      }
+    },
   });
 
   const productLookup = useMemo(() => {
@@ -60,6 +74,7 @@ export default function InventoryMonitorPage() {
           productName,
           variantName,
           stock,
+          imageUrl: item.img || null,
           updatedAt: item.updated_at,
           stockStatus,
         };
@@ -85,11 +100,31 @@ export default function InventoryMonitorPage() {
     return { safe, low, out };
   }, [filtered]);
 
+  const movementRows = useMemo(() => {
+    if (movementQuery.data?.mode === 'real') return movementQuery.data.rows;
+
+    return filtered
+      .map((item) => ({
+        id: `snapshot-${item.id}`,
+        created_at: item.updatedAt || new Date().toISOString(),
+        variant_id: item.id,
+        movement_type: 'snapshot',
+        delta: 0,
+        stock_after: item.stock,
+        reason: 'Fallback snapshot dari data variant',
+      }))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 30);
+  }, [movementQuery.data, filtered]);
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Monitoring Stok</h1>
-        <p className="text-sm text-gray-600 mt-1">Halaman ini fokus hanya untuk visibilitas status stok. Perubahan stok tetap dilakukan di halaman Variants agar alur tidak ganda.</p>
+        <h1 className="text-2xl font-bold text-gray-900">Stok & Pergerakan</h1>
+        <p className="text-sm text-gray-600 mt-1">
+          Halaman terpadu ala marketplace untuk memantau stok dan histori pergerakan dalam satu alur yang jelas.
+          Perubahan stok tetap dilakukan di halaman Variants agar konsisten.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -100,8 +135,8 @@ export default function InventoryMonitorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Daftar Status Stok</CardTitle>
-          <CardDescription>Rule status default: low stock jika ≤ {LOW_STOCK_THRESHOLD}</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Produk & Status Stok</CardTitle>
+          <CardDescription>Tampilan visual produk + status stok agar monitoring lebih mudah dipahami tim operasional.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product/variant/id..." />
@@ -111,41 +146,81 @@ export default function InventoryMonitorPage() {
           ) : isError ? (
             <p className="text-sm text-red-600">Gagal memuat data stok dari API.</p>
           ) : (
-            <div className="overflow-auto rounded-xl border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Variant</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Update Terakhir</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>
-                        <div className="font-medium text-gray-900">{row.productName}</div>
-                        <div className="text-xs text-gray-500">{row.variantName}</div>
-                      </TableCell>
-                      <TableCell>{row.stock}</TableCell>
-                      <TableCell>
-                        {row.stockStatus === 'safe' && <span className="text-emerald-700">Aman</span>}
-                        {row.stockStatus === 'low' && <span className="text-amber-700">Menipis</span>}
-                        {row.stockStatus === 'out' && <span className="text-rose-700">Habis</span>}
-                      </TableCell>
-                      <TableCell>{row.updatedAt ? new Date(row.updatedAt).toLocaleString('id-ID') : '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                  {filtered.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-sm text-gray-500">Tidak ada data stok sesuai filter.</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filtered.map((item) => (
+                <div key={item.id} className="rounded-2xl border bg-white p-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-14 h-14 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                      {item.imageUrl ? (
+                        <img src={item.imageUrl} alt={item.variantName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">No Img</div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{item.productName}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.variantName}</p>
+                      <p className="text-xs text-gray-500 mt-1">Variant ID: {item.id}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-600">Stock: <span className="font-semibold text-gray-900">{item.stock}</span></p>
+                    {item.stockStatus === 'safe' && <span className="text-xs px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">Aman</span>}
+                    {item.stockStatus === 'low' && <span className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700">Menipis</span>}
+                    {item.stockStatus === 'out' && <span className="text-xs px-2 py-1 rounded-lg bg-rose-50 text-rose-700">Habis</span>}
+                  </div>
+
+                  <p className="text-[11px] text-gray-500 mt-2">
+                    Update: {item.updatedAt ? new Date(item.updatedAt).toLocaleString('id-ID') : '-'}
+                  </p>
+                </div>
+              ))}
+              {filtered.length === 0 && <p className="text-sm text-gray-500">Tidak ada data stok sesuai filter.</p>}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4" /> Histori Pergerakan Stok</CardTitle>
+          <CardDescription>
+            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'REAL API' : 'FALLBACK SNAPSHOT'}</strong>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-auto rounded-xl border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Variant</TableHead>
+                  <TableHead>Tipe</TableHead>
+                  <TableHead>Delta</TableHead>
+                  <TableHead>Stock After</TableHead>
+                  <TableHead>Catatan</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {movementRows.map((row: any) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '-'}</TableCell>
+                    <TableCell>{row.variant_id}</TableCell>
+                    <TableCell>{row.movement_type}</TableCell>
+                    <TableCell>{row.delta ?? '-'}</TableCell>
+                    <TableCell>{row.stock_after ?? '-'}</TableCell>
+                    <TableCell className="text-xs text-gray-600">{row.reason || '-'}</TableCell>
+                  </TableRow>
+                ))}
+                {movementRows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-sm text-gray-500">Belum ada data movement.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

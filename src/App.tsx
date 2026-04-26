@@ -32,7 +32,6 @@ const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
 const HelpPage = React.lazy(() => import('./pages/HelpPage'));
 const CashierPage = React.lazy(() => import('./pages/CashierPage'));
 const InventoryMonitorPage = React.lazy(() => import('./pages/InventoryMonitorPage'));
-const StockMovementsPage = React.lazy(() => import('./pages/StockMovementsPage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
@@ -77,7 +76,7 @@ export default function App() {
               <Route path="/content/edit/:articleId" element={<ContentEditPage />} />
               <Route path="/cashier" element={<CashierPage />} />
               <Route path="/inventory-monitor" element={<InventoryMonitorPage />} />
-              <Route path="/stock-movements" element={<StockMovementsPage />} />
+              <Route path="/stock-movements" element={<Navigate to="/inventory-monitor" replace />} />
               <Route path="/productions" element={<ProductionPage />} />
               <Route path="/productions/edit/:productionId" element={<ProductionEditPage />} />
               <Route path="/users" element={<UsersPage />} />

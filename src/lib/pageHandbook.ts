@@ -111,24 +111,14 @@ const handbookEntries: Array<{ match: RegExp; entry: PageHandbookEntry }> = [
     },
   },
   {
-    match: /^\/inventory-monitor$/,
+    match: /^\/(inventory-monitor|stock-movements)$/,
     entry: {
       key: 'inventory-monitor',
-      title: 'Monitoring Stok',
-      purpose: 'Kontrol status stok aman/menipis/habis per varian.',
+      title: 'Stok & Pergerakan',
+      purpose: 'Monitoring status stok dan histori pergerakan dalam satu halaman terpadu.',
       primaryUsers: 'Admin & Owner',
-      usageFlow: ['Cek summary status stok', 'Filter varian target', 'Atur threshold per varian'],
-    },
-  },
-  {
-    match: /^\/stock-movements$/,
-    entry: {
-      key: 'stock-movements',
-      title: 'Pergerakan Stok',
-      purpose: 'Audit perubahan stok (timeline + manual adjustment).',
-      primaryUsers: 'Admin & Owner',
-      usageFlow: ['Review timeline movement', 'Lakukan adjust manual bila perlu', 'Pantau histori perubahan secara periodik'],
-      notes: ['Saat endpoint movement belum aktif, halaman memakai fallback snapshot data varian.'],
+      usageFlow: ['Cek kartu ringkasan stok', 'Pantau produk/varian dengan bantuan gambar', 'Review tabel histori pergerakan stok'],
+      notes: ['Perubahan stok tetap dilakukan di halaman Variants agar alur operasional tetap satu pintu.'],
     },
   },
   {
