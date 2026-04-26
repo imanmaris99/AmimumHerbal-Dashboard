@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Boxes, PackageCheck, Search } from 'lucide-react';
-import { toast } from 'sonner';
 import api from '@/lib/api';
-import { setVariantThreshold } from '@/lib/posInventory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
 
 type ProductItem = { id: string; name: string };
 type VariantItem = {
@@ -27,7 +24,6 @@ const LOW_STOCK_THRESHOLD = 10;
 
 export default function InventoryMonitorPage() {
   const [search, setSearch] = useState('');
-  const [thresholdDrafts, setThresholdDrafts] = useState<Record<number, number>>({});
 
   const { data: productsResponse } = useQuery({
     queryKey: ['inventory-products'],
@@ -37,22 +33,6 @@ export default function InventoryMonitorPage() {
   const { data: variantsResponse, isLoading, isError } = useQuery({
     queryKey: ['inventory-variants'],
     queryFn: async () => (await api.get<VariantResponse>('/type/all')).data,
-  });
-
-  const thresholdMutation = useMutation({
-    mutationFn: async ({ variantId, threshold }: { variantId: number; threshold: number }) => {
-      return setVariantThreshold(variantId, threshold);
-    },
-    onSuccess: () => {
-      toast.success('Threshold stok berhasil disimpan.');
-    },
-    onError: (error: any) => {
-      const message =
-        error?.response?.data?.detail?.message ||
-        error?.response?.data?.detail ||
-        'Endpoint threshold belum tersedia di backend. Lanjut pakai threshold default dulu.';
-      toast.error(String(message));
-    },
   });
 
   const productLookup = useMemo(() => {
@@ -71,23 +51,20 @@ export default function InventoryMonitorPage() {
           '-';
         const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Variant #${item.id}`;
 
-        const threshold = thresholdDrafts[item.id] ?? LOW_STOCK_THRESHOLD;
-
         let stockStatus: 'safe' | 'low' | 'out' = 'safe';
         if (stock <= 0) stockStatus = 'out';
-        else if (stock <= threshold) stockStatus = 'low';
+        else if (stock <= LOW_STOCK_THRESHOLD) stockStatus = 'low';
 
         return {
           id: item.id,
           productName,
           variantName,
           stock,
-          threshold,
           updatedAt: item.updated_at,
           stockStatus,
         };
       });
-  }, [variantsResponse?.data, productLookup, thresholdDrafts]);
+  }, [variantsResponse?.data, productLookup]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -112,7 +89,7 @@ export default function InventoryMonitorPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Monitoring Stok</h1>
-        <p className="text-sm text-gray-600 mt-1">Integrasi aktif ke endpoint variant live + draft threshold per variant (siap disambung penuh saat endpoint backend aktif).</p>
+        <p className="text-sm text-gray-600 mt-1">Halaman ini fokus hanya untuk visibilitas status stok. Perubahan stok tetap dilakukan di halaman Variants agar alur tidak ganda.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -123,8 +100,8 @@ export default function InventoryMonitorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Daftar Stok Variant</CardTitle>
-          <CardDescription>Threshold default: ≤ {LOW_STOCK_THRESHOLD}. Bisa override per variant.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Daftar Status Stok</CardTitle>
+          <CardDescription>Rule status default: low stock jika ≤ {LOW_STOCK_THRESHOLD}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product/variant/id..." />
@@ -140,7 +117,6 @@ export default function InventoryMonitorPage() {
                   <TableRow>
                     <TableHead>Variant</TableHead>
                     <TableHead>Stock</TableHead>
-                    <TableHead>Threshold</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Update Terakhir</TableHead>
                   </TableRow>
@@ -154,35 +130,6 @@ export default function InventoryMonitorPage() {
                       </TableCell>
                       <TableCell>{row.stock}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            className="h-8 w-20"
-                            type="number"
-                            min={0}
-                            value={thresholdDrafts[row.id] ?? LOW_STOCK_THRESHOLD}
-                            onChange={(e) =>
-                              setThresholdDrafts((prev) => ({
-                                ...prev,
-                                [row.id]: Number(e.target.value || LOW_STOCK_THRESHOLD),
-                              }))
-                            }
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() =>
-                              thresholdMutation.mutate({
-                                variantId: row.id,
-                                threshold: thresholdDrafts[row.id] ?? LOW_STOCK_THRESHOLD,
-                              })
-                            }
-                            disabled={thresholdMutation.isPending}
-                          >
-                            Simpan
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell>
                         {row.stockStatus === 'safe' && <span className="text-emerald-700">Aman</span>}
                         {row.stockStatus === 'low' && <span className="text-amber-700">Menipis</span>}
                         {row.stockStatus === 'out' && <span className="text-rose-700">Habis</span>}
@@ -192,7 +139,7 @@ export default function InventoryMonitorPage() {
                   ))}
                   {filtered.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-sm text-gray-500">Tidak ada data stok sesuai filter.</TableCell>
+                      <TableCell colSpan={4} className="text-sm text-gray-500">Tidak ada data stok sesuai filter.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

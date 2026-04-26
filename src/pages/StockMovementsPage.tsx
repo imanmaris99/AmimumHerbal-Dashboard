@@ -1,13 +1,10 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftRight } from 'lucide-react';
-import { toast } from 'sonner';
 import api from '@/lib/api';
-import { adjustStock, getStockMovements } from '@/lib/posInventory';
+import { getStockMovements } from '@/lib/posInventory';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 type ProductItem = { id: string; name: string };
 type VariantItem = {
@@ -24,11 +21,6 @@ interface ProductResponse { data: ProductItem[] }
 interface VariantResponse { data: VariantItem[] }
 
 export default function StockMovementsPage() {
-  const [variantId, setVariantId] = useState('');
-  const [delta, setDelta] = useState('0');
-  const [reason, setReason] = useState('');
-  const [reference, setReference] = useState('');
-
   const { data: productsResponse } = useQuery({
     queryKey: ['movements-products'],
     queryFn: async () => (await api.get<ProductResponse>('/product/all')).data,
@@ -48,31 +40,6 @@ export default function StockMovementsPage() {
       } catch {
         return { mode: 'fallback' as const, rows: [] as any[] };
       }
-    },
-  });
-
-  const adjustMutation = useMutation({
-    mutationFn: async () => {
-      return adjustStock({
-        variant_id: Number(variantId),
-        delta: Number(delta),
-        reason,
-        reference: reference || undefined,
-      });
-    },
-    onSuccess: () => {
-      toast.success('Adjust stok berhasil diproses.');
-      movementQuery.refetch();
-      setDelta('0');
-      setReason('');
-      setReference('');
-    },
-    onError: (error: any) => {
-      const message =
-        error?.response?.data?.detail?.message ||
-        error?.response?.data?.detail ||
-        'Endpoint adjust stock belum tersedia di backend.';
-      toast.error(String(message));
     },
   });
 
@@ -113,33 +80,14 @@ export default function StockMovementsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Pergerakan Stok</h1>
-        <p className="text-sm text-gray-600 mt-1">Jika endpoint movement backend sudah aktif, data akan tampil real-time. Jika belum, halaman pakai fallback snapshot aman.</p>
+        <p className="text-sm text-gray-600 mt-1">Halaman ini fokus untuk histori/audit stok. Aksi ubah stok dilakukan di Variants agar fungsi tidak ganda.</p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Adjust Stok Manual</CardTitle>
-          <CardDescription>Write-action siap, akan aktif penuh setelah endpoint backend `POST /admin/inventory/adjust` tersedia.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <Input placeholder="Variant ID" value={variantId} onChange={(e) => setVariantId(e.target.value)} />
-          <Input placeholder="Delta (+/-)" value={delta} onChange={(e) => setDelta(e.target.value)} />
-          <Input placeholder="Reason" value={reason} onChange={(e) => setReason(e.target.value)} />
-          <Input placeholder="Reference (opsional)" value={reference} onChange={(e) => setReference(e.target.value)} />
-          <Button
-            onClick={() => adjustMutation.mutate()}
-            disabled={!variantId || !reason || adjustMutation.isPending}
-          >
-            {adjustMutation.isPending ? 'Memproses...' : 'Submit Adjust'}
-          </Button>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4" /> Timeline Movement</CardTitle>
           <CardDescription>
-            Mode data saat ini: <strong>{movementQuery.data?.mode === 'real' ? 'REAL API' : 'FALLBACK SNAPSHOT'}</strong>
+            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'REAL API' : 'FALLBACK SNAPSHOT'}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -151,7 +99,7 @@ export default function StockMovementsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Waktu</TableHead>
-                    <TableHead>Variant ID</TableHead>
+                    <TableHead>Variant</TableHead>
                     <TableHead>Tipe</TableHead>
                     <TableHead>Delta</TableHead>
                     <TableHead>Stock After</TableHead>
