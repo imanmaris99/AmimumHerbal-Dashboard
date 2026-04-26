@@ -36,6 +36,7 @@ interface VariantResponse {
 
 type CartItem = {
   variantId: number;
+  productId: string;
   productName: string;
   variantName: string;
   unitPrice: number;
@@ -72,21 +73,55 @@ export default function CashierPage() {
     mutationFn: async () => {
       if (!user?.id) throw new Error('User session tidak valid. Silakan login ulang.');
 
-      return posCheckout({
-        cashier_id: user.id,
-        payment_method: paymentMethod,
-        notes: notes || undefined,
-        items: cart.map((item) => ({
-          variant_id: item.variantId,
-          qty: item.qty,
-          unit_price: item.unitPrice,
-          discount: 0,
-        })),
-      });
+      try {
+        return await posCheckout({
+          cashier_id: user.id,
+          payment_method: paymentMethod,
+          notes: notes || undefined,
+          items: cart.map((item) => ({
+            variant_id: item.variantId,
+            qty: item.qty,
+            unit_price: item.unitPrice,
+            discount: 0,
+          })),
+        });
+      } catch (error: any) {
+        const statusCode = error?.response?.status;
+
+        // Compatibility fallback untuk backend yang belum punya endpoint /admin/pos/checkout
+        if (statusCode === 404 || statusCode === 405) {
+          for (const item of cart) {
+            if (!item.productId) {
+              throw new Error(`Variant ${item.variantId} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
+            }
+
+            // tambah item ke cart user sesuai qty
+            for (let i = 0; i < item.qty; i++) {
+              await api.post(`/cart/product/${item.productId}/${item.variantId}`, {
+                product_id: item.productId,
+                variant_id: item.variantId,
+              });
+            }
+          }
+
+          const compatCheckout = await api.post('/orders/checkout');
+          return {
+            ...compatCheckout.data,
+            compatibility_mode: true,
+          };
+        }
+
+        throw error;
+      }
     },
     onSuccess: (response: any) => {
       const trx = response?.data?.transaction_id;
-      toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
+      const isCompat = response?.compatibility_mode;
+      if (isCompat) {
+        toast.success('Checkout sukses (mode kompatibilitas /orders/checkout).');
+      } else {
+        toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
+      }
       setCart([]);
       setNotes('');
     },
@@ -95,7 +130,7 @@ export default function CashierPage() {
         error?.response?.data?.detail?.message ||
         error?.response?.data?.detail ||
         error?.message ||
-        'Checkout belum tersedia di backend. Endpoint POS checkout perlu diaktifkan.';
+        'Checkout gagal. Mohon cek endpoint backend POS/Orders.';
       toast.error(String(message));
     },
   });
@@ -124,6 +159,7 @@ export default function CashierPage() {
 
         return {
           id: item.id,
+          productId: String(item.product_id || ''),
           productName,
           variantName,
           stock: Number(item.stock ?? 0),
@@ -173,6 +209,7 @@ export default function CashierPage() {
         ...prev,
         {
           variantId: item.id,
+          productId: item.productId,
           productName: item.productName,
           variantName: item.variantName,
           unitPrice: item.finalPrice,
