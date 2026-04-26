@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Search, ShoppingCart, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { posCheckout, type PaymentMethod } from '@/lib/posInventory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAuthStore } from '@/store/authStore';
 
 type ProductItem = {
   id: string;
@@ -46,6 +48,9 @@ const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 export default function CashierPage() {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [notes, setNotes] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   const { data: productsResponse } = useQuery({
     queryKey: ['cashier-products'],
@@ -60,6 +65,38 @@ export default function CashierPage() {
     queryFn: async () => {
       const response = await api.get<VariantResponse>('/type/all');
       return response.data;
+    },
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('User session tidak valid. Silakan login ulang.');
+
+      return posCheckout({
+        cashier_id: user.id,
+        payment_method: paymentMethod,
+        notes: notes || undefined,
+        items: cart.map((item) => ({
+          variant_id: item.variantId,
+          qty: item.qty,
+          unit_price: item.unitPrice,
+          discount: 0,
+        })),
+      });
+    },
+    onSuccess: (response: any) => {
+      const trx = response?.data?.transaction_id;
+      toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
+      setCart([]);
+      setNotes('');
+    },
+    onError: (error: any) => {
+      const message =
+        error?.response?.data?.detail?.message ||
+        error?.response?.data?.detail ||
+        error?.message ||
+        'Checkout belum tersedia di backend. Endpoint POS checkout perlu diaktifkan.';
+      toast.error(String(message));
     },
   });
 
@@ -148,13 +185,11 @@ export default function CashierPage() {
 
   const updateQty = (variantId: number, nextQty: number) => {
     setCart((prev) =>
-      prev
-        .map((row) => {
-          if (row.variantId !== variantId) return row;
-          const safeQty = Math.max(1, Math.min(nextQty, row.stock));
-          return { ...row, qty: safeQty };
-        })
-        .filter((row) => row.qty > 0)
+      prev.map((row) => {
+        if (row.variantId !== variantId) return row;
+        const safeQty = Math.max(1, Math.min(nextQty || 1, row.stock));
+        return { ...row, qty: safeQty };
+      })
     );
   };
 
@@ -224,10 +259,10 @@ export default function CashierPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Keranjang Kasir</CardTitle>
-            <CardDescription>Scaffold transaksi internal (checkout API akan disambungkan pada phase berikutnya).</CardDescription>
+            <CardDescription>Checkout sudah diwire ke endpoint POS (`/admin/pos/checkout`) dengan fallback error aman.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
+            <div className="space-y-3 max-h-[330px] overflow-auto pr-1">
               {cart.map((row) => (
                 <div key={row.variantId} className="rounded-xl border p-3">
                   <p className="font-medium text-gray-900 text-sm">{row.productName}</p>
@@ -251,13 +286,26 @@ export default function CashierPage() {
               {cart.length === 0 && <p className="text-sm text-gray-500">Keranjang masih kosong.</p>}
             </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
+              >
+                <option value="cash">Cash</option>
+                <option value="transfer">Transfer</option>
+                <option value="qris">QRIS</option>
+              </select>
+              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan (opsional)" />
+            </div>
+
             <div className="border-t pt-3">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
                 <span className="font-semibold">{formatRupiah(subtotal)}</span>
               </div>
-              <Button className="w-full mt-3" disabled>
-                Checkout (next phase)
+              <Button className="w-full mt-3" disabled={cart.length === 0 || checkoutMutation.isPending} onClick={() => checkoutMutation.mutate()}>
+                {checkoutMutation.isPending ? 'Memproses...' : 'Checkout POS'}
               </Button>
             </div>
           </CardContent>
