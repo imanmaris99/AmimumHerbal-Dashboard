@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -25,12 +25,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ProfileDialog } from './ProfileDialog';
+import { useLocation } from 'react-router-dom';
+import { getPageHandbook } from '@/lib/pageHandbook';
 
 export function Topbar() {
   const { user, lastActivityAt } = useAuthStore();
   const { toggleSidebar } = useUiStore();
   const { t, i18n } = useTranslation();
+  const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
@@ -76,6 +80,47 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-2 shrink-0 order-1 xl:order-2 ml-auto xl:ml-0 max-w-full w-full xl:w-auto justify-end">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50" aria-label="Handbook halaman">
+              <BookOpenText className="w-4 h-4" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-lg rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-emerald-900">Handbook: {handbook.title}</DialogTitle>
+              <DialogDescription className="pt-2 text-gray-600 text-sm">{handbook.purpose}</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="font-semibold text-gray-900">Pengguna utama</p>
+                <p className="text-gray-600 mt-1">{handbook.primaryUsers}</p>
+              </div>
+
+              <div>
+                <p className="font-semibold text-gray-900">Cara penggunaan</p>
+                <ol className="mt-2 list-decimal pl-5 space-y-1 text-gray-600">
+                  {handbook.usageFlow.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+
+              {handbook.notes?.length ? (
+                <div>
+                  <p className="font-semibold text-gray-900">Catatan penting</p>
+                  <ul className="mt-2 list-disc pl-5 space-y-1 text-gray-600">
+                    {handbook.notes.map((note) => (
+                      <li key={note}>{note}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50" aria-label={t('topbar.languageSwitch')}>
