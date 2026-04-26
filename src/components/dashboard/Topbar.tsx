@@ -149,25 +149,17 @@ export function Topbar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="hidden 2xl:inline-flex h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50">
+            <Button variant="ghost" size="icon" className="hidden 2xl:inline-flex h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50" aria-label="Info sesi">
               <TimerReset className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
             <div className="px-3 py-2 text-xs text-gray-500 leading-relaxed">
-              {t('topbar.languageIntro')}
+              Monitoring sesi internal aktif.
             </div>
             <div className="px-3 py-2 text-xs text-gray-500 border-t border-gray-100">
               Sesi aktif terakhir: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
             </div>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('id')} className="cursor-pointer flex items-center justify-between gap-3">
-              <span>Indonesia (ID)</span>
-              {i18n.language === 'id' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => i18n.changeLanguage('en')} className="cursor-pointer flex items-center justify-between gap-3">
-              <span>English (EN)</span>
-              {i18n.language === 'en' ? <Check className="w-4 h-4 text-emerald-600" /> : null}
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
