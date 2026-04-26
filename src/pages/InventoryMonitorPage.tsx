@@ -26,6 +26,7 @@ const LOW_STOCK_THRESHOLD = 10;
 
 export default function InventoryMonitorPage() {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'safe' | 'low' | 'out'>('all');
 
   const { data: productsResponse } = useQuery({
     queryKey: ['inventory-products'],
@@ -83,15 +84,19 @@ export default function InventoryMonitorPage() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
+
     return rows.filter((item) => {
-      return (
+      const matchKeyword =
+        !q ||
         item.productName.toLowerCase().includes(q) ||
         item.variantName.toLowerCase().includes(q) ||
-        String(item.id).includes(q)
-      );
+        String(item.id).includes(q);
+
+      const matchStatus = statusFilter === 'all' || item.stockStatus === statusFilter;
+
+      return matchKeyword && matchStatus;
     });
-  }, [rows, search]);
+  }, [rows, search, statusFilter]);
 
   const summary = useMemo(() => {
     const safe = filtered.filter((row) => row.stockStatus === 'safe').length;
@@ -139,7 +144,15 @@ export default function InventoryMonitorPage() {
           <CardDescription>Tampilan visual produk + status stok agar monitoring lebih mudah dipahami tim operasional.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product/variant/id..." />
+          <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product/variant/id..." className="lg:max-w-md" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <button onClick={() => setStatusFilter('all')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}>Semua</button>
+              <button onClick={() => setStatusFilter('safe')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'safe' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>Aman</button>
+              <button onClick={() => setStatusFilter('low')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'low' ? 'bg-amber-600 text-white border-amber-600' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>Menipis</button>
+              <button onClick={() => setStatusFilter('out')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'out' ? 'bg-rose-600 text-white border-rose-600' : 'bg-rose-50 text-rose-700 border-rose-100'}`}>Habis</button>
+            </div>
+          </div>
 
           {isLoading ? (
             <p className="text-sm text-gray-500">Memuat data stok...</p>
