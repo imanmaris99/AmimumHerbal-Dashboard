@@ -39,8 +39,8 @@ Sesuai matrix yang sudah ditetapkan:
 ### 1. Shared internal (`admin` + `owner`)
 Halaman/fitur yang boleh diakses:
 - `/overview`
-- `/orders`
-- `/payments`
+- `/orders` → **Unified Orders & Payments page** (tab: Orders + Payments)
+- `/payments` → redirect ke `/orders` (backward compatibility)
 - `/catalog`
 - `/variants`
 - `/content`
@@ -60,8 +60,9 @@ Halaman/fitur yang hanya boleh diakses owner:
 - login internal via backend
 - forgot password internal end-to-end via email reset request dan halaman reset password dashboard
 - overview live ke dashboard summary
+- unified transaction page: orders + payments dalam satu halaman (`/orders`) dengan tab terpisah
 - orders live ke backend admin orders
-- payments live ke backend admin payments
+- payments live ke backend admin payments (via tab di unified page)
 - catalog management untuk submit product baru dan dedicated edit page product
 - variant / pack type management sesuai struktur BE, termasuk update stock/discount dan upload image
 - content management untuk article layer, termasuk create dan dedicated edit page article yang sudah sinkron dengan real article id
@@ -71,6 +72,7 @@ Halaman/fitur yang hanya boleh diakses owner:
 - user management owner-only dengan dedicated edit page untuk edit user lain
 - owner-only visibility untuk area sensitif
 - topbar/sidebar/help page sudah disejajarkan dengan role matrix internal
+- dashboard mendukung **2 bahasa** (Bahasa Indonesia & English), termasuk unified Orders/Payments page
 
 ## Endpoint backend yang dipakai
 - `POST /admin/login`
@@ -113,6 +115,25 @@ Halaman/fitur yang hanya boleh diakses owner:
    - `npm run build`
 5. Output directory:
    - `dist`
+
+## Unified Orders & Payments (Current UX)
+- Single entry point: `/orders`
+- Tab 1: Orders monitoring
+- Tab 2: Payments monitoring
+- Shared controls per tab: search, status filter, summary cards, table list, detail CTA
+- Route compatibility: `/payments` otomatis redirect ke `/orders`
+- Sidebar disederhanakan agar tidak ada duplikasi menu
+
+## Internationalization (i18n)
+- Language support: `id` and `en`
+- Locale files:
+  - `src/locales/id.json`
+  - `src/locales/en.json`
+- Unified page uses dedicated key namespace:
+  - `ordersPageUnified.*`
+- Existing page namespaces remain:
+  - `ordersPage.*`
+  - `paymentsPage.*`
 
 ## Catatan implementasi
 - Dashboard ini sengaja dipisah dari frontend customer agar boundary auth, UX, dan security tetap jelas.
