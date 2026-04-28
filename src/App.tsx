@@ -18,7 +18,7 @@ const UsersPage = React.lazy(() => import('./pages/UsersPage'));
 const UserEditPage = React.lazy(() => import('./pages/UserEditPage'));
 const OrdersPage = React.lazy(() => import('./pages/OrdersPage'));
 const OrderDetailPage = React.lazy(() => import('./pages/OrderDetailPage'));
-const PaymentsPage = React.lazy(() => import('./pages/PaymentsPage'));
+
 const PaymentDetailPage = React.lazy(() => import('./pages/PaymentDetailPage'));
 const CatalogPage = React.lazy(() => import('./pages/CatalogPage'));
 const ProductEditPage = React.lazy(() => import('./pages/ProductEditPage'));
@@ -66,7 +66,7 @@ export default function App() {
               <Route path="/overview" element={<OverviewPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/orders/:orderId" element={<OrderDetailPage />} />
-              <Route path="/payments" element={<PaymentsPage />} />
+              <Route path="/payments" element={<Navigate to="/orders" replace />} />
               <Route path="/payments/:paymentId" element={<PaymentDetailPage />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/catalog/edit/:productId" element={<ProductEditPage />} />

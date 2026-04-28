@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   ShoppingBag,
-  CreditCard,
   Users,
   Settings,
   LogOut,
@@ -28,7 +27,6 @@ const useSharedNavItems = () => {
   return useMemo(() => [
     { icon: LayoutDashboard, label: t('sidebar.nav.dashboard'), path: '/overview', description: t('sidebar.nav.dashboardDesc') },
     { icon: ShoppingBag, label: t('sidebar.nav.orders'), path: '/orders', description: t('sidebar.nav.ordersDesc') },
-    { icon: CreditCard, label: t('sidebar.nav.payments'), path: '/payments', description: t('sidebar.nav.paymentsDesc') },
     { icon: Boxes, label: t('sidebar.nav.catalog'), path: '/catalog', description: t('sidebar.nav.catalogDesc') },
     { icon: Layers3, label: t('sidebar.nav.variants'), path: '/variants', description: t('sidebar.nav.variantsDesc') },
     { icon: Factory, label: t('sidebar.nav.production'), path: '/productions', description: t('sidebar.nav.productionDesc') },
