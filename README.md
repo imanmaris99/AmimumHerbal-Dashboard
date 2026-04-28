@@ -135,6 +135,10 @@ Halaman/fitur yang hanya boleh diakses owner:
   - `ordersPage.*`
   - `paymentsPage.*`
 
+## Release Management
+- Changelog: `docs/CHANGELOG.md`
+- Release note template: `docs/RELEASE_TEMPLATE.md`
+
 ## Catatan implementasi
 - Dashboard ini sengaja dipisah dari frontend customer agar boundary auth, UX, dan security tetap jelas.
 - Rollout owner-only write actions dibuat bertahap agar aman dan mudah diaudit.
