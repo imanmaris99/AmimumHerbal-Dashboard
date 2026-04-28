@@ -357,6 +357,14 @@
     "updatedAt": "Diperbarui pada",
     "unknownCustomer": "Customer tidak diketahui"
   },
+  "ordersPageUnified": {
+    "title": "Pesanan & Pembayaran",
+    "subtitle": "Satu halaman terpadu untuk monitoring transaksi toko.",
+    "tabs": {
+      "orders": "Pesanan",
+      "payments": "Pembayaran"
+    }
+  },
   "overview": {
     "title": "Ringkasan Dashboard",
     "subtitle": "Pantau metrik bisnis internal dan transaksi terbaru Anda.",

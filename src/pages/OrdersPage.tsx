@@ -127,14 +127,14 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 pb-10 max-w-full">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Pesanan & Pembayaran</h1>
-        <p className="text-gray-500 mt-1">Satu halaman terpadu untuk monitoring transaksi toko.</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('ordersPageUnified.title')}</h1>
+        <p className="text-gray-500 mt-1">{t('ordersPageUnified.subtitle')}</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'orders' | 'payments'); setStatusFilter('all'); setSearch(''); }}>
         <TabsList className="grid w-full max-w-sm grid-cols-2 rounded-xl">
-          <TabsTrigger value="orders">Pesanan</TabsTrigger>
-          <TabsTrigger value="payments">Pembayaran</TabsTrigger>
+          <TabsTrigger value="orders">{t('ordersPageUnified.tabs.orders')}</TabsTrigger>
+          <TabsTrigger value="payments">{t('ordersPageUnified.tabs.payments')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -157,13 +157,13 @@ export default function OrdersPage() {
           <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input placeholder="Cari data..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
+              <Input placeholder={activeTab === 'orders' ? t('ordersPage.searchPlaceholder') : t('paymentsPage.searchPlaceholder')} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none">
                 {(activeTab === 'orders' ? orderStatusOptions : paymentStatusOptions).map((status) => (
-                  <option key={status} value={status}>{status === 'all' ? 'Semua status' : status}</option>
+                  <option key={status} value={status}>{status === 'all' ? t('ordersPage.allStatuses') : status}</option>
                 ))}
               </select>
             </div>
@@ -172,11 +172,11 @@ export default function OrdersPage() {
         <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
           {activeTab === 'orders' ? (
             <Table className="min-w-[760px]">
-              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>Order</TableHead><TableHead>Pelanggan</TableHead><TableHead>Pengiriman</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Dibuat</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>{t('ordersPage.table.order')}</TableHead><TableHead>{t('ordersPage.table.customer')}</TableHead><TableHead>{t('ordersPage.table.delivery')}</TableHead><TableHead>{t('ordersPage.table.total')}</TableHead><TableHead>{t('ordersPage.table.status')}</TableHead><TableHead>{t('ordersPage.table.created')}</TableHead><TableHead className="text-right">{t('ordersPage.table.action')}</TableHead></TableRow></TableHeader>
               <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow>
-                  : isError ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-red-500">Gagal memuat data.</TableCell></TableRow>
-                  : filteredOrders.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">Data kosong.</TableCell></TableRow>
+                {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-8">{t('ordersPage.table.loading')}</TableCell></TableRow>
+                  : isError ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-red-500">{t('ordersPage.table.error')}</TableCell></TableRow>
+                  : filteredOrders.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">{t('ordersPage.table.empty')}</TableCell></TableRow>
                   : filteredOrders.map((order) => (
                     <TableRow key={order.id} className="hover:bg-gray-50/50 border-gray-50">
                       <TableCell><p className="font-bold text-sm">{order.id}</p></TableCell>
@@ -185,28 +185,28 @@ export default function OrdersPage() {
                       <TableCell className="font-bold">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
                       <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{order.status}</Badge></TableCell>
                       <TableCell className="text-xs">{new Date(order.created_at).toLocaleString(locale)}</TableCell>
-                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />Detail</Button></TableCell>
+                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />{t('ordersPage.table.detail')}</Button></TableCell>
                     </TableRow>
                   ))}
               </TableBody>
             </Table>
           ) : (
             <Table className="min-w-[900px]">
-              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>Transaksi</TableHead><TableHead>Pelanggan</TableHead><TableHead>Tipe</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead>Status Order</TableHead><TableHead>Update</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>{t('paymentsPage.table.transaction')}</TableHead><TableHead>{t('paymentsPage.table.customer')}</TableHead><TableHead>{t('paymentsPage.table.paymentType')}</TableHead><TableHead>{t('paymentsPage.table.grossAmount')}</TableHead><TableHead>{t('paymentsPage.table.status')}</TableHead><TableHead>{t('paymentsPage.table.orderStatus')}</TableHead><TableHead>{t('paymentsPage.table.updated')}</TableHead><TableHead className="text-right">{t('paymentsPage.table.action')}</TableHead></TableRow></TableHeader>
               <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow>
-                  : isError ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-red-500">Gagal memuat data.</TableCell></TableRow>
-                  : filteredPayments.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">Data kosong.</TableCell></TableRow>
+                {isLoading ? <TableRow><TableCell colSpan={8} className="text-center py-8">{t('paymentsPage.table.loading')}</TableCell></TableRow>
+                  : isError ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-red-500">{t('paymentsPage.table.error')}</TableCell></TableRow>
+                  : filteredPayments.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">{t('paymentsPage.table.empty')}</TableCell></TableRow>
                   : filteredPayments.map((payment) => (
                     <TableRow key={payment.id} className="hover:bg-gray-50/50 border-gray-50">
-                      <TableCell><p className="font-bold text-sm">{payment.transaction_id}</p><p className="text-[10px] text-gray-400">Order: {payment.order_id}</p></TableCell>
+                      <TableCell><p className="font-bold text-sm">{payment.transaction_id}</p><p className="text-[10px] text-gray-400">{t('paymentsPage.table.order')}: {payment.order_id}</p></TableCell>
                       <TableCell>{payment.customer_name || '-'}</TableCell>
                       <TableCell className="uppercase">{payment.payment_type || 'N/A'}</TableCell>
                       <TableCell className="font-bold">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</TableCell>
                       <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>{payment.transaction_status}</Badge></TableCell>
                       <TableCell><Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">{payment.order_status || 'unknown'}</Badge></TableCell>
                       <TableCell className="text-xs">{new Date(payment.updated_at).toLocaleString(locale)}</TableCell>
-                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}><Eye className="w-4 h-4 mr-2" />Detail</Button></TableCell>
+                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}><Eye className="w-4 h-4 mr-2" />{t('paymentsPage.table.detail')}</Button></TableCell>
                     </TableRow>
                   ))}
               </TableBody>

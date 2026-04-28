@@ -357,6 +357,14 @@
     "updatedAt": "Updated at",
     "unknownCustomer": "Unknown Customer"
   },
+  "ordersPageUnified": {
+    "title": "Orders & Payments",
+    "subtitle": "A unified page to monitor store transactions.",
+    "tabs": {
+      "orders": "Orders",
+      "payments": "Payments"
+    }
+  },
   "overview": {
     "title": "Dashboard Overview",
     "subtitle": "Monitor your internal business metrics and latest transactions.",
