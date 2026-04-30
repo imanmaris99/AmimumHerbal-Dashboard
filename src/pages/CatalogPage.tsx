@@ -95,6 +95,7 @@ export default function CatalogPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isUploadingImages, setIsUploadingImages] = useState(false);
@@ -250,6 +251,11 @@ export default function CatalogPage() {
   }, [normalizedProducts, search]);
 
   const totalVariants = filteredProducts.reduce((sum, product) => sum + (product.validVariants?.length || 0), 0);
+
+  const selectedProduct = useMemo(() => {
+    if (!selectedProductId) return null;
+    return normalizedProducts.find((item) => item.id === selectedProductId) || null;
+  }, [normalizedProducts, selectedProductId]);
 
   const handleChange = (field: keyof CreateProductPayload, value: string) => {
     setForm((prev) => ({
@@ -447,7 +453,7 @@ export default function CatalogPage() {
                     <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                   ) : (
                     filteredProducts.map((product) => (
-                      <TableRow key={product.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
+                      <TableRow key={product.id} className={`group hover:bg-gray-50/50 transition-colors border-gray-50 cursor-pointer ${selectedProductId === product.id ? 'bg-emerald-50/40' : ''}`} onClick={() => setSelectedProductId(product.id)}>
                         <TableCell>
                           <div>
                             <p className="font-bold text-gray-900 text-sm">{product.name}</p>
@@ -483,7 +489,7 @@ export default function CatalogPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/catalog/edit/${product.id}`)}>
+                          <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
                             <PencilLine className="w-4 h-4 mr-2" />
                             Edit
                           </Button>
@@ -494,6 +500,21 @@ export default function CatalogPage() {
                 </TableBody>
               </Table>
               </div>
+
+              {selectedProduct && (
+                <div className="mt-4 mx-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                  <div className="flex items-start gap-4">
+                    <img src={selectedProduct.thumbnail_url || 'https://placehold.co/96x96?text=No+Image'} alt={selectedProduct.name} className="w-20 h-20 rounded-xl object-cover border border-emerald-100 bg-white" />
+                    <div className="space-y-1 text-sm text-emerald-900">
+                      <p className="font-bold text-base">{selectedProduct.name}</p>
+                      <p>ID: {selectedProduct.id}</p>
+                      <p>Production: {selectedProduct.brand_info?.name || '-'}</p>
+                      <p>Harga: {selectedProduct.priceSummary}</p>
+                      <p>Variant aktif: {selectedProduct.validVariants?.length || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
