@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -91,6 +91,10 @@ export default function CatalogPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: productionsResponse, isLoading: productionsLoading } = useQuery({
     queryKey: ['catalog-productions'],
@@ -113,8 +117,33 @@ export default function CatalogPage() {
       const response = await api.post<CreateProductResponse>('/product/create', payload);
       return response.data;
     },
-    onSuccess: (response) => {
-      toast.success(response.message || t('catalogPage.errors.createSuccess'));
+    onSuccess: async (response) => {
+      const productId = response?.data?.id;
+      if (productId && pendingImages.length > 0) {
+        setIsUploadingImages(true);
+        try {
+          for (const file of pendingImages) {
+            const formData = new FormData();
+            formData.append('file', file);
+            await api.post(`/product/${productId}/images`, formData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+              onUploadProgress: (e) => {
+                const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+                setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));
+              },
+            });
+          }
+          toast.success('Produk dan galeri gambar berhasil dibuat');
+        } catch (error: any) {
+          toast.error(String(error?.response?.data?.detail?.message || 'Produk berhasil dibuat, tapi upload beberapa gambar gagal'));
+        } finally {
+          setIsUploadingImages(false);
+          setUploadProgress({});
+          setPendingImages([]);
+        }
+      } else {
+        toast.success(response.message || t('catalogPage.errors.createSuccess'));
+      }
       setForm(initialForm);
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
     },
@@ -193,6 +222,15 @@ export default function CatalogPage() {
     createProductMutation.mutate(form);
   };
 
+  const handlePendingFiles = (files: FileList | null) => {
+    if (!files) return;
+    setPendingImages((prev) => [...prev, ...Array.from(files)]);
+  };
+
+  const removePendingFile = (index: number) => {
+    setPendingImages((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   return (
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -261,6 +299,32 @@ export default function CatalogPage() {
               <div className="space-y-2">
                 <Label htmlFor="instruction">Instruksi penggunaan</Label>
                 <textarea id="instruction" value={form.instruction} onChange={(e) => handleChange('instruction', e.target.value)} placeholder="Aturan pakai, saran konsumsi, atau petunjuk penggunaan" className="min-h-[110px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Galeri gambar (opsional saat create)</Label>
+                <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImages}>Pilih File / Kamera</Button>
+                    <input ref={fileInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => handlePendingFiles(e.target.files)} />
+                    {isUploadingImages && <span className="text-sm text-gray-600">Uploading images...</span>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
+
+                  {pendingImages.length > 0 && (
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {pendingImages.map((file, idx) => (
+                        <div key={`${file.name}-${idx}`} className="text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
+                          <span className="truncate">{file.name}</span>
+                          <div className="flex items-center gap-2">
+                            {uploadProgress[file.name] != null && <span>{uploadProgress[file.name]}%</span>}
+                            <button type="button" className="text-red-600" onClick={() => removePendingFile(idx)}>Hapus</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
