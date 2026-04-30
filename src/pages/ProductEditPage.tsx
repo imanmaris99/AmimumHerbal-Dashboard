@@ -88,6 +88,7 @@ export default function ProductEditPage() {
   const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   const [draggingOver, setDraggingOver] = useState(false);
   const [reorderBusy, setReorderBusy] = useState(false);
+  const [dragImageId, setDragImageId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
@@ -211,17 +212,20 @@ export default function ProductEditPage() {
   const retryFailedUploads = async () => {
     const failedNames = Object.keys(uploadErrors);
     if (!failedNames.length || !fileInputRef.current?.files?.length) return;
-    const retries = Array.from(fileInputRef.current.files).filter((f) => failedNames.includes(f.name));
-    await uploadFiles(retries);
+    const retries = Array.from(fileInputRef.current.files as FileList).filter((f: File) => failedNames.includes(f.name));
+    await uploadFiles(retries as File[]);
   };
 
   const handleSetPrimary = async (imageId: number) => {
     if (!productId) return;
+    const prev = images;
+    setImages((curr) => curr.map((img) => ({ ...img, is_primary: img.id === imageId })));
     try {
       await api.patch(`/product/${productId}/images/${imageId}/primary`);
       toast.success('Primary image diperbarui');
       await refreshDetail();
     } catch (error: any) {
+      setImages(prev);
       toast.error(String(error?.response?.data?.detail?.message || 'Gagal set primary image'));
     }
   };
@@ -240,6 +244,7 @@ export default function ProductEditPage() {
 
   const handleReorder = async (next: ProductImageItem[]) => {
     if (!productId) return;
+    const prev = images;
     setImages(next);
     setReorderBusy(true);
     try {
@@ -247,11 +252,23 @@ export default function ProductEditPage() {
       toast.success('Urutan gambar diperbarui');
       await refreshDetail();
     } catch (error: any) {
+      setImages(prev);
       toast.error(String(error?.response?.data?.detail?.message || 'Gagal reorder gambar'));
-      await refreshDetail();
     } finally {
       setReorderBusy(false);
     }
+  };
+
+  const handleDropReorder = (targetId: number) => {
+    if (dragImageId == null || dragImageId === targetId) return;
+    const from = images.findIndex((img) => img.id === dragImageId);
+    const to = images.findIndex((img) => img.id === targetId);
+    if (from < 0 || to < 0) return;
+    const next = images.slice();
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    handleReorder(next);
+    setDragImageId(null);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -406,7 +423,14 @@ export default function ProductEditPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {images.map((img, idx) => (
-                      <div key={img.id} className="rounded-2xl border border-gray-200 p-3 space-y-2 bg-white">
+                      <div
+                        key={img.id}
+                        draggable
+                        onDragStart={() => setDragImageId(img.id)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDropReorder(img.id)}
+                        className={`rounded-2xl border p-3 space-y-2 bg-white ${dragImageId === img.id ? 'opacity-60 border-emerald-400' : 'border-gray-200'}`}
+                      >
                         <img src={img.image_card_url || img.image_thumb_url || img.image_url} alt={`product-${img.id}`} className="w-full h-40 object-cover rounded-xl" />
                         <div className="flex flex-wrap gap-2">
                           <Button type="button" size="sm" variant={img.is_primary ? 'default' : 'outline'} onClick={() => handleSetPrimary(img.id)}>
