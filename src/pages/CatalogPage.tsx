@@ -112,16 +112,30 @@ export default function CatalogPage() {
         return response.data;
       } catch (error: any) {
         const status = error?.response?.status;
-        // Backend saat ini kadang mengembalikan 409 saat produk kosong / konflik baca list.
-        // Di dashboard, treat sebagai empty list agar halaman tetap bisa dipakai untuk create/edit flow.
-        if (status === 404 || status === 409) {
-          return {
-            status_code: status,
-            message: 'No products available yet',
-            data: [],
-          } as ProductResponse;
+        if (status !== 404 && status !== 409) throw error;
+
+        // Fallback: tarik produk per production jika endpoint /product/all sedang conflict.
+        const brands = await api.get<ProductionResponse>('/brand/all');
+        const brandIds = (brands.data?.data || []).map((b) => b.id);
+
+        const settled = await Promise.allSettled(
+          brandIds.map((id) => api.get<ProductResponse>(`/product/production/${id}`))
+        );
+
+        const merged: ProductItem[] = [];
+        for (const item of settled) {
+          if (item.status === 'fulfilled') {
+            merged.push(...(item.value.data?.data || []));
+          }
         }
-        throw error;
+
+        const unique = Array.from(new Map(merged.map((p) => [p.id, p])).values());
+
+        return {
+          status_code: 200,
+          message: unique.length ? 'Loaded from fallback per production' : 'No products available yet',
+          data: unique,
+        } as ProductResponse;
       }
     },
   });
