@@ -33,6 +33,7 @@ interface ProductItem {
   price: number;
   primary_image_url?: string | null;
   gallery_images?: Array<{ id?: number; url?: string; is_primary?: boolean; sort_order?: number }>;
+  thumbnail_url?: string | null;
   min_variant_price?: number | null;
   max_variant_price?: number | null;
   created_at: string;
@@ -47,6 +48,7 @@ interface ProductItem {
     stock?: number | null;
     price?: number | null;
     discount?: number | null;
+    img?: string | null;
   }>;
 }
 
@@ -216,10 +218,15 @@ export default function CatalogPage() {
           : `Rp ${minVariantPrice.toLocaleString('id-ID')} - Rp ${maxVariantPrice.toLocaleString('id-ID')}`
         : `Rp ${Number(product.price || 0).toLocaleString('id-ID')}`;
 
+      const primaryImageUrl = resolveImageUrl(product.primary_image_url);
+      const galleryImages = (product.gallery_images || []).map((img) => ({ ...img, url: resolveImageUrl(img.url) }));
+      const variantImageUrl = resolveImageUrl((product.all_variants || []).find((v) => v?.img)?.img || '');
+
       return {
         ...product,
-        primary_image_url: resolveImageUrl(product.primary_image_url),
-        gallery_images: (product.gallery_images || []).map((img) => ({ ...img, url: resolveImageUrl(img.url) })),
+        primary_image_url: primaryImageUrl,
+        gallery_images: galleryImages,
+        thumbnail_url: primaryImageUrl || galleryImages?.[0]?.url || variantImageUrl || null,
         validVariants,
         minVariantPrice,
         maxVariantPrice,
@@ -449,7 +456,7 @@ export default function CatalogPage() {
                         </TableCell>
                         <TableCell>
                           <img
-                            src={product.primary_image_url || product.gallery_images?.[0]?.url || 'https://placehold.co/72x72?text=No+Image'}
+                            src={product.thumbnail_url || 'https://placehold.co/72x72?text=No+Image'}
                             alt={product.name}
                             className="w-14 h-14 rounded-xl object-cover border border-gray-100"
                             loading="lazy"
