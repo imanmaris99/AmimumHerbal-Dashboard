@@ -188,6 +188,14 @@ export default function CatalogPage() {
   const products = productsResponse?.data ?? [];
 
   const normalizedProducts = useMemo(() => {
+    const resolveImageUrl = (url?: string | null) => {
+      if (!url) return '';
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+      const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+      const path = url.startsWith('/') ? url : `/${url}`;
+      return `${base}${path}`;
+    };
+
     return products.map((product) => {
       const validVariants = (product.all_variants || []).filter((variant) => {
         return Boolean(
@@ -210,6 +218,8 @@ export default function CatalogPage() {
 
       return {
         ...product,
+        primary_image_url: resolveImageUrl(product.primary_image_url),
+        gallery_images: (product.gallery_images || []).map((img) => ({ ...img, url: resolveImageUrl(img.url) })),
         validVariants,
         minVariantPrice,
         maxVariantPrice,
@@ -443,6 +453,10 @@ export default function CatalogPage() {
                             alt={product.name}
                             className="w-14 h-14 rounded-xl object-cover border border-gray-100"
                             loading="lazy"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/72x72?text=No+Image';
+                            }}
                           />
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">{product.brand_info?.name || '-'}</TableCell>
