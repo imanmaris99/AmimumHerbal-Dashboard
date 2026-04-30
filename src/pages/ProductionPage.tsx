@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -58,6 +58,10 @@ export default function ProductionPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [createForm, setCreateForm] = useState(initialCreateForm);
+  const [brandImageFile, setBrandImageFile] = useState<File | null>(null);
+  const [brandImagePreview, setBrandImagePreview] = useState<string>('');
+  const [uploadingBrandImage, setUploadingBrandImage] = useState(false);
+  const brandImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: productionsResponse, isLoading: productionsLoading } = useQuery({
     queryKey: ['production-list'],
@@ -80,9 +84,29 @@ export default function ProductionPage() {
       const response = await api.post('/brand/create', payload);
       return response.data;
     },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('productionPage.errors.createSuccess'));
+    onSuccess: async (response: any) => {
+      const productionId = response?.data?.id;
+      if (productionId && brandImageFile) {
+        setUploadingBrandImage(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', brandImageFile);
+          await api.put(`/brand/logo/${productionId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          toast.success('Production dan logo berhasil dibuat');
+        } catch (error: any) {
+          toast.error(String(error?.response?.data?.detail?.message || 'Production dibuat, tapi upload logo gagal'));
+        } finally {
+          setUploadingBrandImage(false);
+        }
+      } else {
+        toast.success(response?.message || t('productionPage.errors.createSuccess'));
+      }
+
       setCreateForm(initialCreateForm);
+      setBrandImageFile(null);
+      setBrandImagePreview('');
       queryClient.invalidateQueries({ queryKey: ['production-list'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
     },
@@ -163,7 +187,22 @@ export default function ProductionPage() {
                 <Label htmlFor="production-description">Description</Label>
                 <textarea id="production-description" value={createForm.description} onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Deskripsi singkat brand/production" className="min-h-[120px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
               </div>
-              <Button type="submit" disabled={createProductionMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
+
+              <div className="space-y-2">
+                <Label>Logo brand / production (opsional)</Label>
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4">
+                  <Button type="button" variant="outline" onClick={() => brandImageInputRef.current?.click()} disabled={uploadingBrandImage}>Pilih File / Kamera</Button>
+                  <input ref={brandImageInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setBrandImageFile(file);
+                    setBrandImagePreview(URL.createObjectURL(file));
+                  }} />
+                  {brandImagePreview && <img src={brandImagePreview} alt="brand-preview" className="mt-3 h-20 w-20 object-cover rounded-xl border border-gray-100" />}
+                </div>
+              </div>
+
+              <Button type="submit" disabled={createProductionMutation.isPending || uploadingBrandImage} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 {createProductionMutation.isPending ? 'Submitting...' : 'Submit Production'}
               </Button>

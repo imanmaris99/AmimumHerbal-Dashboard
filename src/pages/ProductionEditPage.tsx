@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +44,10 @@ export default function ProductionEditPage() {
     name: '',
     description: '',
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string>('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -76,8 +80,25 @@ export default function ProductionEditPage() {
       const response = await api.put(`/brand/${productionId}`, payload);
       return response.data;
     },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('productionEditPage.updateSuccess'));
+    onSuccess: async (response: any) => {
+      if (logoFile && productionId) {
+        setLogoUploading(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', logoFile);
+          await api.put(`/brand/logo/${productionId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          toast.success('Production dan logo berhasil diupdate');
+        } catch (error: any) {
+          toast.error(String(error?.response?.data?.detail?.message || 'Update production sukses, upload logo gagal'));
+        } finally {
+          setLogoUploading(false);
+        }
+      } else {
+        toast.success(response?.message || t('productionEditPage.updateSuccess'));
+      }
+
       queryClient.invalidateQueries({ queryKey: ['production-list'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
       queryClient.invalidateQueries({ queryKey: ['production-edit-detail', productionId] });
@@ -213,6 +234,22 @@ export default function ProductionEditPage() {
                     className="min-h-[140px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Logo brand / production</Label>
+                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4">
+                    <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}>Pilih File / Kamera</Button>
+                    <input ref={logoInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setLogoFile(file);
+                      setLogoPreview(URL.createObjectURL(file));
+                    }} />
+                    {(logoPreview || productionDetailQuery.data.photo_url) && (
+                      <img src={logoPreview || productionDetailQuery.data.photo_url || ''} alt="logo-preview" className="mt-3 h-20 w-20 object-cover rounded-xl border border-gray-100" />
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
