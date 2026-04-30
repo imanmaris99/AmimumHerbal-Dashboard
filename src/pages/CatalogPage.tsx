@@ -107,8 +107,22 @@ export default function CatalogPage() {
   const { data: productsResponse, isLoading: productsLoading } = useQuery({
     queryKey: ['catalog-products'],
     queryFn: async () => {
-      const response = await api.get<ProductResponse>('/product/all');
-      return response.data;
+      try {
+        const response = await api.get<ProductResponse>('/product/all');
+        return response.data;
+      } catch (error: any) {
+        const status = error?.response?.status;
+        // Backend saat ini kadang mengembalikan 409 saat produk kosong / konflik baca list.
+        // Di dashboard, treat sebagai empty list agar halaman tetap bisa dipakai untuk create/edit flow.
+        if (status === 404 || status === 409) {
+          return {
+            status_code: status,
+            message: 'No products available yet',
+            data: [],
+          } as ProductResponse;
+        }
+        throw error;
+      }
     },
   });
 
