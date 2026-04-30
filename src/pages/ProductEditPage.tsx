@@ -85,6 +85,7 @@ export default function ProductEditPage() {
   const [images, setImages] = useState<ProductImageItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadErrors, setUploadErrors] = useState<Record<string, string>>({});
   const [draggingOver, setDraggingOver] = useState(false);
   const [reorderBusy, setReorderBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -163,9 +164,23 @@ export default function ProductEditPage() {
     if (!productId) return;
     const list = Array.from(files);
     if (!list.length) return;
+
+    const maxMb = 5;
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    const rejected = list.filter((file) => !allowed.includes(file.type) || file.size > maxMb * 1024 * 1024);
+    if (rejected.length) {
+      toast.error(`Sebagian file ditolak. Format: JPG/PNG/WEBP, max ${maxMb}MB`);
+    }
+
+    const validFiles = list.filter((file) => allowed.includes(file.type) && file.size <= maxMb * 1024 * 1024);
+    if (!validFiles.length) return;
+
     setUploading(true);
-    try {
-      for (const file of list) {
+    setUploadErrors({});
+
+    let successCount = 0;
+    for (const file of validFiles) {
+      try {
         const formData = new FormData();
         formData.append('file', file);
         await api.post(`/product/${productId}/images`, formData, {
@@ -175,16 +190,29 @@ export default function ProductEditPage() {
             setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));
           },
         });
+        successCount += 1;
+      } catch (error: any) {
+        const msg = error?.response?.data?.detail?.message || 'Gagal upload';
+        setUploadErrors((prev) => ({ ...prev, [file.name]: String(msg) }));
       }
-      toast.success('Upload gambar berhasil');
-      setUploadProgress({});
-      await refreshDetail();
-    } catch (error: any) {
-      const msg = error?.response?.data?.detail?.message || error?.response?.data?.detail || 'Gagal upload gambar';
-      toast.error(String(msg));
-    } finally {
-      setUploading(false);
     }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} gambar berhasil di-upload`);
+      await refreshDetail();
+    }
+    if (successCount < validFiles.length) {
+      toast.error(`${validFiles.length - successCount} gambar gagal. Klik retry untuk ulang file gagal.`);
+    }
+
+    setUploading(false);
+  };
+
+  const retryFailedUploads = async () => {
+    const failedNames = Object.keys(uploadErrors);
+    if (!failedNames.length || !fileInputRef.current?.files?.length) return;
+    const retries = Array.from(fileInputRef.current.files).filter((f) => failedNames.includes(f.name));
+    await uploadFiles(retries);
   };
 
   const handleSetPrimary = async (imageId: number) => {
@@ -358,14 +386,20 @@ export default function ProductEditPage() {
                       {uploading && <span className="text-sm text-gray-600">Uploading...</span>}
                       {reorderBusy && <span className="text-sm text-gray-600">Menyimpan urutan...</span>}
                     </div>
-                    <input ref={fileInputRef} type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
-                    <p className="text-xs text-gray-500 mt-2">Drag & drop gambar ke area ini atau klik upload.</p>
+                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+                    <p className="text-xs text-gray-500 mt-2">Drag & drop gambar ke area ini atau klik upload. Format: JPG/PNG/WEBP, max 5MB.</p>
 
                     {Object.keys(uploadProgress).length > 0 && (
                       <div className="mt-3 space-y-1 text-xs text-gray-600">
                         {Object.entries(uploadProgress).map(([name, pct]) => (
                           <div key={name}>{name}: {pct}%</div>
                         ))}
+                      </div>
+                    )}
+                    {Object.keys(uploadErrors).length > 0 && (
+                      <div className="mt-3 text-xs text-red-600 space-y-1">
+                        {Object.entries(uploadErrors).map(([name, err]) => <div key={name}>{name}: {err}</div>)}
+                        <Button type="button" size="sm" variant="outline" onClick={retryFailedUploads}>Retry gagal</Button>
                       </div>
                     )}
                   </div>
