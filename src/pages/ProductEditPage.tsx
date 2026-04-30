@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,19 @@ interface ProductDetailVariant {
   discounted_price?: number | null;
 }
 
+interface ProductImageItem {
+  id: number;
+  product_id: string;
+  image_url: string;
+  image_thumb_url?: string | null;
+  image_card_url?: string | null;
+  image_detail_url?: string | null;
+  position: number;
+  is_primary: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 interface ProductDetailData {
   id: string;
   name: string;
@@ -29,6 +42,7 @@ interface ProductDetailData {
   variants_list?: ProductDetailVariant[];
   description_list?: string[];
   instructions_list?: string[];
+  images?: ProductImageItem[];
   price: number;
   min_variant_price?: number | null;
   max_variant_price?: number | null;
@@ -68,6 +82,12 @@ export default function ProductEditPage() {
     instructions: '',
     price: 0,
   });
+  const [images, setImages] = useState<ProductImageItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [draggingOver, setDraggingOver] = useState(false);
+  const [reorderBusy, setReorderBusy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -92,6 +112,7 @@ export default function ProductEditPage() {
       instructions: productDetailQuery.data.instructions_list?.join('\n') || '',
       price: Number(productDetailQuery.data.price || 0),
     });
+    setImages((productDetailQuery.data.images || []).slice().sort((a, b) => a.position - b.position));
   }, [productDetailQuery.data]);
 
   const updateProductMutation = useMutation({
@@ -132,6 +153,78 @@ export default function ProductEditPage() {
 
     return `Rp ${minPrice.toLocaleString('id-ID')} - Rp ${maxPrice.toLocaleString('id-ID')}`;
   }, [productDetailQuery.data, variantCount]);
+
+  const refreshDetail = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['catalog-product-detail', productId] });
+    await productDetailQuery.refetch();
+  };
+
+  const uploadFiles = async (files: FileList | File[]) => {
+    if (!productId) return;
+    const list = Array.from(files);
+    if (!list.length) return;
+    setUploading(true);
+    try {
+      for (const file of list) {
+        const formData = new FormData();
+        formData.append('file', file);
+        await api.post(`/product/${productId}/images`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          onUploadProgress: (e) => {
+            const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+            setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));
+          },
+        });
+      }
+      toast.success('Upload gambar berhasil');
+      setUploadProgress({});
+      await refreshDetail();
+    } catch (error: any) {
+      const msg = error?.response?.data?.detail?.message || error?.response?.data?.detail || 'Gagal upload gambar';
+      toast.error(String(msg));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSetPrimary = async (imageId: number) => {
+    if (!productId) return;
+    try {
+      await api.patch(`/product/${productId}/images/${imageId}/primary`);
+      toast.success('Primary image diperbarui');
+      await refreshDetail();
+    } catch (error: any) {
+      toast.error(String(error?.response?.data?.detail?.message || 'Gagal set primary image'));
+    }
+  };
+
+  const handleDeleteImage = async (imageId: number) => {
+    if (!productId) return;
+    if (!window.confirm('Hapus gambar ini?')) return;
+    try {
+      await api.delete(`/product/${productId}/images/${imageId}`);
+      toast.success('Gambar dihapus');
+      await refreshDetail();
+    } catch (error: any) {
+      toast.error(String(error?.response?.data?.detail?.message || 'Gagal hapus gambar'));
+    }
+  };
+
+  const handleReorder = async (next: ProductImageItem[]) => {
+    if (!productId) return;
+    setImages(next);
+    setReorderBusy(true);
+    try {
+      await api.patch(`/product/${productId}/images/reorder`, { image_ids: next.map((item) => item.id) });
+      toast.success('Urutan gambar diperbarui');
+      await refreshDetail();
+    } catch (error: any) {
+      toast.error(String(error?.response?.data?.detail?.message || 'Gagal reorder gambar'));
+      await refreshDetail();
+    } finally {
+      setReorderBusy(false);
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -251,6 +344,57 @@ export default function ProductEditPage() {
             </CardHeader>
             <CardContent className="px-6 sm:px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-3">
+                  <Label>Galeri Produk</Label>
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDraggingOver(true); }}
+                    onDragLeave={() => setDraggingOver(false)}
+                    onDrop={(e) => { e.preventDefault(); setDraggingOver(false); uploadFiles(e.dataTransfer.files); }}
+                    className={`rounded-2xl border-2 border-dashed p-4 transition ${draggingOver ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 bg-gray-50'}`}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Upload / Pilih File</Button>
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Ambil dari Kamera</Button>
+                      {uploading && <span className="text-sm text-gray-600">Uploading...</span>}
+                      {reorderBusy && <span className="text-sm text-gray-600">Menyimpan urutan...</span>}
+                    </div>
+                    <input ref={fileInputRef} type="file" accept="image/*" multiple capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+                    <p className="text-xs text-gray-500 mt-2">Drag & drop gambar ke area ini atau klik upload.</p>
+
+                    {Object.keys(uploadProgress).length > 0 && (
+                      <div className="mt-3 space-y-1 text-xs text-gray-600">
+                        {Object.entries(uploadProgress).map(([name, pct]) => (
+                          <div key={name}>{name}: {pct}%</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {images.map((img, idx) => (
+                      <div key={img.id} className="rounded-2xl border border-gray-200 p-3 space-y-2 bg-white">
+                        <img src={img.image_card_url || img.image_thumb_url || img.image_url} alt={`product-${img.id}`} className="w-full h-40 object-cover rounded-xl" />
+                        <div className="flex flex-wrap gap-2">
+                          <Button type="button" size="sm" variant={img.is_primary ? 'default' : 'outline'} onClick={() => handleSetPrimary(img.id)}>
+                            {img.is_primary ? 'Primary' : 'Set Primary'}
+                          </Button>
+                          <Button type="button" size="sm" variant="outline" disabled={idx === 0} onClick={() => {
+                            const next = images.slice();
+                            [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+                            handleReorder(next);
+                          }}>↑</Button>
+                          <Button type="button" size="sm" variant="outline" disabled={idx === images.length - 1} onClick={() => {
+                            const next = images.slice();
+                            [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
+                            handleReorder(next);
+                          }}>↓</Button>
+                          <Button type="button" size="sm" variant="outline" className="text-red-600" onClick={() => handleDeleteImage(img.id)}>Delete</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <Label htmlFor="edit-product-name-page">Nama product</Label>
