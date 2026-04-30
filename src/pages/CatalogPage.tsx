@@ -58,6 +58,15 @@ interface ProductResponse {
   data: ProductItem[];
 }
 
+interface VariantIndexItem {
+  id: number;
+  product_id?: string;
+}
+
+interface VariantIndexResponse {
+  data: VariantIndexItem[];
+}
+
 interface CreateProductPayload {
   name: string;
   info: string;
@@ -190,7 +199,23 @@ export default function CatalogPage() {
   const productions = productionsResponse?.data ?? [];
   const products = productsResponse?.data ?? [];
 
+  const { data: variantIndexResponse } = useQuery({
+    queryKey: ['catalog-variant-index'],
+    queryFn: async () => {
+      const response = await api.get<VariantIndexResponse>('/type/all');
+      return response.data;
+    },
+  });
+
   const normalizedProducts = useMemo(() => {
+    const variantRows = variantIndexResponse?.data || [];
+    const variantCountByProduct = new Map<string, number>();
+    for (const row of variantRows) {
+      const pid = String(row.product_id || '');
+      if (!pid) continue;
+      variantCountByProduct.set(pid, (variantCountByProduct.get(pid) || 0) + 1);
+    }
+
     const resolveImageUrl = (url?: string | null) => {
       if (!url) return '';
       if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
@@ -211,6 +236,11 @@ export default function CatalogPage() {
         );
       });
 
+      const fallbackVariantCount = variantCountByProduct.get(String(product.id)) || 0;
+      const normalizedVariants = validVariants.length > 0
+        ? validVariants
+        : Array.from({ length: fallbackVariantCount }, (_, idx) => ({ id: idx + 1 }));
+
       const minVariantPrice = Number(product.min_variant_price ?? product.price ?? 0);
       const maxVariantPrice = Number(product.max_variant_price ?? product.price ?? 0);
       const priceSummary = validVariants.length
@@ -228,13 +258,13 @@ export default function CatalogPage() {
         primary_image_url: primaryImageUrl,
         gallery_images: galleryImages,
         thumbnail_url: primaryImageUrl || galleryImages?.[0]?.url || variantImageUrl || null,
-        validVariants,
+        validVariants: normalizedVariants,
         minVariantPrice,
         maxVariantPrice,
         priceSummary,
       };
     });
-  }, [products]);
+  }, [products, variantIndexResponse?.data]);
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
