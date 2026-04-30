@@ -31,6 +31,8 @@ interface ProductItem {
   id: string;
   name: string;
   price: number;
+  primary_image_url?: string | null;
+  gallery_images?: Array<{ id?: number; url?: string; is_primary?: boolean; sort_order?: number }>;
   min_variant_price?: number | null;
   max_variant_price?: number | null;
   created_at: string;
@@ -414,6 +416,7 @@ export default function CatalogPage() {
                 <TableHeader className="bg-gray-50/50">
                   <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
+                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Image</TableHead>
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
                     <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Variants</TableHead>
@@ -422,9 +425,9 @@ export default function CatalogPage() {
                 </TableHeader>
                 <TableBody>
                   {productsLoading || productionsLoading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
                   ) : filteredProducts.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                   ) : (
                     filteredProducts.map((product) => (
                       <TableRow key={product.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
@@ -433,6 +436,14 @@ export default function CatalogPage() {
                             <p className="font-bold text-gray-900 text-sm">{product.name}</p>
                             <p className="text-[10px] text-gray-400 font-medium">{product.id}</p>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <img
+                            src={product.primary_image_url || product.gallery_images?.[0]?.url || 'https://placehold.co/72x72?text=No+Image'}
+                            alt={product.name}
+                            className="w-14 h-14 rounded-xl object-cover border border-gray-100"
+                            loading="lazy"
+                          />
                         </TableCell>
                         <TableCell className="text-sm text-gray-600">{product.brand_info?.name || '-'}</TableCell>
                         <TableCell>
