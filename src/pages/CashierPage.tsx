@@ -371,7 +371,28 @@ export default function CashierPage() {
   const subtotal = cart.reduce((sum, row) => sum + row.unitPrice * row.qty, 0);
 
   const handlePrintReceipt = () => {
-    window.print();
+    const target = document.getElementById('receipt-detail-print-area');
+    if (!target) {
+      toast.error('Detail nota belum tersedia untuk dicetak.');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) {
+      toast.error('Popup diblokir browser. Izinkan pop-up untuk cetak nota.');
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Detail Nota Pembayaran</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #e5e7eb; padding: 8px; font-size: 12px; text-align: left; }
+        th { background: #f9fafb; }
+      </style>
+    </head><body>${target.innerHTML}<script>window.print();</script></body></html>`);
+    printWindow.document.close();
   };
 
   const filteredReceipts = useMemo(() => {
@@ -561,7 +582,7 @@ export default function CashierPage() {
       </Card>
 
       {selectedReceipt && (
-        <Card className="print:shadow-none print:border-none">
+        <Card id="receipt-detail-print-area" className="print:shadow-none print:border-none">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Detail Nota Pembayaran</CardTitle>
