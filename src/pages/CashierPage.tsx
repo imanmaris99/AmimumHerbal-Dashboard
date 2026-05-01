@@ -14,6 +14,11 @@ import { useAuthStore } from '@/store/authStore';
 type ProductItem = {
   id: string;
   name: string;
+  brand_info?: {
+    id?: number;
+    name?: string;
+    category?: string;
+  } | null;
 };
 
 type VariantItem = {
@@ -112,6 +117,9 @@ const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
 export default function CashierPage() {
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedProducer, setSelectedProducer] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
@@ -302,7 +310,7 @@ export default function CashierPage() {
 
   const productLookup = useMemo(() => {
     const rows = productsResponse?.data ?? [];
-    return new Map(rows.map((item) => [String(item.id), item.name]));
+    return new Map(rows.map((item) => [String(item.id), item]));
   }, [productsResponse?.data]);
 
   const cashierVariants = useMemo(() => {
@@ -315,9 +323,10 @@ export default function CashierPage() {
         const discount = Number(item.discount ?? 0);
         const finalPrice = Math.max(basePrice - discount, 0);
 
+        const productObj = item.product_id ? productLookup.get(String(item.product_id)) : undefined;
         const productName =
           (item.product && item.product.trim()) ||
-          (item.product_id ? productLookup.get(String(item.product_id)) : undefined) ||
+          productObj?.name ||
           '-';
 
         const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Variant #${item.id}`;
@@ -326,6 +335,8 @@ export default function CashierPage() {
           id: item.id,
           productId: String(item.product_id || ''),
           productName,
+          producerName: productObj?.brand_info?.name || '-',
+          categoryName: productObj?.brand_info?.category || '-',
           variantName,
           img: item.img || null,
           stock: Number(item.stock ?? 0),
@@ -334,18 +345,38 @@ export default function CashierPage() {
       });
   }, [variantsResponse?.data, productLookup]);
 
+  const categoryOptions = useMemo(() => Array.from(new Set(cashierVariants.map((i) => i.categoryName).filter(Boolean))).sort(), [cashierVariants]);
+  const producerOptions = useMemo(() => {
+    return Array.from(new Set(cashierVariants
+      .filter((i) => selectedCategory === 'all' || i.categoryName === selectedCategory)
+      .map((i) => i.producerName)
+      .filter(Boolean))).sort();
+  }, [cashierVariants, selectedCategory]);
+  const productOptions = useMemo(() => {
+    return Array.from(new Set(cashierVariants
+      .filter((i) => (selectedCategory === 'all' || i.categoryName === selectedCategory)
+        && (selectedProducer === 'all' || i.producerName === selectedProducer))
+      .map((i) => i.productName)
+      .filter(Boolean))).sort();
+  }, [cashierVariants, selectedCategory, selectedProducer]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return cashierVariants;
 
     return cashierVariants.filter((item) => {
-      return (
+      const hitHierarchy =
+        (selectedCategory === 'all' || item.categoryName === selectedCategory) &&
+        (selectedProducer === 'all' || item.producerName === selectedProducer) &&
+        (selectedProduct === 'all' || item.productName === selectedProduct);
+
+      const hitSearch = !q ||
         item.productName.toLowerCase().includes(q) ||
         item.variantName.toLowerCase().includes(q) ||
-        String(item.id).includes(q)
-      );
+        String(item.id).includes(q);
+
+      return hitHierarchy && hitSearch;
     });
-  }, [cashierVariants, search]);
+  }, [cashierVariants, search, selectedCategory, selectedProducer, selectedProduct]);
 
   const addToCart = (item: (typeof cashierVariants)[number]) => {
     if (item.stock <= 0) {
@@ -556,6 +587,21 @@ export default function CashierPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari produk/variant/id..." />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+              <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedProducer('all'); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none">
+                <option value="all">Semua Kategori</option>
+                {categoryOptions.map((x) => <option key={x} value={x}>{x}</option>)}
+              </select>
+              <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none">
+                <option value="all">Semua Produsen</option>
+                {producerOptions.map((x) => <option key={x} value={x}>{x}</option>)}
+              </select>
+              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none">
+                <option value="all">Semua Produk</option>
+                {productOptions.map((x) => <option key={x} value={x}>{x}</option>)}
+              </select>
+              <Button type="button" variant="outline" onClick={() => { setSelectedCategory('all'); setSelectedProducer('all'); setSelectedProduct('all'); setSearch(''); }}>Reset Filter</Button>
+            </div>
 
             {variantsLoading ? (
               <p className="text-sm text-gray-500">Memuat variant...</p>
