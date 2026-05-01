@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Search, ShoppingCart, Trash2, ReceiptText, Printer } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,6 +56,8 @@ type ReceiptData = {
   total: number;
 };
 
+const RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
+
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
 export default function CashierPage() {
@@ -64,7 +66,23 @@ export default function CashierPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
   const [lastReceipt, setLastReceipt] = useState<ReceiptData | null>(null);
+  const [receiptHistory, setReceiptHistory] = useState<ReceiptData[]>([]);
+  const [receiptQuery, setReceiptQuery] = useState('');
+  const [receiptDate, setReceiptDate] = useState('');
+  const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(RECEIPT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as ReceiptData[];
+        setReceiptHistory(Array.isArray(parsed) ? parsed : []);
+      }
+    } catch {
+      setReceiptHistory([]);
+    }
+  }, []);
 
   const { data: productsResponse } = useQuery({
     queryKey: ['cashier-products'],
@@ -136,7 +154,7 @@ export default function CashierPage() {
         toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
       }
 
-      setLastReceipt({
+      const receiptPayload: ReceiptData = {
         transactionId: String(trx),
         createdAt: new Date().toISOString(),
         cashierName: [user?.firstname, user?.lastname].filter(Boolean).join(' ') || user?.name || user?.email || 'Cashier',
@@ -145,6 +163,14 @@ export default function CashierPage() {
         items: cart,
         subtotal,
         total: subtotal,
+      };
+
+      setLastReceipt(receiptPayload);
+      setSelectedReceiptId(receiptPayload.transactionId);
+      setReceiptHistory((prev) => {
+        const next = [receiptPayload, ...prev].slice(0, 500);
+        localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(next));
+        return next;
       });
 
       setCart([]);
@@ -265,6 +291,43 @@ export default function CashierPage() {
     window.print();
   };
 
+  const filteredReceipts = useMemo(() => {
+    const q = receiptQuery.trim().toLowerCase();
+    return receiptHistory.filter((receipt) => {
+      const hitQuery = !q
+        || receipt.transactionId.toLowerCase().includes(q)
+        || receipt.cashierName.toLowerCase().includes(q)
+        || String(receipt.paymentMethod).toLowerCase().includes(q);
+      const hitDate = !receiptDate || receipt.createdAt.slice(0, 10) === receiptDate;
+      return hitQuery && hitDate;
+    });
+  }, [receiptHistory, receiptQuery, receiptDate]);
+
+  const selectedReceipt = useMemo(() => {
+    if (!selectedReceiptId) return lastReceipt;
+    return receiptHistory.find((r) => r.transactionId === selectedReceiptId) || lastReceipt;
+  }, [receiptHistory, selectedReceiptId, lastReceipt]);
+
+  const exportReceiptPdf = (receipt: ReceiptData) => {
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nota ${receipt.transactionId}</title></head><body>
+      <h2>Nota Pembayaran</h2>
+      <p>No: ${receipt.transactionId}</p>
+      <p>Tanggal: ${new Date(receipt.createdAt).toLocaleString('id-ID')}</p>
+      <p>Kasir: ${receipt.cashierName}</p>
+      <p>Pembayaran: ${String(receipt.paymentMethod).toUpperCase()}</p>
+      <hr/>
+      ${receipt.items.map((i) => `<div>${i.productName} (${i.variantName}) - ${i.qty} x ${formatRupiah(i.unitPrice)} = ${formatRupiah(i.qty * i.unitPrice)}</div>`).join('')}
+      <hr/><h3>Total: ${formatRupiah(receipt.total)}</h3>
+      ${receipt.notes ? `<p>Catatan: ${receipt.notes}</p>` : ''}
+      <script>window.print();</script>
+    </body></html>`;
+    const w = window.open('', '_blank');
+    if (!w) return toast.error('Popup diblokir browser. Izinkan pop-up untuk export PDF.');
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -378,49 +441,68 @@ export default function CashierPage() {
         </Card>
       </div>
 
-      {lastReceipt && (
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat Nota Kasir</CardTitle>
+          <CardDescription>Cek ulang transaksi dengan filter tanggal dan pencarian cepat.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
+            <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
+            <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(''); }}>Reset Filter</Button>
+          </div>
+          <div className="rounded-xl border overflow-auto max-h-[260px]">
+            <Table>
+              <TableHeader><TableRow><TableHead>Transaksi</TableHead><TableHead>Tanggal</TableHead><TableHead>Kasir</TableHead><TableHead>Total</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {filteredReceipts.map((r) => (
+                  <TableRow key={r.transactionId}>
+                    <TableCell>{r.transactionId}</TableCell>
+                    <TableCell>{new Date(r.createdAt).toLocaleString('id-ID')}</TableCell>
+                    <TableCell>{r.cashierName}</TableCell>
+                    <TableCell>{formatRupiah(r.total)}</TableCell>
+                    <TableCell className="text-right"><Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button></TableCell>
+                  </TableRow>
+                ))}
+                {filteredReceipts.length === 0 && <TableRow><TableCell colSpan={5} className="text-sm text-gray-500">Belum ada data nota.</TableCell></TableRow>}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {selectedReceipt && (
         <Card className="print:shadow-none print:border-none">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Nota Pembayaran</CardTitle>
-              <CardDescription>Standar marketplace: ada nomor transaksi, item detail, metode bayar, dan siap dicetak/cek ulang.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Detail Nota Pembayaran</CardTitle>
+              <CardDescription>Audit-ready detail transaksi kasir.</CardDescription>
             </div>
-            <Button variant="outline" onClick={handlePrintReceipt} className="print:hidden"><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
+            <div className="flex gap-2 print:hidden">
+              <Button variant="outline" onClick={handlePrintReceipt}><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
+              <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceipt)}>Export PDF</Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <p><strong>No. Transaksi:</strong> {lastReceipt.transactionId}</p>
-              <p><strong>Tanggal:</strong> {new Date(lastReceipt.createdAt).toLocaleString('id-ID')}</p>
-              <p><strong>Kasir:</strong> {lastReceipt.cashierName}</p>
-              <p><strong>Pembayaran:</strong> {String(lastReceipt.paymentMethod).toUpperCase()}</p>
+              <p><strong>No. Transaksi:</strong> {selectedReceipt.transactionId}</p>
+              <p><strong>Tanggal:</strong> {new Date(selectedReceipt.createdAt).toLocaleString('id-ID')}</p>
+              <p><strong>Kasir:</strong> {selectedReceipt.cashierName}</p>
+              <p><strong>Pembayaran:</strong> {String(selectedReceipt.paymentMethod).toUpperCase()}</p>
             </div>
             <div className="rounded-xl border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead>Harga</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
+              <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
+                {selectedReceipt.items.map((row) => (
+                  <TableRow key={`r-${selectedReceipt.transactionId}-${row.variantId}`}>
+                    <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
+                    <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {lastReceipt.items.map((row) => (
-                    <TableRow key={`r-${row.variantId}`}>
-                      <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
-                      <TableCell>{row.qty}</TableCell>
-                      <TableCell>{formatRupiah(row.unitPrice)}</TableCell>
-                      <TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                ))}
+              </TableBody></Table>
             </div>
-            {lastReceipt.notes && <p><strong>Catatan:</strong> {lastReceipt.notes}</p>}
-            <div className="border-t pt-3 flex items-center justify-between">
-              <span className="font-semibold">Total Bayar</span>
-              <span className="text-lg font-bold">{formatRupiah(lastReceipt.total)}</span>
-            </div>
+            {selectedReceipt.notes && <p><strong>Catatan:</strong> {selectedReceipt.notes}</p>}
+            <div className="border-t pt-3 flex items-center justify-between"><span className="font-semibold">Total Bayar</span><span className="text-lg font-bold">{formatRupiah(selectedReceipt.total)}</span></div>
           </CardContent>
         </Card>
       )}
