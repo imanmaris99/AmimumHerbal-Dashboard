@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -77,6 +77,10 @@ export default function VariantsPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: productsResponse, isLoading: productsLoading } = useQuery({
     queryKey: ['variant-products'],
@@ -99,9 +103,32 @@ export default function VariantsPage() {
       const response = await api.post('/type/create', payload);
       return response.data;
     },
-    onSuccess: (response: any) => {
-      toast.success(response?.message || t('variantsPage.messages.createSuccess'));
+    onSuccess: async (response: any) => {
+      const newVariantId = response?.data?.id;
+      if (newVariantId && pendingImage) {
+        setIsUploadingImage(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', pendingImage);
+          await api.put(`/type/image/${newVariantId}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (e) => {
+              const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+              setUploadProgress(progress);
+            },
+          });
+          toast.success('Variant dan gambar berhasil dibuat');
+        } catch (error: any) {
+          toast.error(String(error?.response?.data?.detail?.message || 'Variant berhasil dibuat, namun upload gambar gagal'));
+        } finally {
+          setIsUploadingImage(false);
+          setUploadProgress(0);
+        }
+      } else {
+        toast.success(response?.message || t('variantsPage.messages.createSuccess'));
+      }
       setForm(initialForm);
+      setPendingImage(null);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
       queryClient.invalidateQueries({ queryKey: ['variant-products'] });
@@ -245,6 +272,24 @@ export default function VariantsPage() {
             <div className="space-y-2">
               <Label htmlFor="expiration">{t('variantsPage.form.expiration')}</Label>
               <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder={t('variantsPage.form.expirationPlaceholder')} required />
+            </div>
+
+            <div className="space-y-3">
+              <Label>Gambar variant (opsional saat create)</Label>
+              <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage}>Pilih File / Kamera</Button>
+                  <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => setPendingImage(e.target.files?.[0] || null)} />
+                  {isUploadingImage && <span className="text-sm text-gray-600">Uploading image... {uploadProgress}%</span>}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah variant berhasil dibuat.</p>
+                {pendingImage && (
+                  <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
+                    <span className="truncate">{pendingImage.name}</span>
+                    <button type="button" className="text-red-600" onClick={() => { setPendingImage(null); setUploadProgress(0); }}>Hapus</button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pt-2">
