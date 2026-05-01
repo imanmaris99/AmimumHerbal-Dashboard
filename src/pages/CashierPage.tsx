@@ -335,8 +335,8 @@ export default function CashierPage() {
           id: item.id,
           productId: String(item.product_id || ''),
           productName,
-          producerName: productObj?.brand_info?.name || '-',
-          categoryName: productObj?.brand_info?.category || '-',
+          producerName: (productObj?.brand_info?.name || '').trim() || 'Tanpa Produsen',
+          categoryName: (productObj?.brand_info?.category || '').trim() || 'Umum',
           variantName,
           img: item.img || null,
           stock: Number(item.stock ?? 0),
@@ -345,12 +345,15 @@ export default function CashierPage() {
       });
   }, [variantsResponse?.data, productLookup]);
 
-  const categoryOptions = useMemo(() => Array.from(new Set(cashierVariants.map((i) => i.categoryName).filter(Boolean))).sort(), [cashierVariants]);
+  const categoryOptions = useMemo(
+    () => Array.from(new Set(cashierVariants.map((i) => i.categoryName).filter((x) => Boolean(x && x.trim() && x !== '-')))).sort(),
+    [cashierVariants]
+  );
   const producerOptions = useMemo(() => {
     return Array.from(new Set(cashierVariants
       .filter((i) => selectedCategory === 'all' || i.categoryName === selectedCategory)
       .map((i) => i.producerName)
-      .filter(Boolean))).sort();
+      .filter((x) => Boolean(x && x.trim() && x !== '-')))).sort();
   }, [cashierVariants, selectedCategory]);
   const productOptions = useMemo(() => {
     return Array.from(new Set(cashierVariants
