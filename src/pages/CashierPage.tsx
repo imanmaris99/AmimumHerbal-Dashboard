@@ -403,65 +403,66 @@ export default function CashierPage() {
   const buildInvoiceHtml = (receipt: ReceiptData) => {
     const rows = receipt.items.map((i) => `
       <tr>
-        <td>${i.productName} <span style="color:#6b7280">(${i.variantName})</span></td>
-        <td style="text-align:right">${formatRupiah(i.unitPrice)}</td>
-        <td style="text-align:center">${i.qty}</td>
-        <td style="text-align:right">${formatRupiah(i.qty * i.unitPrice)}</td>
+        <td>${i.productName} <span class="muted">(${i.variantName})</span></td>
+        <td class="text-right">${formatRupiah(i.unitPrice)}</td>
+        <td class="text-center">${i.qty}</td>
+        <td class="text-right">${formatRupiah(i.qty * i.unitPrice)}</td>
       </tr>
     `).join('');
 
     return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${receipt.transactionId}</title>
       <style>
-        body { font-family: Arial, sans-serif; color:#111; padding:28px; }
-        .wrap { max-width: 820px; margin:0 auto; }
-        .top { display:flex; justify-content:space-between; align-items:flex-start; }
-        h1 { margin:0; font-size:52px; letter-spacing:1px; }
+        :root { --text:#111827; --muted:#6b7280; --line:#d1d5db; }
+        @page { size: 80mm auto; margin: 4mm; }
+        body { font-family: Inter, Arial, Helvetica, sans-serif; color:var(--text); margin:0; }
+        .wrap { width: 72mm; margin:0 auto; font-size:11px; line-height:1.35; }
+        .top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+        h1 { margin:0; font-size:22px; letter-spacing:0.8px; }
         .brand { text-align:right; }
-        hr { border:none; border-top:1px solid #bbb; margin:18px 0 22px; }
-        .meta { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:18px; }
-        .meta b { display:block; margin-bottom:6px; }
-        table { width:100%; border-collapse:collapse; margin-top:8px; }
-        th, td { border-bottom:1px solid #d1d5db; padding:10px 8px; font-size:14px; }
+        .brand .title { font-size:13px; font-weight:700; }
+        hr { border:none; border-top:1px solid var(--line); margin:6px 0; }
+        .meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
+        .meta b { display:block; margin-bottom:2px; font-size:10px; }
+        .muted { color:var(--muted); }
+        table { width:100%; border-collapse:collapse; margin-top:6px; }
+        th, td { border-bottom:1px solid var(--line); padding:4px 2px; font-size:10px; }
         th { text-align:left; font-weight:700; }
-        .sum { margin-top:18px; display:flex; justify-content:space-between; }
-        .sum-right { min-width:260px; }
-        .sum-row { display:flex; justify-content:space-between; margin:6px 0; }
-        .total { font-weight:800; font-size:22px; }
+        .text-right { text-align:right; }
+        .text-center { text-align:center; }
+        .sum { margin-top:8px; }
+        .sum-row { display:flex; justify-content:space-between; margin:2px 0; font-size:11px; }
+        .total { font-weight:800; font-size:16px; margin-top:2px; }
+        .footer { margin-top:10px; font-weight:700; font-size:10px; text-align:center; }
       </style>
     </head><body><div class="wrap">
-      <div class="top"><h1>INVOICE</h1><div class="brand"><div style="font-size:42px;font-weight:700">Toko Herbal AmImUm</div><div>Dashboard POS Internal</div></div></div>
+      <div class="top">
+        <h1>INVOICE</h1>
+        <div class="brand"><div class="title">Toko Herbal AmImUm</div><div>POS Internal</div></div>
+      </div>
       <hr/>
       <div class="meta">
         <div>
-          <b>KEPADA:</b>
-          <div>Pembeli</div>
-          <div style="color:#6b7280">Umum</div>
-          <div style="margin-top:8px"><b>KASIR TOKO:</b> ${receipt.cashierName}</div>
+          <b>KEPADA</b>
+          <div>Pembeli Umum</div>
+          <div><b style="margin-top:4px">KASIR</b>${receipt.cashierName}</div>
         </div>
-        <div style="text-align:right">
-          <b>TANGGAL:</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div>
-          <b style="margin-top:8px">NO INVOICE:</b><div>${receipt.transactionId}</div>
-          <div style="margin-top:8px"><b>METODE:</b> ${String(receipt.paymentMethod).toUpperCase()}</div>
+        <div class="text-right">
+          <b>TANGGAL</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div>
+          <b style="margin-top:4px">NO INVOICE</b><div>${receipt.transactionId}</div>
+          <b style="margin-top:4px">METODE</b><div>${String(receipt.paymentMethod).toUpperCase()}</div>
         </div>
       </div>
       <table>
-        <thead><tr><th>KETERANGAN</th><th style="text-align:right">HARGA</th><th style="text-align:center">JML</th><th style="text-align:right">TOTAL</th></tr></thead>
+        <thead><tr><th>KETERANGAN</th><th class="text-right">HARGA</th><th class="text-center">JML</th><th class="text-right">TOTAL</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="4">Detail item belum tersedia</td></tr>'}</tbody>
       </table>
       <div class="sum">
-        <div>
-          <b>PEMBAYARAN:</b>
-          <div>Metode: ${String(receipt.paymentMethod).toUpperCase()}</div>
-          <div>Kasir: ${receipt.cashierName}</div>
-          ${receipt.notes ? `<div>Catatan: ${receipt.notes}</div>` : ''}
-        </div>
-        <div class="sum-right">
-          <div class="sum-row"><span>SUB TOTAL:</span><b>${formatRupiah(receipt.subtotal)}</b></div>
-          <div class="sum-row"><span>PAJAK:</span><b>${formatRupiah(0)}</b></div>
-          <div class="sum-row total"><span>TOTAL:</span><span>${formatRupiah(receipt.total)}</span></div>
-        </div>
+        <div class="sum-row"><span>SUBTOTAL</span><b>${formatRupiah(receipt.subtotal)}</b></div>
+        <div class="sum-row"><span>PAJAK</span><b>${formatRupiah(0)}</b></div>
+        <div class="sum-row total"><span>TOTAL</span><span>${formatRupiah(receipt.total)}</span></div>
       </div>
-      <div style="margin-top:34px;font-weight:700">TERIMAKASIH ATAS PEMBELIAN ANDA</div>
+      ${receipt.notes ? `<div class="muted" style="margin-top:6px">Catatan: ${receipt.notes}</div>` : ''}
+      <div class="footer">TERIMAKASIH ATAS PEMBELIAN ANDA</div>
     </div><script>window.print();</script></body></html>`;
   };
 
