@@ -43,6 +43,13 @@ interface AdminOrderItem {
   customer_name?: string | null;
 }
 
+interface AdminPaymentInfo {
+  id: string;
+  order_id: string;
+  payment_type?: string | null;
+  transaction_status: string;
+}
+
 interface ApiResponse<T> {
   status_code: number;
   message: string;
@@ -105,16 +112,29 @@ export default function CashierPage() {
     const backendOrders = backendOrdersResponse?.data || [];
     if (!backendOrders.length) return;
 
-    const mapped: ReceiptData[] = backendOrders.map((o) => ({
-      transactionId: String(o.id),
-      createdAt: o.created_at,
-      cashierName: o.customer_name || 'Kasir',
-      paymentMethod: 'cash',
-      notes: o.notes || undefined,
-      items: [],
-      subtotal: Number(o.total_price || 0),
-      total: Number(o.total_price || 0),
-    }));
+    const paymentRows = backendPaymentsResponse?.data || [];
+    const paymentMap = new Map(paymentRows.map((p) => [String(p.order_id), p]));
+
+    const normalizePaymentMethod = (value?: string | null): PaymentMethod => {
+      const v = String(value || '').toLowerCase();
+      if (v.includes('qris') || v.includes('gopay') || v.includes('shopeepay') || v.includes('ovo')) return 'qris';
+      if (v.includes('bank') || v.includes('transfer') || v.includes('va') || v.includes('permata') || v.includes('bca') || v.includes('bni') || v.includes('bri')) return 'transfer';
+      return 'cash';
+    };
+
+    const mapped: ReceiptData[] = backendOrders.map((o) => {
+      const paymentInfo = paymentMap.get(String(o.id));
+      return {
+        transactionId: String(o.id),
+        createdAt: o.created_at,
+        cashierName: o.customer_name || 'Kasir',
+        paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type),
+        notes: o.notes || undefined,
+        items: [],
+        subtotal: Number(o.total_price || 0),
+        total: Number(o.total_price || 0),
+      };
+    });
 
     setReceiptHistory((prev) => {
       const merged = [...mapped, ...prev].reduce<ReceiptData[]>((acc, curr) => {
@@ -124,7 +144,7 @@ export default function CashierPage() {
       localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(merged.slice(0, 500)));
       return merged.slice(0, 500);
     });
-  }, [backendOrdersResponse]);
+  }, [backendOrdersResponse, backendPaymentsResponse]);
 
   const { data: productsResponse } = useQuery({
     queryKey: ['cashier-products'],
@@ -146,6 +166,16 @@ export default function CashierPage() {
     queryKey: ['cashier-receipt-history-backend'],
     queryFn: async () => {
       const response = await api.get<ApiResponse<AdminOrderItem>>('/admin/orders', {
+        params: { limit: 100, skip: 0 },
+      });
+      return response.data;
+    },
+  });
+
+  const { data: backendPaymentsResponse } = useQuery({
+    queryKey: ['cashier-receipt-payments-backend'],
+    queryFn: async () => {
+      const response = await api.get<ApiResponse<AdminPaymentInfo>>('/admin/payments', {
         params: { limit: 100, skip: 0 },
       });
       return response.data;
