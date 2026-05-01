@@ -41,6 +41,13 @@ interface AdminOrderItem {
   notes?: string | null;
   created_at: string;
   customer_name?: string | null;
+  customer_email?: string | null;
+}
+
+interface AdminOrderInfoDetail {
+  customer_name?: string | null;
+  notes?: string | null;
+  created_at?: string;
 }
 
 interface AdminOrderDetailData {
@@ -89,6 +96,8 @@ type ReceiptData = {
   transactionId: string;
   createdAt: string;
   cashierName: string;
+  buyerName?: string;
+  buyerEmail?: string;
   paymentMethod: PaymentMethod;
   notes?: string;
   items: ReceiptItem[];
@@ -181,7 +190,9 @@ export default function CashierPage() {
       return {
         transactionId: String(o.id),
         createdAt: o.created_at,
-        cashierName: o.customer_name || 'Kasir',
+        cashierName: 'Kasir Toko',
+        buyerName: o.customer_name || 'Pembeli',
+        buyerEmail: o.customer_email || undefined,
         paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type),
         notes: o.notes || undefined,
         items: [],
@@ -258,6 +269,7 @@ export default function CashierPage() {
         transactionId: String(trx),
         createdAt: new Date().toISOString(),
         cashierName: [user?.firstname, user?.lastname].filter(Boolean).join(' ') || user?.name || user?.email || 'Cashier',
+        buyerName: 'Pembeli POS',
         paymentMethod,
         notes: notes || undefined,
         items: cart,
@@ -420,15 +432,29 @@ export default function CashierPage() {
       <div class="top"><h1>INVOICE</h1><div class="brand"><div style="font-size:42px;font-weight:700">Toko Herbal AmImUm</div><div>Dashboard POS Internal</div></div></div>
       <hr/>
       <div class="meta">
-        <div><b>KEPADA:</b><div>${receipt.cashierName}</div><div>${receipt.notes || '-'}</div></div>
-        <div style="text-align:right"><b>TANGGAL:</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div><b style="margin-top:8px">NO INVOICE:</b><div>${receipt.transactionId}</div></div>
+        <div>
+          <b>KEPADA:</b>
+          <div>${receipt.buyerName || 'Pembeli'}</div>
+          <div style="color:#6b7280">${receipt.buyerEmail || '-'}</div>
+          <div style="margin-top:8px"><b>KASIR:</b> ${receipt.cashierName}</div>
+        </div>
+        <div style="text-align:right">
+          <b>TANGGAL:</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div>
+          <b style="margin-top:8px">NO INVOICE:</b><div>${receipt.transactionId}</div>
+          <div style="margin-top:8px"><b>METODE:</b> ${String(receipt.paymentMethod).toUpperCase()}</div>
+        </div>
       </div>
       <table>
         <thead><tr><th>KETERANGAN</th><th style="text-align:right">HARGA</th><th style="text-align:center">JML</th><th style="text-align:right">TOTAL</th></tr></thead>
         <tbody>${rows || '<tr><td colspan="4">Detail item belum tersedia</td></tr>'}</tbody>
       </table>
       <div class="sum">
-        <div><b>PEMBAYARAN:</b><div>Metode: ${String(receipt.paymentMethod).toUpperCase()}</div></div>
+        <div>
+          <b>PEMBAYARAN:</b>
+          <div>Metode: ${String(receipt.paymentMethod).toUpperCase()}</div>
+          <div>Kasir: ${receipt.cashierName}</div>
+          ${receipt.notes ? `<div>Catatan: ${receipt.notes}</div>` : ''}
+        </div>
         <div class="sum-right">
           <div class="sum-row"><span>SUB TOTAL:</span><b>${formatRupiah(receipt.subtotal)}</b></div>
           <div class="sum-row"><span>PAJAK:</span><b>${formatRupiah(0)}</b></div>
