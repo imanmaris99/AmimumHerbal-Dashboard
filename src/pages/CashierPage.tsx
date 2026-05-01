@@ -191,8 +191,8 @@ export default function CashierPage() {
         transactionId: String(o.id),
         createdAt: o.created_at,
         cashierName: 'Kasir Toko',
-        buyerName: o.customer_name || 'Pembeli',
-        buyerEmail: o.customer_email || undefined,
+        buyerName: 'Pembeli',
+        buyerEmail: undefined,
         paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type),
         notes: o.notes || undefined,
         items: [],
@@ -434,9 +434,9 @@ export default function CashierPage() {
       <div class="meta">
         <div>
           <b>KEPADA:</b>
-          <div>${receipt.buyerName || 'Pembeli'}</div>
-          <div style="color:#6b7280">${receipt.buyerEmail || '-'}</div>
-          <div style="margin-top:8px"><b>KASIR:</b> ${receipt.cashierName}</div>
+          <div>Pembeli</div>
+          <div style="color:#6b7280">Umum</div>
+          <div style="margin-top:8px"><b>KASIR TOKO:</b> ${receipt.cashierName}</div>
         </div>
         <div style="text-align:right">
           <b>TANGGAL:</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div>
