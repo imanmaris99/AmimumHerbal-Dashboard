@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Search, ShoppingCart, Trash2 } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, ReceiptText, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { posCheckout, type PaymentMethod } from '@/lib/posInventory';
@@ -44,6 +44,18 @@ type CartItem = {
   qty: number;
 };
 
+type ReceiptItem = CartItem;
+type ReceiptData = {
+  transactionId: string;
+  createdAt: string;
+  cashierName: string;
+  paymentMethod: PaymentMethod;
+  notes?: string;
+  items: ReceiptItem[];
+  subtotal: number;
+  total: number;
+};
+
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
 export default function CashierPage() {
@@ -51,6 +63,7 @@ export default function CashierPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
+  const [lastReceipt, setLastReceipt] = useState<ReceiptData | null>(null);
   const user = useAuthStore((state) => state.user);
 
   const { data: productsResponse } = useQuery({
@@ -115,13 +128,25 @@ export default function CashierPage() {
       }
     },
     onSuccess: (response: any) => {
-      const trx = response?.data?.transaction_id;
+      const trx = response?.data?.transaction_id || response?.data?.order_id || `POS-${Date.now()}`;
       const isCompat = response?.compatibility_mode;
       if (isCompat) {
         toast.success('Checkout sukses (mode kompatibilitas /orders/checkout).');
       } else {
         toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
       }
+
+      setLastReceipt({
+        transactionId: String(trx),
+        createdAt: new Date().toISOString(),
+        cashierName: [user?.firstname, user?.lastname].filter(Boolean).join(' ') || user?.name || user?.email || 'Cashier',
+        paymentMethod,
+        notes: notes || undefined,
+        items: cart,
+        subtotal,
+        total: subtotal,
+      });
+
       setCart([]);
       setNotes('');
     },
@@ -236,6 +261,10 @@ export default function CashierPage() {
 
   const subtotal = cart.reduce((sum, row) => sum + row.unitPrice * row.qty, 0);
 
+  const handlePrintReceipt = () => {
+    window.print();
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -348,6 +377,53 @@ export default function CashierPage() {
           </CardContent>
         </Card>
       </div>
+
+      {lastReceipt && (
+        <Card className="print:shadow-none print:border-none">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Nota Pembayaran</CardTitle>
+              <CardDescription>Standar marketplace: ada nomor transaksi, item detail, metode bayar, dan siap dicetak/cek ulang.</CardDescription>
+            </div>
+            <Button variant="outline" onClick={handlePrintReceipt} className="print:hidden"><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <p><strong>No. Transaksi:</strong> {lastReceipt.transactionId}</p>
+              <p><strong>Tanggal:</strong> {new Date(lastReceipt.createdAt).toLocaleString('id-ID')}</p>
+              <p><strong>Kasir:</strong> {lastReceipt.cashierName}</p>
+              <p><strong>Pembayaran:</strong> {String(lastReceipt.paymentMethod).toUpperCase()}</p>
+            </div>
+            <div className="rounded-xl border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead>Harga</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lastReceipt.items.map((row) => (
+                    <TableRow key={`r-${row.variantId}`}>
+                      <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
+                      <TableCell>{row.qty}</TableCell>
+                      <TableCell>{formatRupiah(row.unitPrice)}</TableCell>
+                      <TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {lastReceipt.notes && <p><strong>Catatan:</strong> {lastReceipt.notes}</p>}
+            <div className="border-t pt-3 flex items-center justify-between">
+              <span className="font-semibold">Total Bayar</span>
+              <span className="text-lg font-bold">{formatRupiah(lastReceipt.total)}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
