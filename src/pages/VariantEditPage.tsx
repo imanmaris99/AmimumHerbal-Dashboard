@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -59,6 +59,8 @@ export default function VariantEditPage() {
     discount: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -120,12 +122,17 @@ export default function VariantEditPage() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (e) => {
+          const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+          setUploadProgress(progress);
+        },
       });
       return response.data;
     },
     onSuccess: (response: any) => {
       toast.success(response?.message || t('variantsPage.messages.imageSuccess'));
       setImageFile(null);
+      setUploadProgress(0);
       invalidateVariantData();
     },
     onError: (error: any) => {
@@ -346,9 +353,22 @@ export default function VariantEditPage() {
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 py-6 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-variant-image-page">Image file</Label>
-                  <Input id="edit-variant-image-page" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                <div className="space-y-3">
+                  <Label>Image file</Label>
+                  <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>Pilih File / Kamera</Button>
+                      <input ref={fileInputRef} id="edit-variant-image-page" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                      {uploadImageMutation.isPending && <span className="text-sm text-gray-600">Uploading image... {uploadProgress}%</span>}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Gambar variant akan menggantikan gambar lama setelah upload berhasil.</p>
+                    {imageFile && (
+                      <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
+                        <span className="truncate">{imageFile.name}</span>
+                        <button type="button" className="text-red-600" onClick={() => { setImageFile(null); setUploadProgress(0); }}>Hapus</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-start border-t border-gray-100 pt-5">
