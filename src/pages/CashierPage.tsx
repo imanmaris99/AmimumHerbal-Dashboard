@@ -388,31 +388,71 @@ export default function CashierPage() {
 
   const subtotal = cart.reduce((sum, row) => sum + row.unitPrice * row.qty, 0);
 
+  const buildInvoiceHtml = (receipt: ReceiptData) => {
+    const rows = receipt.items.map((i) => `
+      <tr>
+        <td>${i.productName} <span style="color:#6b7280">(${i.variantName})</span></td>
+        <td style="text-align:right">${formatRupiah(i.unitPrice)}</td>
+        <td style="text-align:center">${i.qty}</td>
+        <td style="text-align:right">${formatRupiah(i.qty * i.unitPrice)}</td>
+      </tr>
+    `).join('');
+
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${receipt.transactionId}</title>
+      <style>
+        body { font-family: Arial, sans-serif; color:#111; padding:28px; }
+        .wrap { max-width: 820px; margin:0 auto; }
+        .top { display:flex; justify-content:space-between; align-items:flex-start; }
+        h1 { margin:0; font-size:52px; letter-spacing:1px; }
+        .brand { text-align:right; }
+        hr { border:none; border-top:1px solid #bbb; margin:18px 0 22px; }
+        .meta { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:18px; }
+        .meta b { display:block; margin-bottom:6px; }
+        table { width:100%; border-collapse:collapse; margin-top:8px; }
+        th, td { border-bottom:1px solid #d1d5db; padding:10px 8px; font-size:14px; }
+        th { text-align:left; font-weight:700; }
+        .sum { margin-top:18px; display:flex; justify-content:space-between; }
+        .sum-right { min-width:260px; }
+        .sum-row { display:flex; justify-content:space-between; margin:6px 0; }
+        .total { font-weight:800; font-size:22px; }
+      </style>
+    </head><body><div class="wrap">
+      <div class="top"><h1>INVOICE</h1><div class="brand"><div style="font-size:42px;font-weight:700">Toko Herbal AmImUm</div><div>Dashboard POS Internal</div></div></div>
+      <hr/>
+      <div class="meta">
+        <div><b>KEPADA:</b><div>${receipt.cashierName}</div><div>${receipt.notes || '-'}</div></div>
+        <div style="text-align:right"><b>TANGGAL:</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div><b style="margin-top:8px">NO INVOICE:</b><div>${receipt.transactionId}</div></div>
+      </div>
+      <table>
+        <thead><tr><th>KETERANGAN</th><th style="text-align:right">HARGA</th><th style="text-align:center">JML</th><th style="text-align:right">TOTAL</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="4">Detail item belum tersedia</td></tr>'}</tbody>
+      </table>
+      <div class="sum">
+        <div><b>PEMBAYARAN:</b><div>Metode: ${String(receipt.paymentMethod).toUpperCase()}</div></div>
+        <div class="sum-right">
+          <div class="sum-row"><span>SUB TOTAL:</span><b>${formatRupiah(receipt.subtotal)}</b></div>
+          <div class="sum-row"><span>PAJAK:</span><b>${formatRupiah(0)}</b></div>
+          <div class="sum-row total"><span>TOTAL:</span><span>${formatRupiah(receipt.total)}</span></div>
+        </div>
+      </div>
+      <div style="margin-top:34px;font-weight:700">TERIMAKASIH ATAS PEMBELIAN ANDA</div>
+    </div><script>window.print();</script></body></html>`;
+  };
+
   const handlePrintReceipt = () => {
-    const target = document.getElementById('receipt-detail-print-area');
-    if (!target) {
+    if (!selectedReceiptWithItems) {
       toast.error('Detail nota belum tersedia untuk dicetak.');
       return;
     }
-
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    const printWindow = window.open('', '_blank', 'width=960,height=760');
     if (!printWindow) {
       toast.error('Popup diblokir browser. Izinkan pop-up untuk cetak nota.');
       return;
     }
-
     printWindow.document.open();
-    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Detail Nota Pembayaran</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th, td { border: 1px solid #e5e7eb; padding: 8px; font-size: 12px; text-align: left; }
-        th { background: #f9fafb; }
-      </style>
-    </head><body>${target.innerHTML}<script>window.print();</script></body></html>`);
+    printWindow.document.write(buildInvoiceHtml(selectedReceiptWithItems));
     printWindow.document.close();
   };
-
   const filteredReceipts = useMemo(() => {
     const q = receiptQuery.trim().toLowerCase();
     return receiptHistory.filter((receipt) => {
@@ -465,22 +505,10 @@ export default function CashierPage() {
   }, [selectedReceipt, selectedOrderDetailResponse]);
 
   const exportReceiptPdf = (receipt: ReceiptData) => {
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nota ${receipt.transactionId}</title></head><body>
-      <h2>Nota Pembayaran</h2>
-      <p>No: ${receipt.transactionId}</p>
-      <p>Tanggal: ${new Date(receipt.createdAt).toLocaleString('id-ID')}</p>
-      <p>Kasir: ${receipt.cashierName}</p>
-      <p>Pembayaran: ${String(receipt.paymentMethod).toUpperCase()}</p>
-      <hr/>
-      ${receipt.items.map((i) => `<div>${i.productName} (${i.variantName}) - ${i.qty} x ${formatRupiah(i.unitPrice)} = ${formatRupiah(i.qty * i.unitPrice)}</div>`).join('')}
-      <hr/><h3>Total: ${formatRupiah(receipt.total)}</h3>
-      ${receipt.notes ? `<p>Catatan: ${receipt.notes}</p>` : ''}
-      <script>window.print();</script>
-    </body></html>`;
     const w = window.open('', '_blank');
     if (!w) return toast.error('Popup diblokir browser. Izinkan pop-up untuk export PDF.');
     w.document.open();
-    w.document.write(html);
+    w.document.write(buildInvoiceHtml(receipt));
     w.document.close();
   };
 
