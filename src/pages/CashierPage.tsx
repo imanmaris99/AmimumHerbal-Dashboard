@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, ShoppingCart, Trash2, ReceiptText, Printer } from 'lucide-react';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { posCheckout, type PaymentMethod } from '@/lib/posInventory';
 import { Button } from '@/components/ui/button';
@@ -86,6 +87,7 @@ export default function CashierPage() {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -513,7 +515,12 @@ export default function CashierPage() {
                     <TableCell>{new Date(r.createdAt).toLocaleString('id-ID')}</TableCell>
                     <TableCell>{r.cashierName}</TableCell>
                     <TableCell>{formatRupiah(r.total)}</TableCell>
-                    <TableCell className="text-right"><Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button></TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button>
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${r.transactionId}`)}>Audit</Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
                 {filteredReceipts.length === 0 && <TableRow><TableCell colSpan={5} className="text-sm text-gray-500">Belum ada data nota.</TableCell></TableRow>}
