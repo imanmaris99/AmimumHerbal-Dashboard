@@ -108,6 +108,42 @@ export default function CashierPage() {
     }
   }, []);
 
+  const { data: productsResponse } = useQuery({
+    queryKey: ['cashier-products'],
+    queryFn: async () => {
+      const response = await api.get<ProductResponse>('/product/all');
+      return response.data;
+    },
+  });
+
+  const { data: variantsResponse, isLoading: variantsLoading, isError: variantsError } = useQuery({
+    queryKey: ['cashier-variants'],
+    queryFn: async () => {
+      const response = await api.get<VariantResponse>('/type/all');
+      return response.data;
+    },
+  });
+
+  const { data: backendOrdersResponse } = useQuery({
+    queryKey: ['cashier-receipt-history-backend'],
+    queryFn: async () => {
+      const response = await api.get<ApiResponse<AdminOrderItem>>('/admin/orders', {
+        params: { limit: 100, skip: 0 },
+      });
+      return response.data;
+    },
+  });
+
+  const { data: backendPaymentsResponse } = useQuery({
+    queryKey: ['cashier-receipt-payments-backend'],
+    queryFn: async () => {
+      const response = await api.get<ApiResponse<AdminPaymentInfo>>('/admin/payments', {
+        params: { limit: 100, skip: 0 },
+      });
+      return response.data;
+    },
+  });
+
   useEffect(() => {
     const backendOrders = backendOrdersResponse?.data || [];
     if (!backendOrders.length) return;
@@ -145,42 +181,6 @@ export default function CashierPage() {
       return merged.slice(0, 500);
     });
   }, [backendOrdersResponse, backendPaymentsResponse]);
-
-  const { data: productsResponse } = useQuery({
-    queryKey: ['cashier-products'],
-    queryFn: async () => {
-      const response = await api.get<ProductResponse>('/product/all');
-      return response.data;
-    },
-  });
-
-  const { data: variantsResponse, isLoading: variantsLoading, isError: variantsError } = useQuery({
-    queryKey: ['cashier-variants'],
-    queryFn: async () => {
-      const response = await api.get<VariantResponse>('/type/all');
-      return response.data;
-    },
-  });
-
-  const { data: backendOrdersResponse } = useQuery({
-    queryKey: ['cashier-receipt-history-backend'],
-    queryFn: async () => {
-      const response = await api.get<ApiResponse<AdminOrderItem>>('/admin/orders', {
-        params: { limit: 100, skip: 0 },
-      });
-      return response.data;
-    },
-  });
-
-  const { data: backendPaymentsResponse } = useQuery({
-    queryKey: ['cashier-receipt-payments-backend'],
-    queryFn: async () => {
-      const response = await api.get<ApiResponse<AdminPaymentInfo>>('/admin/payments', {
-        params: { limit: 100, skip: 0 },
-      });
-      return response.data;
-    },
-  });
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
