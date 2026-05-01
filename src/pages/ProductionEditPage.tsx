@@ -47,6 +47,7 @@ export default function ProductionEditPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadProgress, setLogoUploadProgress] = useState(0);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
@@ -88,12 +89,17 @@ export default function ProductionEditPage() {
           formData.append('file', logoFile);
           await api.put(`/brand/logo/${productionId}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (e) => {
+              const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+              setLogoUploadProgress(progress);
+            },
           });
           toast.success('Production dan logo berhasil diupdate');
         } catch (error: any) {
           toast.error(String(error?.response?.data?.detail?.message || 'Update production sukses, upload logo gagal'));
         } finally {
           setLogoUploading(false);
+          setLogoUploadProgress(0);
         }
       } else {
         toast.success(response?.message || t('productionEditPage.updateSuccess'));
@@ -250,20 +256,32 @@ export default function ProductionEditPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label>Logo brand / production</Label>
-                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4">
-                    <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}>Pilih File / Kamera</Button>
-                    <input ref={logoInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      if (!validateLogoFile(file)) {
-                        e.target.value = '';
-                        return;
-                      }
-                      setLogoFile(file);
-                      setLogoPreview(URL.createObjectURL(file));
-                    }} />
+                  <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
+                    <div className="flex flex-wrap gap-2">
+                      <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}>Pilih File / Kamera</Button>
+                      <input ref={logoInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!validateLogoFile(file)) {
+                          e.target.value = '';
+                          return;
+                        }
+                        setLogoFile(file);
+                        setLogoPreview(URL.createObjectURL(file));
+                      }} />
+                      {logoUploading && <span className="text-sm text-gray-600">Uploading image... {logoUploadProgress}%</span>}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan diupdate bersamaan proses update production.</p>
+
+                    {logoFile && (
+                      <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
+                        <span className="truncate">{logoFile.name}</span>
+                        <button type="button" className="text-red-600" onClick={() => { setLogoFile(null); setLogoPreview(''); setLogoUploadProgress(0); }}>Hapus</button>
+                      </div>
+                    )}
+
                     {(logoPreview || productionDetailQuery.data.photo_url) && (
                       <img src={logoPreview || productionDetailQuery.data.photo_url || ''} alt="logo-preview" className="mt-3 h-20 w-20 object-cover rounded-xl border border-gray-100" />
                     )}

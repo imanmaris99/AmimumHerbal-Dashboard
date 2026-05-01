@@ -61,6 +61,7 @@ export default function ProductionPage() {
   const [brandImageFile, setBrandImageFile] = useState<File | null>(null);
   const [brandImagePreview, setBrandImagePreview] = useState<string>('');
   const [uploadingBrandImage, setUploadingBrandImage] = useState(false);
+  const [brandUploadProgress, setBrandUploadProgress] = useState(0);
   const brandImageInputRef = useRef<HTMLInputElement | null>(null);
 
   const { data: productionsResponse, isLoading: productionsLoading } = useQuery({
@@ -93,12 +94,17 @@ export default function ProductionPage() {
           formData.append('file', brandImageFile);
           await api.put(`/brand/logo/${productionId}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: (e) => {
+              const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
+              setBrandUploadProgress(progress);
+            },
           });
           toast.success('Production dan logo berhasil dibuat');
         } catch (error: any) {
           toast.error(String(error?.response?.data?.detail?.message || 'Production dibuat, tapi upload logo gagal'));
         } finally {
           setUploadingBrandImage(false);
+          setBrandUploadProgress(0);
         }
       } else {
         toast.success(response?.message || t('productionPage.errors.createSuccess'));
@@ -107,6 +113,7 @@ export default function ProductionPage() {
       setCreateForm(initialCreateForm);
       setBrandImageFile(null);
       setBrandImagePreview('');
+      setBrandUploadProgress(0);
       queryClient.invalidateQueries({ queryKey: ['production-list'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
     },
@@ -202,20 +209,32 @@ export default function ProductionPage() {
                 <textarea id="production-description" value={createForm.description} onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Deskripsi singkat brand/production" className="min-h-[120px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label>Logo brand / production (opsional)</Label>
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4">
-                  <Button type="button" variant="outline" onClick={() => brandImageInputRef.current?.click()} disabled={uploadingBrandImage}>Pilih File / Kamera</Button>
-                  <input ref={brandImageInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    if (!validateLogoFile(file)) {
-                      e.target.value = '';
-                      return;
-                    }
-                    setBrandImageFile(file);
-                    setBrandImagePreview(URL.createObjectURL(file));
-                  }} />
+                <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" onClick={() => brandImageInputRef.current?.click()} disabled={uploadingBrandImage}>Pilih File / Kamera</Button>
+                    <input ref={brandImageInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (!validateLogoFile(file)) {
+                        e.target.value = '';
+                        return;
+                      }
+                      setBrandImageFile(file);
+                      setBrandImagePreview(URL.createObjectURL(file));
+                    }} />
+                    {uploadingBrandImage && <span className="text-sm text-gray-600">Uploading image... {brandUploadProgress}%</span>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan di-upload otomatis setelah production berhasil dibuat.</p>
+
+                  {brandImageFile && (
+                    <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
+                      <span className="truncate">{brandImageFile.name}</span>
+                      <button type="button" className="text-red-600" onClick={() => { setBrandImageFile(null); setBrandImagePreview(''); setBrandUploadProgress(0); }}>Hapus</button>
+                    </div>
+                  )}
+
                   {brandImagePreview && <img src={brandImagePreview} alt="brand-preview" className="mt-3 h-20 w-20 object-cover rounded-xl border border-gray-100" />}
                 </div>
               </div>
