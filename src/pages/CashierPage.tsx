@@ -22,6 +22,7 @@ type VariantItem = {
   product?: string;
   name?: string;
   variant?: string | null;
+  img?: string | null;
   stock?: number;
   price?: number | null;
   discount?: number | null;
@@ -326,6 +327,7 @@ export default function CashierPage() {
           productId: String(item.product_id || ''),
           productName,
           variantName,
+          img: item.img || null,
           stock: Number(item.stock ?? 0),
           finalPrice,
         };
@@ -565,6 +567,7 @@ export default function CashierPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Variant</TableHead>
+                      <TableHead>Gambar</TableHead>
                       <TableHead>Harga</TableHead>
                       <TableHead>Stok</TableHead>
                       <TableHead className="text-right">Aksi</TableHead>
@@ -577,6 +580,18 @@ export default function CashierPage() {
                           <div className="font-medium text-gray-900">{item.productName}</div>
                           <div className="text-xs text-gray-500">{item.variantName}</div>
                         </TableCell>
+                        <TableCell>
+                          <img
+                            src={item.img || 'https://placehold.co/56x56?text=No+Image'}
+                            alt={item.variantName}
+                            className="w-12 h-12 rounded-lg object-cover border border-gray-100"
+                            loading="lazy"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
+                            }}
+                          />
+                        </TableCell>
                         <TableCell>{formatRupiah(item.finalPrice)}</TableCell>
                         <TableCell>{item.stock}</TableCell>
                         <TableCell className="text-right">
@@ -586,7 +601,7 @@ export default function CashierPage() {
                     ))}
                     {filtered.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-sm text-gray-500">Tidak ada variant sesuai pencarian.</TableCell>
+                        <TableCell colSpan={5} className="text-sm text-gray-500">Tidak ada variant sesuai pencarian.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
