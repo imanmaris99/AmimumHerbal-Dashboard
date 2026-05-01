@@ -43,6 +43,24 @@ interface AdminOrderItem {
   customer_name?: string | null;
 }
 
+interface AdminOrderDetailData {
+  id: string;
+  order_item_lists: Array<{
+    id: number;
+    product_name?: string | null;
+    variant_product?: string | null;
+    quantity?: number | null;
+    price_per_item?: number | null;
+    total_price?: number | null;
+  }>;
+}
+
+interface AdminOrderDetailResponse {
+  status_code: number;
+  message: string;
+  data: AdminOrderDetailData;
+}
+
 interface AdminPaymentInfo {
   id: string;
   order_id: string;
@@ -412,6 +430,40 @@ export default function CashierPage() {
     return receiptHistory.find((r) => r.transactionId === selectedReceiptId) || lastReceipt;
   }, [receiptHistory, selectedReceiptId, lastReceipt]);
 
+  const { data: selectedOrderDetailResponse } = useQuery({
+    queryKey: ['cashier-receipt-order-detail', selectedReceipt?.transactionId],
+    queryFn: async () => {
+      const response = await api.get<AdminOrderDetailResponse>(`/admin/orders/${selectedReceipt?.transactionId}`);
+      return response.data;
+    },
+    enabled: !!selectedReceipt?.transactionId,
+  });
+
+  const selectedReceiptWithItems = useMemo(() => {
+    if (!selectedReceipt) return null;
+    const orderItems = selectedOrderDetailResponse?.data?.order_item_lists || [];
+    if (!orderItems.length) return selectedReceipt;
+
+    const mappedItems: ReceiptItem[] = orderItems.map((item) => ({
+      variantId: Number(item.id || 0),
+      productId: String(selectedReceipt.transactionId),
+      productName: item.product_name || 'Produk',
+      variantName: item.variant_product || '-',
+      unitPrice: Number(item.price_per_item || 0),
+      stock: 0,
+      qty: Number(item.quantity || 0),
+    }));
+
+    const computedTotal = mappedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
+
+    return {
+      ...selectedReceipt,
+      items: mappedItems,
+      subtotal: computedTotal || selectedReceipt.subtotal,
+      total: computedTotal || selectedReceipt.total,
+    };
+  }, [selectedReceipt, selectedOrderDetailResponse]);
+
   const exportReceiptPdf = (receipt: ReceiptData) => {
     const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nota ${receipt.transactionId}</title></head><body>
       <h2>Nota Pembayaran</h2>
@@ -581,7 +633,7 @@ export default function CashierPage() {
         </CardContent>
       </Card>
 
-      {selectedReceipt && (
+      {selectedReceiptWithItems && (
         <Card id="receipt-detail-print-area" className="print:shadow-none print:border-none">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -590,7 +642,7 @@ export default function CashierPage() {
             </div>
             <div className="flex gap-2 print:hidden">
               <Button variant="outline" onClick={handlePrintReceipt}><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
-              <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceipt)}>Export PDF</Button>
+              <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceiptWithItems)}>Export PDF</Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
@@ -607,19 +659,19 @@ export default function CashierPage() {
               </div>
               <div className="mt-3 h-px bg-gray-100" />
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm">
-                <p><strong>No. Nota:</strong> {selectedReceipt.transactionId}</p>
-                <p><strong>Tanggal:</strong> {new Date(selectedReceipt.createdAt).toLocaleString('id-ID')}</p>
-                <p><strong>Kasir:</strong> {selectedReceipt.cashierName}</p>
-                <p><strong>Metode Bayar:</strong> {String(selectedReceipt.paymentMethod).toUpperCase()}</p>
+                <p><strong>No. Nota:</strong> {selectedReceiptWithItems.transactionId}</p>
+                <p><strong>Tanggal:</strong> {new Date(selectedReceiptWithItems.createdAt).toLocaleString('id-ID')}</p>
+                <p><strong>Kasir:</strong> {selectedReceiptWithItems.cashierName}</p>
+                <p><strong>Metode Bayar:</strong> {String(selectedReceiptWithItems.paymentMethod).toUpperCase()}</p>
               </div>
             </div>
 
             <div className="rounded-xl border overflow-hidden">
               <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
-                {selectedReceipt.items.length === 0 ? (
+                {selectedReceiptWithItems.items.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</TableCell></TableRow>
-                ) : selectedReceipt.items.map((row) => (
-                  <TableRow key={`r-${selectedReceipt.transactionId}-${row.variantId}`}>
+                ) : selectedReceiptWithItems.items.map((row) => (
+                  <TableRow key={`r-${selectedReceiptWithItems.transactionId}-${row.variantId}`}>
                     <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
                     <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
                   </TableRow>
@@ -627,13 +679,13 @@ export default function CashierPage() {
               </TableBody></Table>
             </div>
 
-            {selectedReceipt.notes && <p><strong>Catatan:</strong> {selectedReceipt.notes}</p>}
+            {selectedReceiptWithItems.notes && <p><strong>Catatan:</strong> {selectedReceiptWithItems.notes}</p>}
 
             <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 space-y-2">
-              <div className="flex items-center justify-between"><span>Subtotal</span><span>{formatRupiah(selectedReceipt.subtotal)}</span></div>
+              <div className="flex items-center justify-between"><span>Subtotal</span><span>{formatRupiah(selectedReceiptWithItems.subtotal)}</span></div>
               <div className="flex items-center justify-between"><span>Diskon</span><span>{formatRupiah(0)}</span></div>
               <div className="h-px bg-gray-200" />
-              <div className="flex items-center justify-between text-base font-bold"><span>Total Bayar</span><span>{formatRupiah(selectedReceipt.total)}</span></div>
+              <div className="flex items-center justify-between text-base font-bold"><span>Total Bayar</span><span>{formatRupiah(selectedReceiptWithItems.total)}</span></div>
             </div>
 
             <div className="text-xs text-gray-500 space-y-1">
