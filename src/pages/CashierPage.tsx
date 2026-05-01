@@ -593,16 +593,32 @@ export default function CashierPage() {
               <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceipt)}>Export PDF</Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <p><strong>No. Transaksi:</strong> {selectedReceipt.transactionId}</p>
-              <p><strong>Tanggal:</strong> {new Date(selectedReceipt.createdAt).toLocaleString('id-ID')}</p>
-              <p><strong>Kasir:</strong> {selectedReceipt.cashierName}</p>
-              <p><strong>Pembayaran:</strong> {String(selectedReceipt.paymentMethod).toUpperCase()}</p>
+          <CardContent className="space-y-4 text-sm">
+            <div className="rounded-2xl border border-gray-200 bg-white p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-base font-bold text-gray-900">Toko Herbal AmImUm</p>
+                  <p className="text-xs text-gray-500">Nota Pembayaran Resmi (POS Internal)</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Status</p>
+                  <p className="text-sm font-semibold text-emerald-600">PAID</p>
+                </div>
+              </div>
+              <div className="mt-3 h-px bg-gray-100" />
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm">
+                <p><strong>No. Nota:</strong> {selectedReceipt.transactionId}</p>
+                <p><strong>Tanggal:</strong> {new Date(selectedReceipt.createdAt).toLocaleString('id-ID')}</p>
+                <p><strong>Kasir:</strong> {selectedReceipt.cashierName}</p>
+                <p><strong>Metode Bayar:</strong> {String(selectedReceipt.paymentMethod).toUpperCase()}</p>
+              </div>
             </div>
+
             <div className="rounded-xl border overflow-hidden">
               <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
-                {selectedReceipt.items.map((row) => (
+                {selectedReceipt.items.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</TableCell></TableRow>
+                ) : selectedReceipt.items.map((row) => (
                   <TableRow key={`r-${selectedReceipt.transactionId}-${row.variantId}`}>
                     <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
                     <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
@@ -610,8 +626,20 @@ export default function CashierPage() {
                 ))}
               </TableBody></Table>
             </div>
+
             {selectedReceipt.notes && <p><strong>Catatan:</strong> {selectedReceipt.notes}</p>}
-            <div className="border-t pt-3 flex items-center justify-between"><span className="font-semibold">Total Bayar</span><span className="text-lg font-bold">{formatRupiah(selectedReceipt.total)}</span></div>
+
+            <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 space-y-2">
+              <div className="flex items-center justify-between"><span>Subtotal</span><span>{formatRupiah(selectedReceipt.subtotal)}</span></div>
+              <div className="flex items-center justify-between"><span>Diskon</span><span>{formatRupiah(0)}</span></div>
+              <div className="h-px bg-gray-200" />
+              <div className="flex items-center justify-between text-base font-bold"><span>Total Bayar</span><span>{formatRupiah(selectedReceipt.total)}</span></div>
+            </div>
+
+            <div className="text-xs text-gray-500 space-y-1">
+              <p>Terima kasih telah bertransaksi di Toko Herbal AmImUm.</p>
+              <p>Nota ini sah tanpa tanda tangan. Simpan nota untuk kebutuhan komplain/retur sesuai kebijakan toko.</p>
+            </div>
           </CardContent>
         </Card>
       )}
