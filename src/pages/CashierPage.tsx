@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, ShoppingCart, Trash2, ReceiptText, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -32,6 +32,20 @@ interface ProductResponse {
 
 interface VariantResponse {
   data: VariantItem[];
+}
+
+interface AdminOrderItem {
+  id: string;
+  total_price: number;
+  notes?: string | null;
+  created_at: string;
+  customer_name?: string | null;
+}
+
+interface ApiResponse<T> {
+  status_code: number;
+  message: string;
+  data: T[];
 }
 
 type CartItem = {
@@ -71,6 +85,7 @@ export default function CashierPage() {
   const [receiptDate, setReceiptDate] = useState('');
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     try {
@@ -84,6 +99,31 @@ export default function CashierPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const backendOrders = backendOrdersResponse?.data || [];
+    if (!backendOrders.length) return;
+
+    const mapped: ReceiptData[] = backendOrders.map((o) => ({
+      transactionId: String(o.id),
+      createdAt: o.created_at,
+      cashierName: o.customer_name || 'Kasir',
+      paymentMethod: 'cash',
+      notes: o.notes || undefined,
+      items: [],
+      subtotal: Number(o.total_price || 0),
+      total: Number(o.total_price || 0),
+    }));
+
+    setReceiptHistory((prev) => {
+      const merged = [...mapped, ...prev].reduce<ReceiptData[]>((acc, curr) => {
+        if (!acc.find((x) => x.transactionId === curr.transactionId)) acc.push(curr);
+        return acc;
+      }, []);
+      localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(merged.slice(0, 500)));
+      return merged.slice(0, 500);
+    });
+  }, [backendOrdersResponse]);
+
   const { data: productsResponse } = useQuery({
     queryKey: ['cashier-products'],
     queryFn: async () => {
@@ -96,6 +136,16 @@ export default function CashierPage() {
     queryKey: ['cashier-variants'],
     queryFn: async () => {
       const response = await api.get<VariantResponse>('/type/all');
+      return response.data;
+    },
+  });
+
+  const { data: backendOrdersResponse } = useQuery({
+    queryKey: ['cashier-receipt-history-backend'],
+    queryFn: async () => {
+      const response = await api.get<ApiResponse<AdminOrderItem>>('/admin/orders', {
+        params: { limit: 100, skip: 0 },
+      });
       return response.data;
     },
   });
@@ -175,6 +225,7 @@ export default function CashierPage() {
 
       setCart([]);
       setNotes('');
+      queryClient.invalidateQueries({ queryKey: ['cashier-receipt-history-backend'] });
     },
     onError: (error: any) => {
       const message =
