@@ -179,9 +179,26 @@ export default function VariantEditPage() {
     updateVariantMutation.mutate(form);
   };
 
+  const validateImageFile = (file: File) => {
+    const isImage = file.type.startsWith('image/');
+    const maxSizeBytes = 2 * 1024 * 1024;
+    if (!isImage) {
+      toast.error('File gambar harus berupa image');
+      return false;
+    }
+    if (file.size > maxSizeBytes) {
+      toast.error('Ukuran gambar maksimal 2MB');
+      return false;
+    }
+    return true;
+  };
+
   const handleImageUpload = () => {
     if (!imageFile) {
       toast.error(t('variantsPage.messages.selectImage'));
+      return;
+    }
+    if (!validateImageFile(imageFile)) {
       return;
     }
     uploadImageMutation.mutate(imageFile);
@@ -358,7 +375,15 @@ export default function VariantEditPage() {
                   <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
                     <div className="flex flex-wrap gap-2">
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadImageMutation.isPending}>Pilih File / Kamera</Button>
-                      <input ref={fileInputRef} id="edit-variant-image-page" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+                      <input ref={fileInputRef} id="edit-variant-image-page" type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        if (!validateImageFile(file)) {
+                          e.target.value = '';
+                          return;
+                        }
+                        setImageFile(file);
+                      }} />
                       {uploadImageMutation.isPending && <span className="text-sm text-gray-600">Uploading image... {uploadProgress}%</span>}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">Gambar variant akan menggantikan gambar lama setelah upload berhasil.</p>
