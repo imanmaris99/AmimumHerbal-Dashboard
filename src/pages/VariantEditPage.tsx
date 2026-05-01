@@ -6,6 +6,7 @@ import { ArrowLeft, Boxes, ImagePlus, Loader2, Save, Trash2 } from 'lucide-react
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -177,20 +178,6 @@ export default function VariantEditPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     updateVariantMutation.mutate(form);
-  };
-
-  const validateImageFile = (file: File) => {
-    const isImage = file.type.startsWith('image/');
-    const maxSizeBytes = 2 * 1024 * 1024;
-    if (!isImage) {
-      toast.error('File gambar harus berupa image');
-      return false;
-    }
-    if (file.size > maxSizeBytes) {
-      toast.error('Ukuran gambar maksimal 2MB');
-      return false;
-    }
-    return true;
   };
 
   const handleImageUpload = () => {

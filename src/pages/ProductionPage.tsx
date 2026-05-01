@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Factory, PlusCircle, Search, Tags, LayoutGrid, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { validateImageFile } from '@/lib/imageValidation';
 
 interface ProductionItem {
   id: number;
@@ -139,20 +140,6 @@ export default function ProductionPage() {
     });
   }, [productions, search]);
 
-  const validateLogoFile = (file: File) => {
-    const isImage = file.type.startsWith('image/');
-    const maxSizeBytes = 2 * 1024 * 1024;
-    if (!isImage) {
-      toast.error('File logo harus berupa gambar');
-      return false;
-    }
-    if (file.size > maxSizeBytes) {
-      toast.error('Ukuran logo maksimal 2MB');
-      return false;
-    }
-    return true;
-  };
-
   const submitProduction = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -217,7 +204,7 @@ export default function ProductionPage() {
                     <input ref={brandImageInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      if (!validateLogoFile(file)) {
+                      if (!validateImageFile(file)) {
                         e.target.value = '';
                         return;
                       }

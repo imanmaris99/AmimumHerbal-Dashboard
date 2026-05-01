@@ -6,6 +6,7 @@ import { ArrowLeft, Factory, Loader2, PencilLine, Save, Tags } from 'lucide-reac
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -118,20 +119,6 @@ export default function ProductionEditPage() {
   });
 
   const summaryDescription = useMemo(() => productionDetailQuery.data?.description_list?.[0] || '-', [productionDetailQuery.data]);
-
-  const validateLogoFile = (file: File) => {
-    const isImage = file.type.startsWith('image/');
-    const maxSizeBytes = 2 * 1024 * 1024;
-    if (!isImage) {
-      toast.error('File logo harus berupa gambar');
-      return false;
-    }
-    if (file.size > maxSizeBytes) {
-      toast.error('Ukuran logo maksimal 2MB');
-      return false;
-    }
-    return true;
-  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -264,7 +251,7 @@ export default function ProductionEditPage() {
                       <input ref={logoInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        if (!validateLogoFile(file)) {
+                        if (!validateImageFile(file)) {
                           e.target.value = '';
                           return;
                         }
