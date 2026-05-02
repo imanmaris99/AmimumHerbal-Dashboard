@@ -163,8 +163,8 @@ export default function OverviewPage() {
               </Card>
             ))
           : stats.map((stat) => (
-              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.06] transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
+              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden relative bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:border-slate-600">
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.06] dark:group-hover:opacity-[0.12] transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
 
                 <CardContent className="p-6 relative">
                   <div className="flex items-center justify-between">
@@ -272,7 +272,7 @@ export default function OverviewPage() {
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
             <CardDescription>{t('overview.recentOrdersDesc')}</CardDescription>
           </div>
-          <Button variant="outline" className="rounded-xl border-gray-100 font-bold text-xs h-9 w-full sm:w-auto">
+          <Button variant="outline" className="rounded-xl border-gray-100 dark:border-slate-600 font-bold text-xs h-9 w-full sm:w-auto hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
             {t('overview.viewAll')}
           </Button>
         </CardHeader>
@@ -301,7 +301,7 @@ export default function OverviewPage() {
                 </TableRow>
               ) : (
                 recentOrders.map((order, index) => (
-                  <TableRow key={order.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
+                  <TableRow key={order.id} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
                     <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
                     <TableCell>
                       <div>
