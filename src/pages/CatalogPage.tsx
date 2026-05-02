@@ -575,6 +575,36 @@ export default function CatalogPage() {
                           Edit Produk
                         </Button>
                       </div>
+
+                      {selectedProduct.validVariants?.length ? (
+                        <div className="pt-3 space-y-2">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Quick Update / Upload Varian</p>
+                          <div className="space-y-2">
+                            {selectedProduct.validVariants.slice(0, 5).map((variant) => (
+                              <div key={variant.id} className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-white/80 px-3 py-2">
+                                <div className="min-w-0">
+                                  <p className="text-xs font-semibold text-emerald-900 truncate">{variant.name || '-'} {variant.variant ? `- ${variant.variant}` : ''}</p>
+                                  <p className="text-[10px] text-emerald-700">ID Varian: {variant.id}</p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  className="rounded-lg whitespace-nowrap"
+                                  onClick={() => navigate(`/variants/edit/${variant.id}`)}
+                                >
+                                  Update & Upload
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                          {selectedProduct.validVariants.length > 5 ? (
+                            <p className="text-[10px] text-emerald-700">Menampilkan 5 varian pertama. Lihat semua dari halaman Manajemen Varian.</p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <p className="pt-3 text-xs text-emerald-800">Produk ini belum punya varian. Lanjutkan ke "Lanjut Kelola Varian" untuk membuat varian baru.</p>
+                      )}
                     </div>
                   </div>
                 </div>
