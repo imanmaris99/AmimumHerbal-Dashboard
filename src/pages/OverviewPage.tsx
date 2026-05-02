@@ -163,7 +163,7 @@ export default function OverviewPage() {
               </Card>
             ))
           : stats.map((stat) => (
-              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative bg-white">
+              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md transition-all duration-300 overflow-hidden relative bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.06] transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
 
                 <CardContent className="p-6 relative">
@@ -190,7 +190,7 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 md:gap-6 xl:gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+        <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-8 pt-8 px-6 sm:px-8">
             <div>
               <CardTitle className="text-lg font-bold tracking-tight">{t('overview.orderStatus')}</CardTitle>
@@ -228,7 +228,7 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+        <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
           <CardHeader className="pt-8 px-8">
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.paymentStatus')}</CardTitle>
             <CardDescription>{t('overview.paymentStatusDesc')}</CardDescription>
@@ -266,7 +266,7 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-8 py-8">
           <div>
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
