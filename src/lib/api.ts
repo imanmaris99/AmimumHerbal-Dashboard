@@ -2,8 +2,14 @@ import axios from 'axios';
 import { QueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 
+const apiBaseUrl = import.meta.env.VITE_API_URL;
+
+if (!apiBaseUrl) {
+  throw new Error('VITE_API_URL is required. Please set it in your environment configuration.');
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://api.103-174-114-183.sslip.io',
+  baseURL: apiBaseUrl,
 });
 
 export const dashboardQueryClient = new QueryClient({
