@@ -373,9 +373,9 @@ export default function ProductEditPage() {
                 Product ini saat ini terhubung ke <strong>{variantCount}</strong> variant / pack type. Edit product menjaga layer inti katalog, sedangkan harga jual operasional per variant tetap dikelola di modul Variants.
               </div>
 
-              <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm space-y-3">
+              <div className="rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 p-4 text-sm space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="flex items-center gap-2"><Boxes className="w-4 h-4" />Variant slots aktif</span>
+                  <span className="flex items-center gap-2 font-semibold"><Boxes className="w-4 h-4 text-emerald-600" />Variant slots aktif</span>
                   <strong>{variantCount}</strong>
                 </div>
 
@@ -389,12 +389,12 @@ export default function ProductEditPage() {
                 {variantCount > 0 ? (
                   <div className="space-y-2">
                     {(productDetailQuery.data?.variants_list || []).map((variant) => (
-                      <div key={variant.id} className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 flex items-center justify-between gap-3">
+                      <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2 flex items-center justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-semibold truncate">{variant.variant || `Variant #${variant.id}`}</p>
-                          <p className="text-[10px] text-slate-300">ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
+                          <p className="text-[10px] text-slate-500">ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
                         </div>
-                        <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-600 text-white hover:bg-slate-700" onClick={() => navigate(`/variants/edit/${variant.id}`)}>
+                        <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
                           <PencilLine className="w-4 h-4 mr-2" />
                           Edit Variant
                         </Button>

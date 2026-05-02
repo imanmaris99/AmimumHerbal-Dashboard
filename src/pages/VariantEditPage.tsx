@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Boxes, ImagePlus, Loader2, Save, Trash2 } from 'lucide-react';
@@ -50,6 +50,8 @@ export default function VariantEditPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { variantId } = useParams<{ variantId: string }>();
+  const [searchParams] = useSearchParams();
+  const parentProductId = searchParams.get('productId') || '';
 
   const [form, setForm] = useState<UpdateVariantPayload>({
     name: '',
@@ -106,7 +108,7 @@ export default function VariantEditPage() {
     onSuccess: (response: any) => {
       toast.success(response?.message || t('variantsPage.messages.updateSuccess'));
       invalidateVariantData();
-      navigate('/variants');
+      navigate(parentProductId ? `/variants?productId=${parentProductId}` : '/variants');
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
@@ -155,7 +157,7 @@ export default function VariantEditPage() {
     onSuccess: (response: any) => {
       toast.success(response?.message || 'Variant berhasil dihapus.');
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
-      navigate('/variants');
+      navigate(parentProductId ? `/variants?productId=${parentProductId}` : '/variants');
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;
@@ -204,10 +206,10 @@ export default function VariantEditPage() {
           type="button"
           variant="outline"
           className="rounded-xl border-gray-200 bg-white text-gray-700 hover:bg-gray-50 w-fit"
-          onClick={() => navigate('/variants')}
+          onClick={() => navigate(parentProductId ? `/catalog/edit/${parentProductId}` : '/variants')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Variants
+          {parentProductId ? 'Kembali ke Edit Product' : 'Back to Variants'}
         </Button>
         <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
           <div>
@@ -215,6 +217,9 @@ export default function VariantEditPage() {
             <p className="text-sm text-gray-500 mt-1 max-w-3xl">
               Kelola data, gambar, dan status variant dari satu halaman kerja yang lebih ringkas dan fokus.
             </p>
+            {parentProductId ? (
+              <p className="text-xs text-emerald-700 mt-2">Context product induk aktif: {parentProductId}</p>
+            ) : null}
           </div>
           <p className="text-xs font-medium text-emerald-600">Admin & Owner access</p>
         </div>
@@ -333,7 +338,7 @@ export default function VariantEditPage() {
                   <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4 border-t border-gray-100 pt-5">
                     <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar variants.</p>
                     <div className="flex flex-col-reverse sm:flex-row gap-3 w-full md:w-auto">
-                      <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto text-gray-600" onClick={() => navigate('/variants')}>
+                      <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto text-gray-600" onClick={() => navigate(parentProductId ? `/catalog/edit/${parentProductId}` : '/variants')}>
                         Cancel
                       </Button>
                       <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateVariantMutation.isPending}>
