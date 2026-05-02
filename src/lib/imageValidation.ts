@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 
-export function validateImageFile(file: File, maxSizeMb = 2) {
+// Keep aligned with BE MAX_FILE_SIZE (10MB)
+export function validateImageFile(file: File, maxSizeMb = 10) {
   const isImage = file.type.startsWith('image/');
   const maxSizeBytes = maxSizeMb * 1024 * 1024;
   if (!isImage) {
