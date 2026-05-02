@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,6 +75,7 @@ const initialForm: CreateVariantPayload = {
 export default function VariantsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [form, setForm] = useState<CreateVariantPayload>(initialForm);
@@ -143,6 +144,13 @@ export default function VariantsPage() {
 
   const products = productsResponse?.data ?? [];
   const variants = variantsResponse?.data ?? [];
+
+  useEffect(() => {
+    const productIdFromCatalog = searchParams.get('productId');
+    if (!productIdFromCatalog) return;
+
+    setForm((prev) => (prev.product_id ? prev : { ...prev, product_id: productIdFromCatalog }));
+  }, [searchParams]);
 
   const productLookup = useMemo(() => {
     return new Map(products.map((product) => [String(product.id), product]));

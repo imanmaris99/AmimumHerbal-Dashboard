@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
+import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -519,10 +519,16 @@ export default function CatalogPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
-                            <PencilLine className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/variants?productId=${product.id}`); }}>
+                              <Layers className="w-4 h-4 mr-2" />
+                              Kelola Varian
+                            </Button>
+                            <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
+                              <PencilLine className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -541,6 +547,16 @@ export default function CatalogPage() {
                       <p>Production: {selectedProduct.brand_info?.name || '-'}</p>
                       <p>Harga: {selectedProduct.priceSummary}</p>
                       <p>Variant aktif: {selectedProduct.validVariants?.length || 0}</p>
+                      <div className="pt-2 flex flex-wrap gap-2">
+                        <Button type="button" size="sm" className="rounded-xl" onClick={() => navigate(`/variants?productId=${selectedProduct.id}`)}>
+                          <Layers className="w-4 h-4 mr-2" />
+                          Lanjut Kelola Varian
+                        </Button>
+                        <Button type="button" size="sm" variant="outline" className="rounded-xl" onClick={() => navigate(`/catalog/edit/${selectedProduct.id}`)}>
+                          <PencilLine className="w-4 h-4 mr-2" />
+                          Edit Produk
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
