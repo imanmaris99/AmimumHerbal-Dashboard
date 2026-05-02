@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine, Layers } from 'lucide-react';
+import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 
@@ -106,7 +106,6 @@ export default function CatalogPage() {
   const [variantFocus, setVariantFocus] = useState<'all' | 'needsVariant' | 'ready'>('all');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [variantQuickPage, setVariantQuickPage] = useState(1);
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isUploadingImages, setIsUploadingImages] = useState(false);
@@ -295,23 +294,6 @@ export default function CatalogPage() {
     return normalizedProducts.find((item) => item.id === selectedProductId) || null;
   }, [normalizedProducts, selectedProductId]);
 
-  const QUICK_VARIANT_PAGE_SIZE = 5;
-  const selectedProductVariants = selectedProduct?.validVariants || [];
-  const totalVariantQuickPages = Math.max(1, Math.ceil(selectedProductVariants.length / QUICK_VARIANT_PAGE_SIZE));
-  const pagedSelectedVariants = selectedProductVariants.slice(
-    (variantQuickPage - 1) * QUICK_VARIANT_PAGE_SIZE,
-    variantQuickPage * QUICK_VARIANT_PAGE_SIZE,
-  );
-
-  useEffect(() => {
-    setVariantQuickPage(1);
-  }, [selectedProductId]);
-
-  useEffect(() => {
-    if (variantQuickPage > totalVariantQuickPages) {
-      setVariantQuickPage(totalVariantQuickPages);
-    }
-  }, [variantQuickPage, totalVariantQuickPages]);
 
   const handleChange = (field: keyof CreateProductPayload, value: string) => {
     setForm((prev) => ({
@@ -551,31 +533,15 @@ export default function CatalogPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            className="h-auto p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/variants?productId=${product.id}`);
-                            }}
-                          >
-                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase hover:bg-emerald-100 hover:text-emerald-700 transition-colors">
-                              {product.validVariants?.length || 0} variants
-                            </Badge>
-                          </Button>
+                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
+                            {product.validVariants?.length || 0} variants
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/variants?productId=${product.id}`); }}>
-                              <Layers className="w-4 h-4 mr-2" />
-                              Kelola Varian
-                            </Button>
-                            <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
-                              <PencilLine className="w-4 h-4 mr-2" />
-                              Edit
-                            </Button>
-                          </div>
+                          <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
+                            <PencilLine className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -595,51 +561,15 @@ export default function CatalogPage() {
                       <p>Harga: {selectedProduct.priceSummary}</p>
                       <p>Variant aktif: {selectedProduct.validVariants?.length || 0}</p>
                       <div className="pt-2 flex flex-wrap gap-2">
-                        <Button type="button" size="sm" className="rounded-xl" onClick={() => navigate(`/variants?productId=${selectedProduct.id}`)}>
-                          <Layers className="w-4 h-4 mr-2" />
-                          Lanjut Kelola Varian
-                        </Button>
                         <Button type="button" size="sm" variant="outline" className="rounded-xl" onClick={() => navigate(`/catalog/edit/${selectedProduct.id}`)}>
                           <PencilLine className="w-4 h-4 mr-2" />
                           Edit Produk
                         </Button>
                       </div>
 
-                      {selectedProduct.validVariants?.length ? (
-                        <div className="pt-3 space-y-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Quick Update / Upload Varian</p>
-                          <div className="space-y-2">
-                            {pagedSelectedVariants.map((variant) => (
-                              <div key={variant.id} className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-white/80 px-3 py-2">
-                                <div className="min-w-0">
-                                  <p className="text-xs font-semibold text-emerald-900 truncate">{variant.name || '-'} {variant.variant ? `- ${variant.variant}` : ''}</p>
-                                  <p className="text-[10px] text-emerald-700">ID Varian: {variant.id}</p>
-                                </div>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="outline"
-                                  className="rounded-lg whitespace-nowrap"
-                                  onClick={() => navigate(`/variants/edit/${variant.id}`)}
-                                >
-                                  Update & Upload
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                          {selectedProductVariants.length > QUICK_VARIANT_PAGE_SIZE ? (
-                            <div className="flex items-center justify-between gap-3 pt-2">
-                              <p className="text-[10px] text-emerald-700">Halaman {variantQuickPage} dari {totalVariantQuickPages}</p>
-                              <div className="flex items-center gap-2">
-                                <Button type="button" size="sm" variant="outline" className="rounded-lg" disabled={variantQuickPage <= 1} onClick={() => setVariantQuickPage((prev) => Math.max(1, prev - 1))}>Prev</Button>
-                                <Button type="button" size="sm" variant="outline" className="rounded-lg" disabled={variantQuickPage >= totalVariantQuickPages} onClick={() => setVariantQuickPage((prev) => Math.min(totalVariantQuickPages, prev + 1))}>Next</Button>
-                              </div>
-                            </div>
-                          ) : null}
-                        </div>
-                      ) : (
-                        <p className="pt-3 text-xs text-emerald-800">Produk ini belum punya varian. Lanjutkan ke "Lanjut Kelola Varian" untuk membuat varian baru.</p>
-                      )}
+                      <p className="pt-3 text-xs text-emerald-800">
+                        Untuk tambah, update, dan upload varian per product, lanjutkan dari halaman <strong>Edit Produk</strong> pada section <strong>Variant slots aktif</strong>.
+                      </p>
                     </div>
                   </div>
                 </div>
