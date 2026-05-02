@@ -551,9 +551,19 @@ export default function CatalogPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                            {product.validVariants?.length || 0} variants
-                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="h-auto p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/variants?productId=${product.id}`);
+                            }}
+                          >
+                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase hover:bg-emerald-100 hover:text-emerald-700 transition-colors">
+                              {product.validVariants?.length || 0} variants
+                            </Badge>
+                          </Button>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
