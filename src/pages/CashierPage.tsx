@@ -570,8 +570,8 @@ export default function CashierPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kasir (POS)</h1>
-        <p className="text-sm text-gray-600 mt-1">Integrasi awal sudah aktif ke data produk/variant live untuk simulasi cart kasir internal.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Kasir (POS)</h1>
+        <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">Integrasi awal sudah aktif ke data produk/variant live untuk simulasi cart kasir internal.</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
@@ -583,15 +583,15 @@ export default function CashierPage() {
           <CardContent className="space-y-4">
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari produk/variant/id..." />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none">
+              <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 <option value="all">Semua Produsen</option>
                 {producerOptions.map((x) => <option key={x} value={x}>{x}</option>)}
               </select>
-              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none">
+              <select value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} className="h-10 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 <option value="all">Semua Produk</option>
                 {productOptions.map((x) => <option key={x} value={x}>{x}</option>)}
               </select>
-              <Button type="button" variant="outline" onClick={() => { setSelectedProducer('all'); setSelectedProduct('all'); setSearch(''); }}>Reset Filter</Button>
+              <Button type="button" variant="outline" className="dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700/50" onClick={() => { setSelectedProducer('all'); setSelectedProduct('all'); setSearch(''); }}>Reset Filter</Button>
             </div>
 
             {variantsLoading ? (
@@ -612,10 +612,10 @@ export default function CashierPage() {
                   </TableHeader>
                   <TableBody>
                     {filtered.map((item) => (
-                      <TableRow key={item.id}>
+                      <TableRow key={item.id} className="dark:hover:bg-slate-700/30 dark:border-slate-700">
                         <TableCell>
-                          <div className="font-medium text-gray-900">{item.productName}</div>
-                          <div className="text-xs text-gray-500">{item.variantName}</div>
+                          <div className="font-medium text-gray-900 dark:text-slate-100">{item.productName}</div>
+                          <div className="text-xs text-gray-500 dark:text-slate-400">{item.variantName}</div>
                         </TableCell>
                         <TableCell>
                           <img
@@ -656,9 +656,9 @@ export default function CashierPage() {
           <CardContent className="space-y-4">
             <div className="space-y-3 max-h-[330px] overflow-auto pr-1">
               {cart.map((row) => (
-                <div key={row.variantId} className="rounded-xl border p-3">
-                  <p className="font-medium text-gray-900 text-sm">{row.productName}</p>
-                  <p className="text-xs text-gray-500">{row.variantName}</p>
+                <div key={row.variantId} className="rounded-xl border dark:border-slate-700 p-3">
+                  <p className="font-medium text-gray-900 dark:text-slate-100 text-sm">{row.productName}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{row.variantName}</p>
                   <div className="mt-3 flex items-center gap-2">
                     <Input
                       type="number"
