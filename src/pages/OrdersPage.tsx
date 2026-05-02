@@ -140,19 +140,19 @@ export default function OrdersPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {summaryCards.map((card) => (
-          <Card key={card.label} className="border-none shadow-sm rounded-3xl">
+          <Card key={card.label} className="border-none shadow-sm rounded-3xl dark:bg-slate-800/80 dark:border dark:border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><card.icon className="w-5 h-5" /></div>
               </div>
-              <p className="text-sm font-medium text-gray-500 mt-4">{card.label}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1 break-words">{card.value}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mt-4">{card.label}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 mt-1 break-words">{card.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden dark:bg-slate-800/80 dark:border dark:border-slate-700">
         <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
           <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
             <div className="relative flex-1 w-full">
@@ -161,7 +161,7 @@ export default function OrdersPage() {
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-gray-100 bg-white px-4 text-sm text-gray-700 outline-none">
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 {(activeTab === 'orders' ? orderStatusOptions : paymentStatusOptions).map((status) => (
                   <option key={status} value={status}>{status === 'all' ? t('ordersPage.allStatuses') : status}</option>
                 ))}
@@ -172,13 +172,13 @@ export default function OrdersPage() {
         <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
           {activeTab === 'orders' ? (
             <Table className="min-w-[760px]">
-              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>{t('ordersPage.table.order')}</TableHead><TableHead>{t('ordersPage.table.customer')}</TableHead><TableHead>{t('ordersPage.table.delivery')}</TableHead><TableHead>{t('ordersPage.table.total')}</TableHead><TableHead>{t('ordersPage.table.status')}</TableHead><TableHead>{t('ordersPage.table.created')}</TableHead><TableHead className="text-right">{t('ordersPage.table.action')}</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60"><TableRow className="dark:border-slate-700"><TableHead className="dark:text-slate-400">{t('ordersPage.table.order')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.customer')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.delivery')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.total')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.status')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.created')}</TableHead><TableHead className="text-right dark:text-slate-400">{t('ordersPage.table.action')}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-8">{t('ordersPage.table.loading')}</TableCell></TableRow>
                   : isError ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-red-500">{t('ordersPage.table.error')}</TableCell></TableRow>
                   : filteredOrders.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">{t('ordersPage.table.empty')}</TableCell></TableRow>
                   : filteredOrders.map((order) => (
-                    <TableRow key={order.id} className="hover:bg-gray-50/50 border-gray-50">
+                    <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
                       <TableCell><p className="font-bold text-sm">{order.id}</p></TableCell>
                       <TableCell>{order.customer_name || '-'}</TableCell>
                       <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{order.delivery_type}</span></TableCell>
@@ -192,13 +192,13 @@ export default function OrdersPage() {
             </Table>
           ) : (
             <Table className="min-w-[900px]">
-              <TableHeader className="bg-gray-50/50"><TableRow><TableHead>{t('paymentsPage.table.transaction')}</TableHead><TableHead>{t('paymentsPage.table.customer')}</TableHead><TableHead>{t('paymentsPage.table.paymentType')}</TableHead><TableHead>{t('paymentsPage.table.grossAmount')}</TableHead><TableHead>{t('paymentsPage.table.status')}</TableHead><TableHead>{t('paymentsPage.table.orderStatus')}</TableHead><TableHead>{t('paymentsPage.table.updated')}</TableHead><TableHead className="text-right">{t('paymentsPage.table.action')}</TableHead></TableRow></TableHeader>
+              <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60"><TableRow className="dark:border-slate-700"><TableHead className="dark:text-slate-400">{t('paymentsPage.table.transaction')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.customer')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.paymentType')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.grossAmount')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.status')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.orderStatus')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.updated')}</TableHead><TableHead className="text-right dark:text-slate-400">{t('paymentsPage.table.action')}</TableHead></TableRow></TableHeader>
               <TableBody>
                 {isLoading ? <TableRow><TableCell colSpan={8} className="text-center py-8">{t('paymentsPage.table.loading')}</TableCell></TableRow>
                   : isError ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-red-500">{t('paymentsPage.table.error')}</TableCell></TableRow>
                   : filteredPayments.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">{t('paymentsPage.table.empty')}</TableCell></TableRow>
                   : filteredPayments.map((payment) => (
-                    <TableRow key={payment.id} className="hover:bg-gray-50/50 border-gray-50">
+                    <TableRow key={payment.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
                       <TableCell><p className="font-bold text-sm">{payment.transaction_id}</p><p className="text-[10px] text-gray-400">{t('paymentsPage.table.order')}: {payment.order_id}</p></TableCell>
                       <TableCell>{payment.customer_name || '-'}</TableCell>
                       <TableCell className="uppercase">{payment.payment_type || 'N/A'}</TableCell>
