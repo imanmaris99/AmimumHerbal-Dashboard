@@ -103,6 +103,7 @@ export default function CatalogPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [variantFocus, setVariantFocus] = useState<'all' | 'needsVariant' | 'ready'>('all');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [pendingImages, setPendingImages] = useState<File[]>([]);
@@ -268,17 +269,23 @@ export default function CatalogPage() {
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    if (!keyword) return normalizedProducts;
 
     return normalizedProducts.filter((product) => {
       const productionName = product.brand_info?.name?.toLowerCase() || '';
-      return (
+      const keywordMatch = !keyword || (
         product.name.toLowerCase().includes(keyword) ||
         productionName.includes(keyword) ||
         product.id.toLowerCase().includes(keyword)
       );
+
+      if (!keywordMatch) return false;
+
+      const variantCount = product.validVariants?.length || 0;
+      if (variantFocus === 'needsVariant') return variantCount === 0;
+      if (variantFocus === 'ready') return variantCount > 0;
+      return true;
     });
-  }, [normalizedProducts, search]);
+  }, [normalizedProducts, search, variantFocus]);
 
   const totalVariants = filteredProducts.reduce((sum, product) => sum + (product.validVariants?.length || 0), 0);
 
@@ -457,6 +464,17 @@ export default function CatalogPage() {
                       Reset
                     </Button>
                   ) : null}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button type="button" size="sm" variant={variantFocus === 'all' ? 'default' : 'outline'} className="rounded-xl" onClick={() => setVariantFocus('all')}>
+                    Semua Produk
+                  </Button>
+                  <Button type="button" size="sm" variant={variantFocus === 'needsVariant' ? 'default' : 'outline'} className="rounded-xl" onClick={() => setVariantFocus('needsVariant')}>
+                    Butuh Varian
+                  </Button>
+                  <Button type="button" size="sm" variant={variantFocus === 'ready' ? 'default' : 'outline'} className="rounded-xl" onClick={() => setVariantFocus('ready')}>
+                    Sudah Ada Varian
+                  </Button>
                 </div>
                 <p className="text-xs text-gray-500">
                   Menampilkan <strong>{filteredProducts.length}</strong> dari <strong>{normalizedProducts.length}</strong> produk.
