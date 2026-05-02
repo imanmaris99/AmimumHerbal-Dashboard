@@ -392,7 +392,7 @@ export default function ProductEditPage() {
                       <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2 flex items-center justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-xs font-semibold truncate">{variant.variant || `Variant #${variant.id}`}</p>
-                          <p className="text-[10px] text-slate-500">ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
+                          <p className="text-[10px] text-slate-500">Pack type: {variant.name || '-'} • ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
                         </div>
                         <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
                           <PencilLine className="w-4 h-4 mr-2" />
