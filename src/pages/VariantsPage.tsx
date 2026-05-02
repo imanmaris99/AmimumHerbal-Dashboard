@@ -175,16 +175,21 @@ export default function VariantsPage() {
 
   const filteredVariants = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    if (!keyword) return enrichedVariants;
 
-    return enrichedVariants.filter((variant) => {
+    const contextVariants = productIdFromCatalog
+      ? enrichedVariants.filter((variant) => String(variant.product_id || '') === String(productIdFromCatalog))
+      : enrichedVariants;
+
+    if (!keyword) return contextVariants;
+
+    return contextVariants.filter((variant) => {
       return (
         (variant.resolvedPackName || '').toLowerCase().includes(keyword) ||
         (variant.resolvedProductName || '').toLowerCase().includes(keyword) ||
         (variant.variant || '').toLowerCase().includes(keyword)
       );
     });
-  }, [enrichedVariants, search]);
+  }, [enrichedVariants, search, productIdFromCatalog]);
 
   const totalStock = filteredVariants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   const discountedVariants = filteredVariants.filter((variant) => Number(variant.discount || 0) > 0).length;
@@ -335,7 +340,11 @@ export default function VariantsPage() {
         <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900">{t('variantsPage.table.title')}</h2>
-            <p className="text-sm text-gray-500 mt-1">{t('variantsPage.table.subtitle')}</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {productIdFromCatalog
+                ? 'Menampilkan varian dari product induk aktif saja agar flow tetap terintegrasi.'
+                : t('variantsPage.table.subtitle')}
+            </p>
           </div>
           <div className="mt-4 space-y-3">
             <div className="relative">
