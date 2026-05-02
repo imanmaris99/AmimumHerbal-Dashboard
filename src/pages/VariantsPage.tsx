@@ -129,7 +129,7 @@ export default function VariantsPage() {
       } else {
         toast.success(response?.message || t('variantsPage.messages.createSuccess'));
       }
-      setForm(initialForm);
+      setForm((prev) => ({ ...initialForm, product_id: productIdFromCatalog || prev.product_id || '' }));
       setPendingImage(null);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
@@ -144,13 +144,12 @@ export default function VariantsPage() {
 
   const products = productsResponse?.data ?? [];
   const variants = variantsResponse?.data ?? [];
+  const productIdFromCatalog = searchParams.get('productId') || '';
 
   useEffect(() => {
-    const productIdFromCatalog = searchParams.get('productId');
     if (!productIdFromCatalog) return;
-
-    setForm((prev) => (prev.product_id ? prev : { ...prev, product_id: productIdFromCatalog }));
-  }, [searchParams]);
+    setForm((prev) => ({ ...prev, product_id: productIdFromCatalog }));
+  }, [productIdFromCatalog]);
 
   const productLookup = useMemo(() => {
     return new Map(products.map((product) => [String(product.id), product]));
@@ -189,6 +188,7 @@ export default function VariantsPage() {
 
   const totalStock = filteredVariants.reduce((sum, variant) => sum + Number(variant.stock || 0), 0);
   const discountedVariants = filteredVariants.filter((variant) => Number(variant.discount || 0) > 0).length;
+  const selectedParentProduct = form.product_id ? productLookup.get(String(form.product_id)) : undefined;
 
   const handleChange = (field: keyof CreateVariantPayload, value: string) => {
     setForm((prev) => ({
@@ -243,15 +243,26 @@ export default function VariantsPage() {
         </CardHeader>
         <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
           <form onSubmit={handleSubmit} className="space-y-5">
+            {selectedParentProduct ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Product induk aktif</p>
+                <p className="text-sm font-bold text-emerald-900 mt-1">{selectedParentProduct.name}</p>
+                <p className="text-xs text-emerald-800 mt-1">ID: {selectedParentProduct.id}{selectedParentProduct.brand_info?.name ? ` • Production: ${selectedParentProduct.brand_info.name}` : ''}</p>
+              </div>
+            ) : null}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="product_id">{t('variantsPage.form.product')}</Label>
-                <select id="product_id" value={form.product_id} onChange={(e) => handleChange('product_id', e.target.value)} className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none w-full" required>
+                <select id="product_id" value={form.product_id} onChange={(e) => handleChange('product_id', e.target.value)} disabled={Boolean(productIdFromCatalog)} className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none w-full disabled:bg-gray-100 disabled:text-gray-500" required>
                   <option value="">{t('variantsPage.form.selectProduct')}</option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>{product.name}{product.brand_info?.name ? ` - ${product.brand_info.name}` : ''}</option>
                   ))}
                 </select>
+                {productIdFromCatalog ? (
+                  <p className="text-[11px] text-gray-500">Product dikunci dari context halaman sebelumnya agar flow tambah varian tetap terstruktur.</p>
+                ) : null}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">{t('variantsPage.form.packTypeName')}</Label>
