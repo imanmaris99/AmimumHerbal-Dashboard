@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText } from 'lucide-react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -27,6 +27,7 @@ import {
 import { ProfileDialog } from './ProfileDialog';
 import { useLocation } from 'react-router-dom';
 import { getPageHandbook } from '@/lib/pageHandbook';
+import { getStoredThemeMode, setThemeMode, type ThemeMode } from '@/lib/theme';
 
 export function Topbar() {
   const { user, lastActivityAt } = useAuthStore();
@@ -34,6 +35,7 @@ export function Topbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [themeMode, setThemeModeState] = useState<ThemeMode>(() => getStoredThemeMode());
   const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
 
   const displayName = user?.name || user?.email || 'Internal User';
@@ -50,7 +52,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="min-h-16 md:min-h-20 bg-white border-b border-gray-100 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap xl:flex-nowrap">
+    <header className="min-h-16 md:min-h-20 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-3 sm:px-4 md:px-6 xl:px-8 py-3 md:py-4 flex items-start md:items-center justify-between sticky top-0 z-10 gap-3 flex-wrap xl:flex-nowrap">
       <div className="flex-1 min-w-0 mr-0 sm:mr-2 md:mr-4 order-2 xl:order-1 basis-full xl:basis-auto max-w-full">
         <Dialog>
           <DialogTrigger asChild>
@@ -141,6 +143,20 @@ export function Topbar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 rounded-full border border-transparent text-gray-500 hover:text-emerald-600 hover:border-emerald-100 hover:bg-emerald-50"
+          aria-label="Toggle dark mode"
+          onClick={() => {
+            const next: ThemeMode = themeMode === 'dark' ? 'light' : 'dark';
+            setThemeMode(next);
+            setThemeModeState(next);
+          }}
+        >
+          {themeMode === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </Button>
 
         <div className="hidden xl:flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-700">
           <ShieldCheck className="w-4 h-4" />

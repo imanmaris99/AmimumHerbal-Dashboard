@@ -5,6 +5,9 @@ import App from './App.tsx';
 import './index.css';
 import './lib/i18n';
 import { dashboardQueryClient } from './lib/api';
+import { initTheme } from './lib/theme';
+
+initTheme();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
