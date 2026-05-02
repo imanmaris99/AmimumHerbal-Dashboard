@@ -28,7 +28,7 @@ const useSharedNavItems = () => {
     { icon: LayoutDashboard, label: t('sidebar.nav.dashboard'), path: '/overview', description: t('sidebar.nav.dashboardDesc') },
     { icon: ShoppingBag, label: t('sidebar.nav.orders'), path: '/orders', description: t('sidebar.nav.ordersDesc') },
     { icon: Boxes, label: t('sidebar.nav.catalog'), path: '/catalog', description: t('sidebar.nav.catalogDesc') },
-    { icon: Layers3, label: t('sidebar.nav.variants'), path: '/variants', description: t('sidebar.nav.variantsDesc') },
+
     { icon: Factory, label: t('sidebar.nav.production'), path: '/productions', description: t('sidebar.nav.productionDesc') },
     { icon: FileText, label: t('sidebar.nav.content'), path: '/content', description: t('sidebar.nav.contentDesc') },
     { icon: ShoppingCart, label: t('sidebar.nav.cashier'), path: '/cashier', description: t('sidebar.nav.cashierDesc') },
