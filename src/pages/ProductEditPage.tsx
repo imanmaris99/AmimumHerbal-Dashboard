@@ -389,10 +389,15 @@ export default function ProductEditPage() {
                 {variantCount > 0 ? (
                   <div className="space-y-2">
                     {(productDetailQuery.data?.variants_list || []).map((variant) => (
-                      <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate">{variant.variant || `Variant #${variant.id}`}</p>
-                          <p className="text-[10px] text-slate-500">Pack type: {variant.name || '-'} • ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
+                      <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-3">
+                        <div className="min-w-0 space-y-1">
+                          <p className="text-xs font-semibold text-slate-900 truncate">{variant.variant || `Variant #${variant.id}`}</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-600">
+                            <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Pack type: {variant.name || '-'}</span>
+                            <span>ID: {variant.id}</span>
+                            <span>Stock: {variant.stock ?? 0}</span>
+                            <span>Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
+                          </div>
                         </div>
                         <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
                           <PencilLine className="w-4 h-4 mr-2" />
