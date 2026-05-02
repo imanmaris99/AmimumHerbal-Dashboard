@@ -273,13 +273,13 @@ export default function ProductionPage() {
         <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
           <div className="overflow-x-auto">
           <Table className="min-w-[860px]">
-            <TableHeader className="bg-gray-50/50">
-              <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Preview</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Category</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Description</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
+            <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
+              <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Production</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Preview</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Category</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Description</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -289,11 +289,11 @@ export default function ProductionPage() {
                 <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
               ) : (
                 filteredProductions.map((production) => (
-                  <TableRow key={production.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
+                  <TableRow key={production.id} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{production.name}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">ID: {production.id}</p>
+                        <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{production.name}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">ID: {production.id}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -313,8 +313,8 @@ export default function ProductionPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">{production.category || '-'}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{production.description_list?.[0] || '-'}</TableCell>
+                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{production.category || '-'}</TableCell>
+                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{production.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/productions/edit/${production.id}`)}>
                         <PencilLine className="w-4 h-4 mr-2" />
