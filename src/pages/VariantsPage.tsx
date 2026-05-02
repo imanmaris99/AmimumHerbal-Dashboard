@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine } from 'lucide-react';
+import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { validateImageFile } from '@/lib/imageValidation';
@@ -224,12 +224,30 @@ export default function VariantsPage() {
 
   return (
     <div className="space-y-8 pb-10">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('variantsPage.title')}</h1>
-          <p className="text-gray-500 mt-1">{t('variantsPage.subtitle')}</p>
+      <div className="space-y-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-xl border-gray-200"
+          onClick={() => {
+            if (productIdFromCatalog) {
+              navigate(`/catalog/edit/${productIdFromCatalog}`);
+              return;
+            }
+            navigate('/catalog');
+          }}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          {productIdFromCatalog ? 'Kembali ke Edit Product' : 'Kembali ke Catalog'}
+        </Button>
+
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{t('variantsPage.title')}</h1>
+            <p className="text-gray-500 mt-1">{t('variantsPage.subtitle')}</p>
+          </div>
+          <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">{t('variantsPage.badge')}</Badge>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl">{t('variantsPage.badge')}</Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
