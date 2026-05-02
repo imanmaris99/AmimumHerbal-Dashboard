@@ -259,9 +259,29 @@ export default function VariantsPage() {
 
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">{t('variantsPage.form.title')}</h2>
-            <p className="text-sm text-gray-500 mt-1">{t('variantsPage.form.subtitle')}</p>
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">{t('variantsPage.form.title')}</h2>
+                <p className="text-sm text-gray-500 mt-1">{t('variantsPage.form.subtitle')}</p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="rounded-xl"
+                onClick={() => {
+                  if (productIdFromCatalog) {
+                    navigate(`/catalog/edit/${productIdFromCatalog}`);
+                    return;
+                  }
+                  navigate('/catalog');
+                }}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Kembali
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
