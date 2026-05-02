@@ -61,14 +61,14 @@ function SidebarContent() {
 
   return (
     <>
-      <div className="p-6 border-b border-gray-50 shrink-0 bg-white">
+      <div className="p-6 border-b border-gray-50 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-100">
             <span className="text-white font-bold text-xl">U</span>
           </div>
           <div>
-            <span className="font-bold text-base text-gray-900 tracking-tight block leading-tight">Dashboard Toko Herbal AmImUm</span>
-            <span className="text-xs text-gray-500">{t('sidebar.header.subtitle')}</span>
+            <span className="font-bold text-base text-gray-900 dark:text-slate-100 tracking-tight block leading-tight">Dashboard Toko Herbal AmImUm</span>
+            <span className="text-xs text-gray-500 dark:text-slate-400">{t('sidebar.header.subtitle')}</span>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ function SidebarContent() {
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-5 space-y-6 overflow-y-auto bg-white">
+      <nav className="flex-1 px-4 py-5 space-y-6 overflow-y-auto bg-white dark:bg-slate-900">
         <div>
           <p className="px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">{t('sidebar.group.shared')}</p>
           <div className="space-y-1">
@@ -97,8 +97,8 @@ function SidebarContent() {
                   cn(
                     'flex items-start gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group',
                     isActive
-                      ? 'bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shadow-sm ring-1 ring-emerald-100 dark:ring-emerald-900/60'
+                      : 'text-gray-500 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-100'
                   )
                 }
               >
@@ -142,7 +142,7 @@ function SidebarContent() {
         </RoleGuard>
       </nav>
 
-      <div className="p-4 mt-auto border-t border-gray-50 shrink-0">
+      <div className="p-4 mt-auto border-t border-gray-50 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
         <button
           onClick={() => logout()}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all duration-200 group"
@@ -160,7 +160,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden md:flex w-60 xl:w-72 bg-white border-r border-gray-100 flex-col h-[100dvh] sticky top-0 shrink-0">
+      <aside className="hidden md:flex w-60 xl:w-72 bg-white dark:bg-slate-900 border-r border-gray-100 dark:border-slate-800 flex-col h-[100dvh] sticky top-0 shrink-0">
         <SidebarContent />
       </aside>
 
