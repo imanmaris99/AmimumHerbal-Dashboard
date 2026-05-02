@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -106,6 +106,7 @@ export default function CatalogPage() {
   const [variantFocus, setVariantFocus] = useState<'all' | 'needsVariant' | 'ready'>('all');
   const [form, setForm] = useState<CreateProductPayload>(initialForm);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [variantQuickPage, setVariantQuickPage] = useState(1);
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isUploadingImages, setIsUploadingImages] = useState(false);
@@ -293,6 +294,24 @@ export default function CatalogPage() {
     if (!selectedProductId) return null;
     return normalizedProducts.find((item) => item.id === selectedProductId) || null;
   }, [normalizedProducts, selectedProductId]);
+
+  const QUICK_VARIANT_PAGE_SIZE = 5;
+  const selectedProductVariants = selectedProduct?.validVariants || [];
+  const totalVariantQuickPages = Math.max(1, Math.ceil(selectedProductVariants.length / QUICK_VARIANT_PAGE_SIZE));
+  const pagedSelectedVariants = selectedProductVariants.slice(
+    (variantQuickPage - 1) * QUICK_VARIANT_PAGE_SIZE,
+    variantQuickPage * QUICK_VARIANT_PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setVariantQuickPage(1);
+  }, [selectedProductId]);
+
+  useEffect(() => {
+    if (variantQuickPage > totalVariantQuickPages) {
+      setVariantQuickPage(totalVariantQuickPages);
+    }
+  }, [variantQuickPage, totalVariantQuickPages]);
 
   const handleChange = (field: keyof CreateProductPayload, value: string) => {
     setForm((prev) => ({
@@ -580,7 +599,7 @@ export default function CatalogPage() {
                         <div className="pt-3 space-y-2">
                           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Quick Update / Upload Varian</p>
                           <div className="space-y-2">
-                            {selectedProduct.validVariants.slice(0, 5).map((variant) => (
+                            {pagedSelectedVariants.map((variant) => (
                               <div key={variant.id} className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-white/80 px-3 py-2">
                                 <div className="min-w-0">
                                   <p className="text-xs font-semibold text-emerald-900 truncate">{variant.name || '-'} {variant.variant ? `- ${variant.variant}` : ''}</p>
@@ -598,8 +617,14 @@ export default function CatalogPage() {
                               </div>
                             ))}
                           </div>
-                          {selectedProduct.validVariants.length > 5 ? (
-                            <p className="text-[10px] text-emerald-700">Menampilkan 5 varian pertama. Lihat semua dari halaman Manajemen Varian.</p>
+                          {selectedProductVariants.length > QUICK_VARIANT_PAGE_SIZE ? (
+                            <div className="flex items-center justify-between gap-3 pt-2">
+                              <p className="text-[10px] text-emerald-700">Halaman {variantQuickPage} dari {totalVariantQuickPages}</p>
+                              <div className="flex items-center gap-2">
+                                <Button type="button" size="sm" variant="outline" className="rounded-lg" disabled={variantQuickPage <= 1} onClick={() => setVariantQuickPage((prev) => Math.max(1, prev - 1))}>Prev</Button>
+                                <Button type="button" size="sm" variant="outline" className="rounded-lg" disabled={variantQuickPage >= totalVariantQuickPages} onClick={() => setVariantQuickPage((prev) => Math.min(totalVariantQuickPages, prev + 1))}>Next</Button>
+                              </div>
+                            </div>
                           ) : null}
                         </div>
                       ) : (
