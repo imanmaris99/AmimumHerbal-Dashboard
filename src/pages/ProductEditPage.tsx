@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Box, Boxes, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Box, Boxes, Loader2, PencilLine, PlusCircle, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
@@ -373,9 +373,37 @@ export default function ProductEditPage() {
                 Product ini saat ini terhubung ke <strong>{variantCount}</strong> variant / pack type. Edit product menjaga layer inti katalog, sedangkan harga jual operasional per variant tetap dikelola di modul Variants.
               </div>
 
-              <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2"><Boxes className="w-4 h-4" />Variant slots aktif</span>
-                <strong>{variantCount}</strong>
+              <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2"><Boxes className="w-4 h-4" />Variant slots aktif</span>
+                  <strong>{variantCount}</strong>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" className="rounded-xl bg-white text-slate-900 hover:bg-slate-100" onClick={() => navigate(`/variants?productId=${productDetailQuery.data?.id}`)}>
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Tambah Variant
+                  </Button>
+                </div>
+
+                {variantCount > 0 ? (
+                  <div className="space-y-2">
+                    {(productDetailQuery.data?.variants_list || []).map((variant) => (
+                      <div key={variant.id} className="rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate">{variant.variant || `Variant #${variant.id}`}</p>
+                          <p className="text-[10px] text-slate-300">ID: {variant.id} • Stock: {variant.stock ?? 0} • Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</p>
+                        </div>
+                        <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-600 text-white hover:bg-slate-700" onClick={() => navigate(`/variants/edit/${variant.id}`)}>
+                          <PencilLine className="w-4 h-4 mr-2" />
+                          Edit Variant
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-300">Belum ada variant aktif untuk product ini. Klik "Tambah Variant" untuk mulai setup variant.</p>
+                )}
               </div>
             </CardContent>
           </Card>
