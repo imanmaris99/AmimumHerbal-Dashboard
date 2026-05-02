@@ -102,6 +102,9 @@ export default function ProductEditPage() {
       return response.data.data;
     },
     enabled: !!productId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   useEffect(() => {

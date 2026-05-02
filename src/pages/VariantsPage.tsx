@@ -129,11 +129,15 @@ export default function VariantsPage() {
       } else {
         toast.success(response?.message || t('variantsPage.messages.createSuccess'));
       }
+      const targetProductId = String(form.product_id || productIdFromCatalog || '');
       setForm((prev) => ({ ...initialForm, product_id: productIdFromCatalog || prev.product_id || '' }));
       setPendingImage(null);
       queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
       queryClient.invalidateQueries({ queryKey: ['variant-products'] });
+      if (targetProductId) {
+        queryClient.invalidateQueries({ queryKey: ['catalog-product-detail', targetProductId] });
+      }
     },
     onError: (error: any) => {
       const detail = error?.response?.data?.detail;

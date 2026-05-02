@@ -98,6 +98,10 @@ export default function VariantEditPage() {
   const invalidateVariantData = () => {
     queryClient.invalidateQueries({ queryKey: ['all-pack-types'] });
     queryClient.invalidateQueries({ queryKey: ['variant-detail', variantId] });
+    queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
+    if (parentProductId) {
+      queryClient.invalidateQueries({ queryKey: ['catalog-product-detail', parentProductId] });
+    }
   };
 
   const updateVariantMutation = useMutation({
