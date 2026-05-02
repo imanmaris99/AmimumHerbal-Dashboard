@@ -146,8 +146,8 @@ export default function ContentPage() {
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
         <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Articles overview</h2>
-            <p className="text-sm text-gray-500 mt-1">Pantau article layer untuk kebutuhan edukasi, informasi publik, dan materi konten storefront.</p>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Articles overview</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Pantau article layer untuk kebutuhan edukasi, informasi publik, dan materi konten storefront.</p>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -157,11 +157,11 @@ export default function ContentPage() {
         <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
           <div className="overflow-x-auto">
           <Table className="min-w-[720px]">
-            <TableHeader className="bg-gray-50/50">
-              <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Article</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Summary</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
+            <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
+              <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Article</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Summary</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -171,14 +171,14 @@ export default function ContentPage() {
                 <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Tidak ada article yang cocok.</TableCell></TableRow>
               ) : (
                 filteredArticles.slice(0, 8).map((article, index) => (
-                  <TableRow key={`${article.display_id || index}-${article.title}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
+                  <TableRow key={`${article.display_id || index}-${article.title}`} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{article.title}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">Display ID: {article.display_id || '-'}</p>
+                        <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{article.title}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">Display ID: {article.display_id || '-'}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">{article.description_list?.[0] || '-'}</TableCell>
+                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{article.description_list?.[0] || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/content/edit/${article.id}`)}>
                         <PencilLine className="w-4 h-4 mr-2" />
