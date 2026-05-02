@@ -452,8 +452,8 @@ export default function CatalogPage() {
             <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">Existing products</h2>
-                  <p className="text-sm text-gray-500 mt-1">Pantau produk yang sudah ada sebelum menambah item baru.</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Existing products</h2>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Pantau produk yang sudah ada sebelum menambah item baru.</p>
                 </div>
               </div>
               <div className="mt-4 space-y-3">
@@ -485,14 +485,14 @@ export default function CatalogPage() {
             <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
               <div className="overflow-x-auto">
               <Table className="min-w-[640px]">
-                <TableHeader className="bg-gray-50/50">
-                  <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Image</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Production</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Variants</TableHead>
-                    <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Action</TableHead>
+                <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
+                  <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Product</TableHead>
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Image</TableHead>
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Production</TableHead>
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Price</TableHead>
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Variants</TableHead>
+                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -502,11 +502,11 @@ export default function CatalogPage() {
                     <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                   ) : (
                     filteredProducts.map((product) => (
-                      <TableRow key={product.id} className={`group hover:bg-gray-50/50 transition-colors border-gray-50 cursor-pointer ${selectedProductId === product.id ? 'bg-emerald-50/40' : ''}`} onClick={() => setSelectedProductId(product.id)}>
+                      <TableRow key={product.id} className={`group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700 cursor-pointer ${selectedProductId === product.id ? 'bg-emerald-50/40 dark:bg-emerald-950/30' : ''}`} onClick={() => setSelectedProductId(product.id)}>
                         <TableCell>
                           <div>
-                            <p className="font-bold text-gray-900 text-sm">{product.name}</p>
-                            <p className="text-[10px] text-gray-400 font-medium">{product.id}</p>
+                            <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{product.name}</p>
+                            <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">{product.id}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -521,11 +521,11 @@ export default function CatalogPage() {
                             }}
                           />
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{product.brand_info?.name || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600 dark:text-slate-300">{product.brand_info?.name || '-'}</TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-bold text-gray-900">{product.priceSummary}</p>
-                            <p className="text-[10px] text-gray-400 font-medium">
+                            <p className="font-bold text-gray-900 dark:text-slate-100">{product.priceSummary}</p>
+                            <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">
                               {product.validVariants?.length
                                 ? 'range harga variant'
                                 : 'harga dasar product'}
