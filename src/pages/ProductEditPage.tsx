@@ -396,7 +396,15 @@ export default function ProductEditPage() {
                             <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Pack type: {variant.name || '-'}</span>
                             <span>ID: {variant.id}</span>
                             <span>Stock: {variant.stock ?? 0}</span>
-                            <span>Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
+                            {Number(variant.discount || 0) > 0 && typeof variant.discounted_price === 'number' ? (
+                              <span>
+                                Price: <span className="line-through text-slate-400">Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>{' '}
+                                <span className="font-semibold text-emerald-700">Rp {Number(variant.discounted_price).toLocaleString('id-ID')}</span>{' '}
+                                <span className="inline-flex items-center rounded-md bg-emerald-100 px-1.5 py-0.5 text-emerald-700">-{Number(variant.discount || 0)}%</span>
+                              </span>
+                            ) : (
+                              <span>Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
+                            )}
                           </div>
                         </div>
                         <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
