@@ -324,6 +324,8 @@ export default function CashierPage() {
       setNotes('');
       setBuyerName('');
       queryClient.invalidateQueries({ queryKey: ['cashier-receipt-history-backend'] });
+      queryClient.invalidateQueries({ queryKey: ['cashier-variants'] });
+      queryClient.invalidateQueries({ queryKey: ['cashier-products'] });
     },
     onError: (error: any) => {
       const message =
