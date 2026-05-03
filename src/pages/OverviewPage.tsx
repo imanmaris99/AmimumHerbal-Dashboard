@@ -73,18 +73,20 @@ export default function OverviewPage() {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const [posReceiptMap, setPosReceiptMap] = useState<Map<string, string>>(new Map());
+  const [posReceipts, setPosReceipts] = useState<Array<{ transactionId?: string; buyerName?: string; total?: number; createdAt?: string }>>([]);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(POS_RECEIPT_STORAGE_KEY);
       if (!raw) return;
-      const parsed = JSON.parse(raw) as Array<{ transactionId?: string; buyerName?: string }>;
+      const parsed = JSON.parse(raw) as Array<{ transactionId?: string; buyerName?: string; total?: number; createdAt?: string }>;
       if (!Array.isArray(parsed)) return;
       const m = new Map<string, string>();
       parsed.forEach((r) => {
         if (r?.transactionId && r?.buyerName) m.set(String(r.transactionId), String(r.buyerName));
       });
       setPosReceiptMap(m);
+      setPosReceipts(parsed);
     } catch {
       setPosReceiptMap(new Map());
     }
@@ -119,6 +121,10 @@ export default function OverviewPage() {
       : computedGrossFromOrders)
     : 0;
 
+  const today = new Date().toISOString().slice(0, 10);
+  const posOmzet = posReceipts.reduce((sum, r) => sum + Number(r?.total || 0), 0);
+  const posTodayCount = posReceipts.filter((r) => String(r?.createdAt || '').slice(0, 10) === today).length;
+
   const stats = summary
     ? [
         {
@@ -152,6 +158,22 @@ export default function OverviewPage() {
           icon: Clock,
           color: 'text-purple-600',
           bg: 'bg-purple-50',
+        },
+        {
+          label: 'Omzet Kasir (Lokal)',
+          value: `Rp ${posOmzet.toLocaleString('id-ID')}`,
+          helper: `${posReceipts.length} transaksi tersimpan`,
+          icon: Wallet,
+          color: 'text-orange-600',
+          bg: 'bg-orange-50',
+        },
+        {
+          label: 'Transaksi Kasir Hari Ini',
+          value: posTodayCount.toLocaleString('id-ID'),
+          helper: 'Berdasarkan receipt kasir lokal',
+          icon: ShoppingBag,
+          color: 'text-teal-600',
+          bg: 'bg-teal-50',
         },
       ]
     : [];
