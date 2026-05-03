@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '@/lib/api';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '@/store/authStore';
 
 interface DashboardSummaryResponse {
   status_code: number;
@@ -68,6 +69,7 @@ const COLORS = ['#F97316', '#FDBA74', '#FFEDD5', '#FED7AA', '#FB923C'];
 
 export default function OverviewPage() {
   const { t } = useTranslation();
+  const user = useAuthStore((state) => state.user);
 
   const { data: summaryResponse, isLoading: summaryLoading } = useQuery({
     queryKey: ['admin-dashboard-summary'],
@@ -147,6 +149,24 @@ export default function OverviewPage() {
     : [];
 
   const recentOrders = ordersResponse?.data ?? [];
+
+  const resolveCustomerLabel = (customerName: string | null) => {
+    const raw = (customerName || '').trim();
+    const adminFullName = [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim().toLowerCase();
+    const adminName = String(user?.name || '').trim().toLowerCase();
+    const adminEmailPrefix = String(user?.email || '').split('@')[0]?.trim().toLowerCase();
+    const normalized = raw.toLowerCase();
+
+    const looksLikeAdmin = !!raw && (
+      normalized === adminFullName ||
+      normalized === adminName ||
+      normalized === adminEmailPrefix
+    );
+
+    if (looksLikeAdmin) return 'Pelanggan POS';
+    if (!raw) return t('overview.table.unknown');
+    return raw;
+  };
 
   return (
     <div className="space-y-7 md:space-y-9 pb-10 max-w-full">
@@ -305,7 +325,7 @@ export default function OverviewPage() {
                     <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{order.customer_name || t('overview.table.unknown')}</p>
+                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.customer_name)}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{new Date(order.created_at).toLocaleString('id-ID')}</p>
                       </div>
                     </TableCell>
