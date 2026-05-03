@@ -90,12 +90,21 @@ export default function OverviewPage() {
   });
 
   const summary = summaryResponse?.data;
+  const recentOrders = ordersResponse?.data ?? [];
+  const computedGrossFromOrders = recentOrders
+    .filter((order) => String(order.status || '').toLowerCase() === 'completed' || String(order.status || '').toLowerCase() === 'paid')
+    .reduce((sum, order) => sum + Number(order.total_price || 0), 0);
+  const grossRevenueDisplay = summary
+    ? (Number(summary.gross_revenue_paid_orders || 0) > 0
+      ? Number(summary.gross_revenue_paid_orders || 0)
+      : computedGrossFromOrders)
+    : 0;
 
   const stats = summary
     ? [
         {
           label: t('overview.grossRevenue'),
-          value: `Rp ${summary.gross_revenue_paid_orders.toLocaleString('id-ID')}`,
+          value: `Rp ${grossRevenueDisplay.toLocaleString('id-ID')}`,
           helper: t('overview.grossRevenueHelper'),
           icon: Wallet,
           color: 'text-emerald-600',
@@ -147,8 +156,6 @@ export default function OverviewPage() {
         { name: 'Refund', value: summary.total_refund_payments },
       ].filter((item) => item.value > 0)
     : [];
-
-  const recentOrders = ordersResponse?.data ?? [];
 
   const resolveCustomerLabel = (customerName: string | null) => {
     const raw = (customerName || '').trim();
