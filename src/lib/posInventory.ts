@@ -39,17 +39,25 @@ export interface StockMovementListResponse {
 }
 
 export async function posCheckout(payload: PosCheckoutPayload) {
+  const cartOps: Array<() => Promise<unknown>> = [];
+
   for (const item of payload.items) {
     if (!item.product_id) {
       throw new Error(`Variant ${item.variant_id} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
     }
 
     for (let i = 0; i < item.qty; i++) {
-      await api.post(`/cart/product/${item.product_id}/${item.variant_id}`, {
+      cartOps.push(() => api.post(`/cart/product/${item.product_id}/${item.variant_id}`, {
         product_id: item.product_id,
         variant_id: item.variant_id,
-      });
+      }));
     }
+  }
+
+  const concurrency = 5;
+  for (let i = 0; i < cartOps.length; i += concurrency) {
+    const chunk = cartOps.slice(i, i + concurrency);
+    await Promise.all(chunk.map((run) => run()));
   }
 
   const response = await api.post('/orders/checkout');
