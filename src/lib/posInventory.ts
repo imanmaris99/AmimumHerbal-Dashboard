@@ -4,6 +4,7 @@ export type PaymentMethod = 'cash' | 'transfer' | 'qris';
 
 export interface PosCheckoutItemPayload {
   variant_id: number;
+  product_id?: string;
   qty: number;
   unit_price: number;
   discount: number;
@@ -38,8 +39,24 @@ export interface StockMovementListResponse {
 }
 
 export async function posCheckout(payload: PosCheckoutPayload) {
-  const response = await api.post('/admin/pos/checkout', payload);
-  return response.data;
+  for (const item of payload.items) {
+    if (!item.product_id) {
+      throw new Error(`Variant ${item.variant_id} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
+    }
+
+    for (let i = 0; i < item.qty; i++) {
+      await api.post(`/cart/product/${item.product_id}/${item.variant_id}`, {
+        product_id: item.product_id,
+        variant_id: item.variant_id,
+      });
+    }
+  }
+
+  const response = await api.post('/orders/checkout');
+  return {
+    ...response.data,
+    compatibility_mode: true,
+  };
 }
 
 export async function getStockMovements(params: {

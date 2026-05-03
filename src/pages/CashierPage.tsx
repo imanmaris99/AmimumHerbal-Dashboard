@@ -279,6 +279,7 @@ export default function CashierPage() {
           notes: posNotes.join(' | '),
           items: cart.map((item) => ({
             variant_id: item.variantId,
+            product_id: item.productId,
             qty: item.qty,
             unit_price: item.unitPrice,
             discount: Number(item.qty > 0 ? (item.discountValue / item.qty) : 0),
