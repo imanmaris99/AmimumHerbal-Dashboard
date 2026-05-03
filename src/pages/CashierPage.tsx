@@ -581,36 +581,55 @@ export default function CashierPage() {
   const buildReceiptPlainText = (receipt: ReceiptData) => {
     const width = printPaper === '58' ? 32 : 42;
     const line = '-'.repeat(width);
+    const leftCol = printPaper === '58' ? 18 : 26;
+    const qtyCol = printPaper === '58' ? 3 : 4;
+    const priceCol = width - leftCol - qtyCol;
+
     const center = (text: string) => {
       const t = text.slice(0, width);
       const pad = Math.max(0, Math.floor((width - t.length) / 2));
       return `${' '.repeat(pad)}${t}`;
     };
-    const money = (n: number) => `Rp${Math.round(n).toLocaleString('id-ID')}`;
-    const row = (name: string, qty: number, price: number) => {
-      const total = qty * price;
-      return `${name.slice(0, width)}\n${qty} x ${money(price)} = ${money(total)}`;
+
+    const right = (text: string, len: number) => text.length >= len ? text.slice(0, len) : `${' '.repeat(len - text.length)}${text}`;
+    const money = (n: number) => Math.round(n).toLocaleString('id-ID');
+
+    const fit = (text: string, len: number) => {
+      if (text.length <= len) return `${text}${' '.repeat(len - text.length)}`;
+      return `${text.slice(0, Math.max(0, len - 1))}…`;
     };
 
-    const itemLines = receipt.items.length
-      ? receipt.items.map((i) => row(`${i.productName} (${i.variantName})`, i.qty, i.unitPrice)).join('\n')
-      : 'Detail item belum tersedia';
+    const itemRows = receipt.items.length
+      ? receipt.items.map((i) => {
+        const name = `${i.productName} (${i.variantName})`;
+        const subtotal = money(i.qty * i.unitPrice);
+        return `${fit(name, leftCol)}${right(String(i.qty), qtyCol)}${right(subtotal, priceCol)}`;
+      }).join('\n')
+      : fit('Detail item belum tersedia', width);
+
+    const sumRow = (label: string, value: number) => {
+      const v = `Rp${money(value)}`;
+      const head = `${label}${' '.repeat(Math.max(1, width - label.length - v.length))}`;
+      return `${head}${v}`;
+    };
 
     return [
       center('TOKO HERBAL AMIMUM'),
       center('NOTA PEMBAYARAN'),
       line,
-      `No    : ${receipt.transactionId}`,
-      `Tgl   : ${new Date(receipt.createdAt).toLocaleString('id-ID')}`,
-      `Kasir : ${receipt.cashierName}`,
-      `Buyer : ${receipt.buyerName || 'Pelanggan POS'}`,
-      `Bayar : ${String(receipt.paymentMethod).toUpperCase()}`,
+      `No   : ${receipt.transactionId}`,
+      `Tgl  : ${new Date(receipt.createdAt).toLocaleString('id-ID')}`,
+      `Kasir: ${receipt.cashierName}`,
+      `Cust : ${receipt.buyerName || 'Pelanggan POS'}`,
+      `Bayar: ${String(receipt.paymentMethod).toUpperCase()}`,
       line,
-      itemLines,
+      `${fit('ITEM', leftCol)}${right('QTY', qtyCol)}${right('TOTAL', priceCol)}`,
       line,
-      `Subtotal : ${money(receipt.subtotal)}`,
-      `Diskon   : ${money(0)}`,
-      `TOTAL    : ${money(receipt.total)}`,
+      itemRows,
+      line,
+      sumRow('Subtotal', receipt.subtotal),
+      sumRow('Diskon', 0),
+      sumRow('TOTAL', receipt.total),
       line,
       center('Terima kasih'),
       '\n\n\n',
