@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, ShoppingCart, Trash2, ReceiptText, Printer } from 'lucide-react';
+import { Search, ShoppingCart, Trash2, ReceiptText, Printer, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
@@ -575,6 +575,17 @@ export default function CashierPage() {
     w.document.close();
   };
 
+  const clearReceiptHistory = () => {
+    const ok = window.confirm('Hapus semua riwayat nota kasir dari dashboard ini? Tindakan ini tidak bisa dibatalkan.');
+    if (!ok) return;
+
+    setReceiptHistory([]);
+    setLastReceipt(null);
+    setSelectedReceiptId('');
+    localStorage.removeItem(RECEIPT_STORAGE_KEY);
+    toast.success('Riwayat nota kasir berhasil dihapus.');
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -718,10 +729,13 @@ export default function CashierPage() {
           <CardDescription>Cek ulang transaksi dengan filter tanggal dan pencarian cepat.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
             <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
             <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
             <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(''); }}>Reset Filter</Button>
+            <Button variant="destructive" onClick={clearReceiptHistory} className="flex items-center gap-2">
+              <History className="w-4 h-4" /> Hapus Riwayat
+            </Button>
           </div>
           <div className="rounded-xl border overflow-auto max-h-[260px]">
             <Table>
