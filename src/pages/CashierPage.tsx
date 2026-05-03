@@ -599,11 +599,25 @@ export default function CashierPage() {
       return `${text.slice(0, Math.max(0, len - 1))}…`;
     };
 
+    const wrapName = (text: string, len: number) => {
+      const chunks: string[] = [];
+      let rest = text.trim();
+      while (rest.length > len) {
+        chunks.push(rest.slice(0, len));
+        rest = rest.slice(len);
+      }
+      chunks.push(rest);
+      return chunks;
+    };
+
     const itemRows = receipt.items.length
       ? receipt.items.map((i) => {
         const name = `${i.productName} (${i.variantName})`;
         const subtotal = money(i.qty * i.unitPrice);
-        return `${fit(name, leftCol)}${right(String(i.qty), qtyCol)}${right(subtotal, priceCol)}`;
+        const wrapped = wrapName(name, leftCol);
+        const first = `${fit(wrapped[0] || '', leftCol)}${right(String(i.qty), qtyCol)}${right(subtotal, priceCol)}`;
+        const cont = wrapped.slice(1).map((part) => `${fit(part, leftCol)}${' '.repeat(qtyCol)}${' '.repeat(priceCol)}`);
+        return [first, ...cont].join('\n');
       }).join('\n')
       : fit('Detail item belum tersedia', width);
 
