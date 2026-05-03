@@ -181,7 +181,15 @@ export default function CashierPage() {
 
   useEffect(() => {
     const backendOrders = backendOrdersResponse?.data || [];
-    if (!backendOrders.length) return;
+
+    // Source of truth: backend orders.
+    // If backend is empty (e.g. DB reset), clear cached local receipt history.
+    if (!backendOrders.length) {
+      setReceiptHistory([]);
+      localStorage.removeItem(RECEIPT_STORAGE_KEY);
+      if (selectedReceiptId) setSelectedReceiptId('');
+      return;
+    }
 
     const paymentRows = backendPaymentsResponse?.data || [];
     const paymentMap = new Map(paymentRows.map((p) => [String(p.order_id), p]));
