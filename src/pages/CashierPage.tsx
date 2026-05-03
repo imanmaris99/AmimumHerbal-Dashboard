@@ -251,10 +251,13 @@ export default function CashierPage() {
       if (!user?.id) throw new Error('User session tidak valid. Silakan login ulang.');
 
       try {
+        const posNotes = [`POS Buyer: ${buyerName.trim()}`];
+        if (notes.trim()) posNotes.push(`Catatan: ${notes.trim()}`);
+
         return await posCheckout({
           cashier_id: user.id,
           payment_method: paymentMethod,
-          notes: notes || undefined,
+          notes: posNotes.join(' | '),
           items: cart.map((item) => ({
             variant_id: item.variantId,
             qty: item.qty,

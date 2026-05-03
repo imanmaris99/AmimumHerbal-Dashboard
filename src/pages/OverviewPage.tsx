@@ -61,6 +61,7 @@ interface OrdersResponse {
     customer_name: string | null;
     total_price: number;
     status: string;
+    notes?: string | null;
     created_at: string;
   }>;
 }
@@ -175,7 +176,13 @@ export default function OverviewPage() {
       ].filter((item) => item.value > 0)
     : [];
 
-  const resolveCustomerLabel = (orderId: string, customerName: string | null) => {
+  const extractBuyerFromNotes = (notes?: string | null) => {
+    const raw = String(notes || '');
+    const match = raw.match(/POS Buyer:\s*([^|]+)/i);
+    return match?.[1]?.trim() || '';
+  };
+
+  const resolveCustomerLabel = (orderId: string, customerName: string | null, notes?: string | null) => {
     const raw = (customerName || '').trim();
     const adminFullName = [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim().toLowerCase();
     const adminName = String(user?.name || '').trim().toLowerCase();
@@ -189,6 +196,9 @@ export default function OverviewPage() {
     );
 
     if (looksLikeAdmin) {
+      const buyerFromNotes = extractBuyerFromNotes(notes);
+      if (buyerFromNotes) return buyerFromNotes;
+
       const buyerFromPos = posReceiptMap.get(String(orderId));
       return buyerFromPos || 'Pelanggan POS';
     }
@@ -353,7 +363,7 @@ export default function OverviewPage() {
                     <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.id, order.customer_name)}</p>
+                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.id, order.customer_name, order.notes)}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{new Date(order.created_at).toLocaleString('id-ID')}</p>
                       </div>
                     </TableCell>
