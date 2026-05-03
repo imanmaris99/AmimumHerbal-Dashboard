@@ -1053,13 +1053,13 @@ export default function CashierPage() {
       </Card>
 
       {selectedReceiptWithItems && (
-        <Card id="receipt-detail-print-area" className="print:shadow-none print:border-none">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card id="receipt-detail-print-area" className="print:shadow-none print:border-none overflow-hidden">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Detail Nota Pembayaran</CardTitle>
               <CardDescription>Audit-ready detail transaksi kasir.</CardDescription>
             </div>
-            <div className="flex gap-2 print:hidden items-center">
+            <div className="flex flex-wrap gap-2 print:hidden items-center">
               <select
                 value={printPaper}
                 onChange={(e) => setPrintPaper(e.target.value as '58' | '80')}
@@ -1102,16 +1102,33 @@ export default function CashierPage() {
             </div>
 
             <div className="rounded-xl border overflow-hidden">
-              <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
+              <div className="hidden sm:block overflow-x-auto">
+                <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
+                  {selectedReceiptWithItems.items.length === 0 ? (
+                    <TableRow><TableCell colSpan={4} className="text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</TableCell></TableRow>
+                  ) : selectedReceiptWithItems.items.map((row) => (
+                    <TableRow key={`r-${selectedReceiptWithItems.transactionId}-${row.variantId}`}>
+                      <TableCell className="max-w-[220px] truncate">{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
+                      <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody></Table>
+              </div>
+
+              <div className="sm:hidden divide-y">
                 {selectedReceiptWithItems.items.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</TableCell></TableRow>
+                  <div className="p-3 text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</div>
                 ) : selectedReceiptWithItems.items.map((row) => (
-                  <TableRow key={`r-${selectedReceiptWithItems.transactionId}-${row.variantId}`}>
-                    <TableCell>{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
-                    <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
-                  </TableRow>
+                  <div key={`m-${selectedReceiptWithItems.transactionId}-${row.variantId}`} className="p-3 space-y-1">
+                    <p className="font-medium text-gray-900 leading-snug">{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></p>
+                    <div className="flex items-center justify-between text-xs text-gray-600">
+                      <span>Qty: {row.qty}</span>
+                      <span>Harga: {formatRupiah(row.unitPrice)}</span>
+                    </div>
+                    <div className="text-right text-sm font-semibold text-gray-900">Subtotal: {formatRupiah(row.unitPrice * row.qty)}</div>
+                  </div>
                 ))}
-              </TableBody></Table>
+              </div>
             </div>
 
             {selectedReceiptWithItems.notes && <p><strong>Catatan:</strong> {selectedReceiptWithItems.notes}</p>}
