@@ -37,6 +37,20 @@ interface AdminPaymentsResponse {
   };
 }
 
+interface AdminOrdersResponse {
+  status_code: number;
+  message: string;
+  data: Array<{
+    id: string;
+    customer_name: string | null;
+    customer_email?: string | null;
+    total_price: number;
+    status: string;
+    created_at: string;
+    updated_at?: string;
+  }>;
+}
+
 const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture', 'authorize', 'challenge', 'partial_refund'];
 
 export default function PaymentsPage() {
@@ -60,7 +74,40 @@ export default function PaymentsPage() {
     },
   });
 
-  const payments = paymentsResponse?.data ?? [];
+  const { data: ordersResponse } = useQuery({
+    queryKey: ['admin-orders-for-payments-bridge'],
+    queryFn: async () => {
+      const response = await api.get<AdminOrdersResponse>('/admin/orders', {
+        params: { limit: 50, skip: 0 },
+      });
+      return response.data;
+    },
+  });
+
+  const payments = useMemo(() => {
+    const paymentRows = paymentsResponse?.data ?? [];
+    const orderRows = ordersResponse?.data ?? [];
+
+    const paymentByOrderId = new Map(paymentRows.map((p) => [String(p.order_id), p]));
+    const syntheticFromOrders: AdminPaymentInfo[] = orderRows
+      .filter((order) => !paymentByOrderId.has(String(order.id)))
+      .map((order) => ({
+        id: `POS-${order.id}`,
+        order_id: String(order.id),
+        transaction_id: `POS-${order.id}`,
+        payment_type: 'cash',
+        gross_amount: Number(order.total_price || 0),
+        transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
+        fraud_status: null,
+        customer_name: order.customer_name || 'Pelanggan POS',
+        customer_email: order.customer_email || '-',
+        order_status: order.status || 'paid',
+        created_at: order.created_at,
+        updated_at: order.updated_at || order.created_at,
+      }));
+
+    return [...paymentRows, ...syntheticFromOrders];
+  }, [paymentsResponse?.data, ordersResponse?.data]);
 
   const filteredPayments = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -78,7 +125,7 @@ export default function PaymentsPage() {
   }, [payments, search]);
 
   const grossVisible = filteredPayments.reduce((sum, payment) => sum + Number(payment.gross_amount || 0), 0);
-  const totalPayments = paymentsResponse?.meta?.count ?? filteredPayments.length;
+  const totalPayments = payments.length;
   const pendingPayments = filteredPayments.filter((payment) => payment.transaction_status?.toLowerCase() === 'pending').length;
   const settledPayments = filteredPayments.filter((payment) => payment.transaction_status?.toLowerCase() === 'settlement').length;
   const flaggedPayments = filteredPayments.filter((payment) => {
