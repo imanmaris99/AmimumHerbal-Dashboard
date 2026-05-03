@@ -112,6 +112,7 @@ type ReceiptData = {
 };
 
 const RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
+const RECEIPT_DELETED_IDS_KEY = 'amimum.pos.receipts.deleted.v1';
 
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
@@ -127,6 +128,7 @@ export default function CashierPage() {
   const [receiptQuery, setReceiptQuery] = useState('');
   const [receiptDate, setReceiptDate] = useState('');
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
+  const [deletedReceiptIds, setDeletedReceiptIds] = useState<string[]>([]);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -138,8 +140,15 @@ export default function CashierPage() {
         const parsed = JSON.parse(raw) as ReceiptData[];
         setReceiptHistory(Array.isArray(parsed) ? parsed : []);
       }
+
+      const deletedRaw = localStorage.getItem(RECEIPT_DELETED_IDS_KEY);
+      if (deletedRaw) {
+        const parsedDeleted = JSON.parse(deletedRaw) as string[];
+        setDeletedReceiptIds(Array.isArray(parsedDeleted) ? parsedDeleted : []);
+      }
     } catch {
       setReceiptHistory([]);
+      setDeletedReceiptIds([]);
     }
   }, []);
 
@@ -186,7 +195,9 @@ export default function CashierPage() {
     // If backend is empty (e.g. DB reset), clear cached local receipt history.
     if (!backendOrders.length) {
       setReceiptHistory([]);
+      setDeletedReceiptIds([]);
       localStorage.removeItem(RECEIPT_STORAGE_KEY);
+      localStorage.removeItem(RECEIPT_DELETED_IDS_KEY);
       if (selectedReceiptId) setSelectedReceiptId('');
       return;
     }
@@ -201,7 +212,9 @@ export default function CashierPage() {
       return 'cash';
     };
 
-    const mapped: ReceiptData[] = backendOrders.map((o) => {
+    const mapped: ReceiptData[] = backendOrders
+      .filter((o) => !deletedReceiptIds.includes(String(o.id)))
+      .map((o) => {
       const paymentInfo = paymentMap.get(String(o.id));
       return {
         transactionId: String(o.id),
@@ -225,7 +238,7 @@ export default function CashierPage() {
       localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(merged.slice(0, 500)));
       return merged.slice(0, 500);
     });
-  }, [backendOrdersResponse, backendPaymentsResponse]);
+  }, [backendOrdersResponse, backendPaymentsResponse, deletedReceiptIds, selectedReceiptId]);
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
@@ -579,11 +592,32 @@ export default function CashierPage() {
     const ok = window.confirm('Hapus semua riwayat nota kasir dari dashboard ini? Tindakan ini tidak bisa dibatalkan.');
     if (!ok) return;
 
+    const allIds = receiptHistory.map((r) => r.transactionId);
+    const nextDeleted = Array.from(new Set([...deletedReceiptIds, ...allIds]));
+
     setReceiptHistory([]);
     setLastReceipt(null);
     setSelectedReceiptId('');
+    setDeletedReceiptIds(nextDeleted);
+    localStorage.setItem(RECEIPT_DELETED_IDS_KEY, JSON.stringify(nextDeleted));
     localStorage.removeItem(RECEIPT_STORAGE_KEY);
     toast.success('Riwayat nota kasir berhasil dihapus.');
+  };
+
+  const deleteSingleReceipt = (transactionId: string) => {
+    const ok = window.confirm(`Hapus riwayat nota ${transactionId} dari dashboard ini?`);
+    if (!ok) return;
+
+    const nextDeleted = Array.from(new Set([...deletedReceiptIds, transactionId]));
+    const nextHistory = receiptHistory.filter((r) => r.transactionId !== transactionId);
+
+    setDeletedReceiptIds(nextDeleted);
+    setReceiptHistory(nextHistory);
+    localStorage.setItem(RECEIPT_DELETED_IDS_KEY, JSON.stringify(nextDeleted));
+    localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(nextHistory));
+
+    if (selectedReceiptId === transactionId) setSelectedReceiptId('');
+    toast.success(`Riwayat ${transactionId} dihapus.`);
   };
 
   return (
@@ -751,6 +785,9 @@ export default function CashierPage() {
                       <div className="flex justify-end gap-2">
                         <Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button>
                         <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${r.transactionId}`)}>Audit</Button>
+                        <Button size="sm" variant="destructive" onClick={() => deleteSingleReceipt(r.transactionId)}>
+                          Hapus
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
