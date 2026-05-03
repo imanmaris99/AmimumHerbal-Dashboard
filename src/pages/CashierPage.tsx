@@ -460,7 +460,8 @@ export default function CashierPage() {
   const updateItemDiscount = (variantId: number, discountInput: number) => {
     setCart((prev) => prev.map((row) => {
       if (row.variantId !== variantId) return row;
-      const safeInput = Math.max(0, Number(discountInput || 0));
+      const rawInput = Math.max(0, Number(discountInput || 0));
+      const safeInput = row.discountType === 'percent' ? Math.min(rawInput, 100) : rawInput;
       const lineSubtotal = row.unitPrice * row.qty;
       const discountValue = row.discountType === 'percent'
         ? Math.max(0, Math.min((lineSubtotal * safeInput) / 100, lineSubtotal))
@@ -770,6 +771,7 @@ export default function CashierPage() {
                     <Input
                       type="number"
                       min={0}
+                      max={row.discountType === 'percent' ? 100 : row.unitPrice * row.qty}
                       value={row.discountInput}
                       onChange={(e) => updateItemDiscount(row.variantId, Number(e.target.value))}
                       className="h-9"
