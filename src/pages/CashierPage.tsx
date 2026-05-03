@@ -132,7 +132,7 @@ export default function CashierPage() {
   const [lastReceipt, setLastReceipt] = useState<ReceiptData | null>(null);
   const [receiptHistory, setReceiptHistory] = useState<ReceiptData[]>([]);
   const [receiptQuery, setReceiptQuery] = useState('');
-  const [receiptDate, setReceiptDate] = useState('');
+  const [receiptDate, setReceiptDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const [deletedReceiptIds, setDeletedReceiptIds] = useState<string[]>([]);
   const user = useAuthStore((state) => state.user);
@@ -857,7 +857,7 @@ export default function CashierPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
             <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
             <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
-            <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(''); }}>Reset Filter</Button>
+            <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(new Date().toISOString().slice(0, 10)); }}>Reset Filter</Button>
             <Button variant="destructive" onClick={clearReceiptHistory} className="flex items-center gap-2">
               <History className="w-4 h-4" /> Hapus Riwayat
             </Button>
