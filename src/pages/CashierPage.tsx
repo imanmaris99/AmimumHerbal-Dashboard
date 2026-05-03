@@ -241,8 +241,27 @@ export default function CashierPage() {
         if (!acc.find((x) => x.transactionId === curr.transactionId)) acc.push(curr);
         return acc;
       }, []);
-      localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(merged.slice(0, 500)));
-      return merged.slice(0, 500);
+
+      // Heuristic cleanup: remove local POS-* placeholder rows when backend order likely already exists.
+      const cleaned = merged.filter((row) => {
+        if (!String(row.transactionId).startsWith('POS-')) return true;
+
+        const rowTime = new Date(row.createdAt).getTime();
+        const hasBackendTwin = merged.some((candidate) => {
+          if (candidate.transactionId === row.transactionId) return false;
+          if (String(candidate.transactionId).startsWith('POS-')) return false;
+
+          const candidateTime = new Date(candidate.createdAt).getTime();
+          const sameTotal = Number(candidate.total || 0) === Number(row.total || 0);
+          const closeTime = Math.abs(candidateTime - rowTime) <= 5 * 60 * 1000;
+          return sameTotal && closeTime;
+        });
+
+        return !hasBackendTwin;
+      });
+
+      localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(cleaned.slice(0, 500)));
+      return cleaned.slice(0, 500);
     });
   }, [backendOrdersResponse, backendPaymentsResponse, deletedReceiptIds, selectedReceiptId]);
 
@@ -295,7 +314,7 @@ export default function CashierPage() {
       }
     },
     onSuccess: (response: any) => {
-      const trx = response?.data?.transaction_id || response?.data?.order_id || `POS-${Date.now()}`;
+      const trx = response?.data?.transaction_id || response?.data?.order_id || response?.data?.id || `POS-${Date.now()}`;
       const isCompat = response?.compatibility_mode;
       if (isCompat) {
         toast.success('Checkout sukses (mode kompatibilitas /orders/checkout).');
