@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -52,6 +52,7 @@ interface AdminOrdersResponse {
 }
 
 const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture', 'authorize', 'challenge', 'partial_refund'];
+const POS_RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 
 export default function PaymentsPage() {
   const navigate = useNavigate();
@@ -59,6 +60,20 @@ export default function PaymentsPage() {
   const locale = i18n.language === 'en' ? 'en-US' : 'id-ID';
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [localPosReceipts, setLocalPosReceipts] = useState<Array<{ transactionId: string; createdAt: string; total: number; paymentMethod?: string; buyerName?: string }>>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(POS_RECEIPT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setLocalPosReceipts(parsed);
+      }
+    } catch {
+      setLocalPosReceipts([]);
+    }
+  }, []);
 
   const { data: paymentsResponse, isLoading, isError, error } = useQuery({
     queryKey: ['admin-payments', statusFilter],
@@ -106,8 +121,30 @@ export default function PaymentsPage() {
         updated_at: order.updated_at || order.created_at,
       }));
 
-    return [...paymentRows, ...syntheticFromOrders];
-  }, [paymentsResponse?.data, ordersResponse?.data]);
+    const knownTransactionIds = new Set([
+      ...paymentRows.map((p) => String(p.transaction_id || '')),
+      ...syntheticFromOrders.map((p) => String(p.transaction_id || '')),
+    ]);
+
+    const syntheticFromLocalPos: AdminPaymentInfo[] = localPosReceipts
+      .filter((r) => !knownTransactionIds.has(String(r.transactionId || '')))
+      .map((r) => ({
+        id: `LOCAL-${r.transactionId}`,
+        order_id: String(r.transactionId),
+        transaction_id: String(r.transactionId),
+        payment_type: String(r.paymentMethod || 'cash'),
+        gross_amount: Number(r.total || 0),
+        transaction_status: 'settlement',
+        fraud_status: null,
+        customer_name: r.buyerName || 'Pelanggan POS',
+        customer_email: '-',
+        order_status: 'paid',
+        created_at: r.createdAt,
+        updated_at: r.createdAt,
+      }));
+
+    return [...paymentRows, ...syntheticFromOrders, ...syntheticFromLocalPos];
+  }, [paymentsResponse?.data, ordersResponse?.data, localPosReceipts]);
 
   const filteredPayments = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
