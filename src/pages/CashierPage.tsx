@@ -87,6 +87,8 @@ interface ApiResponse<T> {
   data: T[];
 }
 
+type DiscountType = 'amount' | 'percent';
+
 type CartItem = {
   variantId: number;
   productId: string;
@@ -95,6 +97,8 @@ type CartItem = {
   unitPrice: number;
   stock: number;
   qty: number;
+  discountType: DiscountType;
+  discountInput: number;
   discountValue: number;
 };
 
@@ -431,6 +435,8 @@ export default function CashierPage() {
           unitPrice: item.finalPrice,
           stock: item.stock,
           qty: 1,
+          discountType: 'amount',
+          discountInput: 0,
           discountValue: 0,
         },
       ];
@@ -451,12 +457,24 @@ export default function CashierPage() {
     setCart((prev) => prev.filter((row) => row.variantId !== variantId));
   };
 
-  const updateItemDiscount = (variantId: number, discountValue: number) => {
+  const updateItemDiscount = (variantId: number, discountInput: number) => {
     setCart((prev) => prev.map((row) => {
       if (row.variantId !== variantId) return row;
-      const maxDiscount = row.unitPrice;
-      const safe = Math.max(0, Math.min(Number(discountValue || 0), maxDiscount));
-      return { ...row, discountValue: safe };
+      const safeInput = Math.max(0, Number(discountInput || 0));
+      const discountValue = row.discountType === 'percent'
+        ? Math.max(0, Math.min((row.unitPrice * safeInput) / 100, row.unitPrice))
+        : Math.max(0, Math.min(safeInput, row.unitPrice));
+      return { ...row, discountInput: safeInput, discountValue };
+    }));
+  };
+
+  const updateItemDiscountType = (variantId: number, discountType: DiscountType) => {
+    setCart((prev) => prev.map((row) => {
+      if (row.variantId !== variantId) return row;
+      const discountValue = discountType === 'percent'
+        ? Math.max(0, Math.min((row.unitPrice * row.discountInput) / 100, row.unitPrice))
+        : Math.max(0, Math.min(row.discountInput, row.unitPrice));
+      return { ...row, discountType, discountValue };
     }));
   };
 
@@ -583,6 +601,8 @@ export default function CashierPage() {
       unitPrice: Number(item.price_per_item || 0),
       stock: 0,
       qty: Number(item.quantity || 0),
+      discountType: 'amount',
+      discountInput: 0,
       discountValue: 0,
     }));
 
@@ -737,20 +757,27 @@ export default function CashierPage() {
                       onChange={(e) => updateQty(row.variantId, Number(e.target.value))}
                       className="h-9"
                     />
+                    <select
+                      value={row.discountType}
+                      onChange={(e) => updateItemDiscountType(row.variantId, e.target.value as DiscountType)}
+                      className="h-9 rounded-xl border border-gray-200 bg-white px-3 text-xs text-gray-700 outline-none"
+                    >
+                      <option value="amount">Rp</option>
+                      <option value="percent">%</option>
+                    </select>
                     <Input
                       type="number"
                       min={0}
-                      max={row.unitPrice}
-                      value={row.discountValue}
+                      value={row.discountInput}
                       onChange={(e) => updateItemDiscount(row.variantId, Number(e.target.value))}
                       className="h-9"
-                      placeholder="Diskon/item"
+                      placeholder={row.discountType === 'percent' ? 'Diskon %/item' : 'Diskon Rp/item'}
                     />
                     <Button variant="outline" size="sm" onClick={() => removeFromCart(row.variantId)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)} • Diskon/item {formatRupiah(row.discountValue || 0)}</p>
+                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)} • Diskon/item {row.discountType === 'percent' ? `${row.discountInput}%` : formatRupiah(row.discountInput || 0)} (efektif {formatRupiah(row.discountValue || 0)})</p>
                 </div>
               ))}
               {cart.length === 0 && <p className="text-sm text-gray-500">Keranjang masih kosong.</p>}
