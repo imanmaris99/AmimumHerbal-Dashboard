@@ -270,6 +270,20 @@ export default function CashierPage() {
       if (!user?.id) throw new Error('User session tidak valid. Silakan login ulang.');
 
       try {
+        const stockMap = new Map(cashierVariants.map((v) => [v.id, Number(v.stock ?? 0)]));
+        const invalidStockRow = cart.find((item) => {
+          const latestStock = stockMap.get(item.variantId);
+          return latestStock === undefined || latestStock < item.qty;
+        });
+
+        if (invalidStockRow) {
+          const latest = stockMap.get(invalidStockRow.variantId);
+          throw new Error(
+            `Stok tidak cukup untuk ${invalidStockRow.productName} (${invalidStockRow.variantName}). ` +
+            `Tersedia ${latest ?? 0}, diminta ${invalidStockRow.qty}. Silakan sesuaikan qty.`
+          );
+        }
+
         const posNotes = [`POS Buyer: ${buyerName.trim()}`];
         if (notes.trim()) posNotes.push(`Catatan: ${notes.trim()}`);
 
