@@ -118,6 +118,7 @@ type ReceiptData = {
 
 const RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 const RECEIPT_DELETED_IDS_KEY = 'amimum.pos.receipts.deleted.v1';
+const BT_PRINTER_DEVICE_ID_KEY = 'amimum.pos.btPrinterDeviceId.v1';
 
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
@@ -136,6 +137,7 @@ export default function CashierPage() {
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const [deletedReceiptIds, setDeletedReceiptIds] = useState<string[]>([]);
   const [printPaper, setPrintPaper] = useState<'58' | '80'>('58');
+  const [isBtPrinting, setIsBtPrinting] = useState(false);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -610,9 +612,86 @@ export default function CashierPage() {
       `Diskon   : ${money(0)}`,
       `TOTAL    : ${money(receipt.total)}`,
       line,
-      center('Terima kasih 🙏'),
+      center('Terima kasih'),
       '\n\n\n',
     ].join('\n');
+  };
+
+  const getPrinterCharacteristic = async (device: BluetoothDevice) => {
+    const server = await device.gatt?.connect();
+    if (!server) throw new Error('Gagal konek ke printer Bluetooth.');
+
+    const candidateServices: BluetoothServiceUUID[] = [0xFFE0, 0x18F0, 'battery_service'];
+    for (const serviceId of candidateServices) {
+      try {
+        const svc = await server.getPrimaryService(serviceId);
+        const chars = await svc.getCharacteristics();
+        const c = chars.find((x) => x.properties.writeWithoutResponse || x.properties.write);
+        if (c) return { server, characteristic: c };
+      } catch {
+        // continue
+      }
+    }
+    throw new Error('Karakteristik write printer tidak ditemukan.');
+  };
+
+  const writeChunks = async (characteristic: BluetoothRemoteGATTCharacteristic, bytes: Uint8Array) => {
+    const chunkSize = 140;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.slice(i, i + chunkSize);
+      if (characteristic.properties.writeWithoutResponse) {
+        await characteristic.writeValueWithoutResponse(chunk);
+      } else {
+        await characteristic.writeValue(chunk);
+      }
+    }
+  };
+
+  const buildEscPosBytes = (receipt: ReceiptData) => {
+    const encoder = new TextEncoder();
+    const text = buildReceiptPlainText(receipt);
+    const init = new Uint8Array([0x1b, 0x40]);
+    const alignCenter = new Uint8Array([0x1b, 0x61, 0x01]);
+    const alignLeft = new Uint8Array([0x1b, 0x61, 0x00]);
+    const boldOn = new Uint8Array([0x1b, 0x45, 0x01]);
+    const boldOff = new Uint8Array([0x1b, 0x45, 0x00]);
+    const normalSize = new Uint8Array([0x1d, 0x21, 0x00]);
+    const bigSize = new Uint8Array([0x1d, 0x21, 0x11]);
+    const feedAndCut = new Uint8Array([0x1b, 0x64, 0x04, 0x1d, 0x56, 0x00]);
+
+    const payload = encoder.encode(text);
+    const out = new Uint8Array(
+      init.length + alignCenter.length + boldOn.length + bigSize.length +
+      alignLeft.length + boldOff.length + normalSize.length + payload.length + feedAndCut.length
+    );
+    let o = 0;
+    out.set(init, o); o += init.length;
+    out.set(alignCenter, o); o += alignCenter.length;
+    out.set(boldOn, o); o += boldOn.length;
+    out.set(bigSize, o); o += bigSize.length;
+    out.set(alignLeft, o); o += alignLeft.length;
+    out.set(boldOff, o); o += boldOff.length;
+    out.set(normalSize, o); o += normalSize.length;
+    out.set(payload, o); o += payload.length;
+    out.set(feedAndCut, o);
+    return out;
+  };
+
+  const resolveBluetoothPrinter = async () => {
+    const nav = navigator as Navigator & { bluetooth: Bluetooth };
+    const storedId = localStorage.getItem(BT_PRINTER_DEVICE_ID_KEY);
+    if (storedId && typeof nav.bluetooth.getDevices === 'function') {
+      const trusted = await nav.bluetooth.getDevices();
+      const found = trusted.find((d) => d.id === storedId);
+      if (found) return found;
+    }
+
+    const picked = await nav.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [0xFFE0, 0x18F0],
+    });
+    localStorage.setItem(BT_PRINTER_DEVICE_ID_KEY, picked.id);
+    return picked;
   };
 
   const handleBluetoothPrint = async () => {
@@ -625,50 +704,18 @@ export default function CashierPage() {
       return;
     }
 
+    setIsBtPrinting(true);
     try {
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [0xFFE0, 0x18F0],
-      });
-      const server = await device.gatt?.connect();
-      if (!server) throw new Error('Gagal konek ke printer Bluetooth.');
-
-      const candidateServices = [0xFFE0, 0x18F0];
-      let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
-
-      for (const serviceId of candidateServices) {
-        try {
-          const svc = await server.getPrimaryService(serviceId);
-          const chars = await svc.getCharacteristics();
-          characteristic = chars.find((c) => c.properties.writeWithoutResponse || c.properties.write) || null;
-          if (characteristic) break;
-        } catch {
-          // continue
-        }
-      }
-
-      if (!characteristic) {
-        throw new Error('Karakteristik write printer tidak ditemukan.');
-      }
-
-      const text = buildReceiptPlainText(selectedReceiptWithItems);
-      const encoder = new TextEncoder();
-      const bytes = encoder.encode(text);
-      const chunkSize = 150;
-
-      for (let i = 0; i < bytes.length; i += chunkSize) {
-        const chunk = bytes.slice(i, i + chunkSize);
-        if (characteristic.properties.writeWithoutResponse) {
-          await characteristic.writeValueWithoutResponse(chunk);
-        } else {
-          await characteristic.writeValue(chunk);
-        }
-      }
-
+      const device = await resolveBluetoothPrinter();
+      const { server, characteristic } = await getPrinterCharacteristic(device);
+      const bytes = buildEscPosBytes(selectedReceiptWithItems);
+      await writeChunks(characteristic, bytes);
       try { server.disconnect(); } catch {}
-      toast.success(`Nota terkirim ke printer Bluetooth (${printPaper}mm).`);
+      toast.success(`Nota Bluetooth terkirim (${printPaper}mm) ke ${device.name || 'printer'} .`);
     } catch (error: any) {
       toast.error(error?.message || 'Gagal cetak Bluetooth. Pastikan printer menyala dan sudah pairing.');
+    } finally {
+      setIsBtPrinting(false);
     }
   };
   const filteredReceipts = useMemo(() => {
@@ -989,7 +1036,13 @@ export default function CashierPage() {
                 <option value="58">58mm</option>
                 <option value="80">80mm</option>
               </select>
-              <Button variant="outline" onClick={handleBluetoothPrint}><Printer className="w-4 h-4 mr-2" />Print Bluetooth</Button>
+              <Button variant="outline" onClick={handleBluetoothPrint} disabled={isBtPrinting}>
+                <Printer className="w-4 h-4 mr-2" />{isBtPrinting ? 'Mengirim...' : 'Print Bluetooth'}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { localStorage.removeItem(BT_PRINTER_DEVICE_ID_KEY); toast.success('Pairing printer direset. Print berikutnya akan pilih device lagi.'); }}
+              >Reset Pairing</Button>
               <Button variant="outline" onClick={handlePrintReceipt}><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
               <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceiptWithItems)}>Export PDF</Button>
             </div>
