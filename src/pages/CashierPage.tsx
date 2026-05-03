@@ -285,42 +285,12 @@ export default function CashierPage() {
           })),
         });
       } catch (error: any) {
-        const statusCode = error?.response?.status;
-
-        // Compatibility fallback untuk backend yang belum punya endpoint /admin/pos/checkout
-        if (statusCode === 404 || statusCode === 405) {
-          for (const item of cart) {
-            if (!item.productId) {
-              throw new Error(`Variant ${item.variantId} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
-            }
-
-            // tambah item ke cart user sesuai qty
-            for (let i = 0; i < item.qty; i++) {
-              await api.post(`/cart/product/${item.productId}/${item.variantId}`, {
-                product_id: item.productId,
-                variant_id: item.variantId,
-              });
-            }
-          }
-
-          const compatCheckout = await api.post('/orders/checkout');
-          return {
-            ...compatCheckout.data,
-            compatibility_mode: true,
-          };
-        }
-
         throw error;
       }
     },
     onSuccess: (response: any) => {
       const trx = response?.data?.transaction_id || response?.data?.order_id || response?.data?.id || `POS-${Date.now()}`;
-      const isCompat = response?.compatibility_mode;
-      if (isCompat) {
-        toast.success('Checkout sukses (mode kompatibilitas /orders/checkout).');
-      } else {
-        toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
-      }
+      toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
 
       const receiptPayload: ReceiptData = {
         transactionId: String(trx),
@@ -767,7 +737,7 @@ export default function CashierPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><ShoppingCart className="w-4 h-4" /> Keranjang Kasir</CardTitle>
-            <CardDescription>Checkout sudah diwire ke endpoint POS (`/admin/pos/checkout`) dengan fallback error aman.</CardDescription>
+            <CardDescription>Checkout kasir terhubung ke endpoint POS `/admin/pos/checkout`.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3 max-h-[330px] overflow-auto pr-1">
