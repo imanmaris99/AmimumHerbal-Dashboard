@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AreaChart,
   Area,
@@ -66,10 +66,28 @@ interface OrdersResponse {
 }
 
 const COLORS = ['#F97316', '#FDBA74', '#FFEDD5', '#FED7AA', '#FB923C'];
+const POS_RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 
 export default function OverviewPage() {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
+  const [posReceiptMap, setPosReceiptMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(POS_RECEIPT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Array<{ transactionId?: string; buyerName?: string }>;
+      if (!Array.isArray(parsed)) return;
+      const m = new Map<string, string>();
+      parsed.forEach((r) => {
+        if (r?.transactionId && r?.buyerName) m.set(String(r.transactionId), String(r.buyerName));
+      });
+      setPosReceiptMap(m);
+    } catch {
+      setPosReceiptMap(new Map());
+    }
+  }, []);
 
   const { data: summaryResponse, isLoading: summaryLoading } = useQuery({
     queryKey: ['admin-dashboard-summary'],
@@ -157,7 +175,7 @@ export default function OverviewPage() {
       ].filter((item) => item.value > 0)
     : [];
 
-  const resolveCustomerLabel = (customerName: string | null) => {
+  const resolveCustomerLabel = (orderId: string, customerName: string | null) => {
     const raw = (customerName || '').trim();
     const adminFullName = [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim().toLowerCase();
     const adminName = String(user?.name || '').trim().toLowerCase();
@@ -170,7 +188,10 @@ export default function OverviewPage() {
       normalized === adminEmailPrefix
     );
 
-    if (looksLikeAdmin) return 'Pelanggan POS';
+    if (looksLikeAdmin) {
+      const buyerFromPos = posReceiptMap.get(String(orderId));
+      return buyerFromPos || 'Pelanggan POS';
+    }
     if (!raw) return t('overview.table.unknown');
     return raw;
   };
@@ -332,7 +353,7 @@ export default function OverviewPage() {
                     <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.customer_name)}</p>
+                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.id, order.customer_name)}</p>
                         <p className="text-[10px] text-gray-400 font-medium">{new Date(order.created_at).toLocaleString('id-ID')}</p>
                       </div>
                     </TableCell>
