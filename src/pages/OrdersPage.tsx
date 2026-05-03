@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -47,6 +47,7 @@ interface ApiResponse<T> {
 
 const orderStatusOptions = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'refund'];
 const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture', 'authorize', 'challenge', 'partial_refund'];
+const POS_RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 
 export default function OrdersPage() {
   const navigate = useNavigate();
@@ -56,6 +57,18 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'orders' | 'payments'>('orders');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [localPosReceipts, setLocalPosReceipts] = useState<Array<{ transactionId: string; createdAt: string; total: number; paymentMethod?: string; buyerName?: string }>>([]);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(POS_RECEIPT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setLocalPosReceipts(parsed);
+    } catch {
+      setLocalPosReceipts([]);
+    }
+  }, []);
 
   const { data: ordersResponse, isLoading: isOrdersLoading, isError: isOrdersError } = useQuery({
     queryKey: ['admin-orders', statusFilter],
@@ -65,7 +78,7 @@ export default function OrdersPage() {
       });
       return response.data;
     },
-    enabled: activeTab === 'orders',
+    enabled: true,
   });
 
   const { data: paymentsResponse, isLoading: isPaymentsLoading, isError: isPaymentsError } = useQuery({
@@ -80,7 +93,46 @@ export default function OrdersPage() {
   });
 
   const orders = ordersResponse?.data ?? [];
-  const payments = paymentsResponse?.data ?? [];
+  const payments = useMemo(() => {
+    const paymentRows = paymentsResponse?.data ?? [];
+    const orderRows = ordersResponse?.data ?? [];
+
+    const paymentByOrderId = new Map(paymentRows.map((p) => [String(p.order_id), p]));
+    const syntheticFromOrders: AdminPaymentInfo[] = orderRows
+      .filter((order) => !paymentByOrderId.has(String(order.id)))
+      .map((order) => ({
+        id: `POS-${order.id}`,
+        order_id: String(order.id),
+        transaction_id: String(order.id),
+        payment_type: 'cash',
+        gross_amount: Number(order.total_price || 0),
+        transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
+        fraud_status: null,
+        customer_name: order.customer_name || 'Pelanggan POS',
+        customer_email: '-',
+        order_status: order.status || 'paid',
+        updated_at: order.created_at,
+      }));
+
+    const knownTxn = new Set([...paymentRows.map((p) => String(p.transaction_id)), ...syntheticFromOrders.map((p) => String(p.transaction_id))]);
+    const syntheticFromLocal: AdminPaymentInfo[] = localPosReceipts
+      .filter((r) => !knownTxn.has(String(r.transactionId)))
+      .map((r) => ({
+        id: `LOCAL-${r.transactionId}`,
+        order_id: String(r.transactionId),
+        transaction_id: String(r.transactionId),
+        payment_type: String(r.paymentMethod || 'cash'),
+        gross_amount: Number(r.total || 0),
+        transaction_status: 'settlement',
+        fraud_status: null,
+        customer_name: r.buyerName || 'Pelanggan POS',
+        customer_email: '-',
+        order_status: 'paid',
+        updated_at: r.createdAt,
+      }));
+
+    return [...paymentRows, ...syntheticFromOrders, ...syntheticFromLocal];
+  }, [paymentsResponse?.data, ordersResponse?.data, localPosReceipts]);
 
   const filteredOrders = useMemo(() => {
     const q = search.trim().toLowerCase();
