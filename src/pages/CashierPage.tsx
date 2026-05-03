@@ -95,6 +95,7 @@ type CartItem = {
   unitPrice: number;
   stock: number;
   qty: number;
+  discountValue: number;
 };
 
 type ReceiptItem = CartItem;
@@ -123,6 +124,7 @@ export default function CashierPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
+  const [buyerName, setBuyerName] = useState('');
   const [lastReceipt, setLastReceipt] = useState<ReceiptData | null>(null);
   const [receiptHistory, setReceiptHistory] = useState<ReceiptData[]>([]);
   const [receiptQuery, setReceiptQuery] = useState('');
@@ -253,7 +255,7 @@ export default function CashierPage() {
             variant_id: item.variantId,
             qty: item.qty,
             unit_price: item.unitPrice,
-            discount: 0,
+            discount: Number(item.discountValue || 0),
           })),
         });
       } catch (error: any) {
@@ -298,12 +300,12 @@ export default function CashierPage() {
         transactionId: String(trx),
         createdAt: new Date().toISOString(),
         cashierName: [user?.firstname, user?.lastname].filter(Boolean).join(' ') || user?.name || user?.email || 'Cashier',
-        buyerName: 'Pembeli POS',
+        buyerName: buyerName.trim() || 'Pelanggan POS',
         paymentMethod,
         notes: notes || undefined,
         items: cart,
         subtotal,
-        total: subtotal,
+        total: grandTotal,
       };
 
       setLastReceipt(receiptPayload);
@@ -316,6 +318,7 @@ export default function CashierPage() {
 
       setCart([]);
       setNotes('');
+      setBuyerName('');
       queryClient.invalidateQueries({ queryKey: ['cashier-receipt-history-backend'] });
     },
     onError: (error: any) => {
@@ -428,6 +431,7 @@ export default function CashierPage() {
           unitPrice: item.finalPrice,
           stock: item.stock,
           qty: 1,
+          discountValue: 0,
         },
       ];
     });
@@ -447,7 +451,18 @@ export default function CashierPage() {
     setCart((prev) => prev.filter((row) => row.variantId !== variantId));
   };
 
+  const updateItemDiscount = (variantId: number, discountValue: number) => {
+    setCart((prev) => prev.map((row) => {
+      if (row.variantId !== variantId) return row;
+      const maxDiscount = row.unitPrice;
+      const safe = Math.max(0, Math.min(Number(discountValue || 0), maxDiscount));
+      return { ...row, discountValue: safe };
+    }));
+  };
+
   const subtotal = cart.reduce((sum, row) => sum + row.unitPrice * row.qty, 0);
+  const totalDiscount = cart.reduce((sum, row) => sum + (row.discountValue * row.qty), 0);
+  const grandTotal = Math.max(subtotal - totalDiscount, 0);
 
   const buildInvoiceHtml = (receipt: ReceiptData) => {
     const rows = receipt.items.map((i) => `
@@ -492,7 +507,7 @@ export default function CashierPage() {
       <div class="meta">
         <div>
           <b>KEPADA</b>
-          <div>Pembeli Umum</div>
+          <div>${receipt.buyerName || 'Pelanggan POS'}</div>
           <div><b style="margin-top:4px">KASIR</b>${receipt.cashierName}</div>
         </div>
         <div class="text-right">
@@ -568,6 +583,7 @@ export default function CashierPage() {
       unitPrice: Number(item.price_per_item || 0),
       stock: 0,
       qty: Number(item.quantity || 0),
+      discountValue: 0,
     }));
 
     const computedTotal = mappedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
@@ -721,27 +737,39 @@ export default function CashierPage() {
                       onChange={(e) => updateQty(row.variantId, Number(e.target.value))}
                       className="h-9"
                     />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={row.unitPrice}
+                      value={row.discountValue}
+                      onChange={(e) => updateItemDiscount(row.variantId, Number(e.target.value))}
+                      className="h-9"
+                      placeholder="Diskon/item"
+                    />
                     <Button variant="outline" size="sm" onClick={() => removeFromCart(row.variantId)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)}</p>
+                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)} • Diskon/item {formatRupiah(row.discountValue || 0)}</p>
                 </div>
               ))}
               {cart.length === 0 && <p className="text-sm text-gray-500">Keranjang masih kosong.</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
-              >
-                <option value="cash">Cash</option>
-                <option value="transfer">Transfer</option>
-                <option value="qris">QRIS</option>
-              </select>
-              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan (opsional)" />
+            <div className="grid grid-cols-1 gap-2">
+              <Input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Nama pelanggan (wajib)" />
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+                  className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="transfer">Transfer</option>
+                  <option value="qris">QRIS</option>
+                </select>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan (opsional)" />
+              </div>
             </div>
 
             <div className="border-t pt-3">
@@ -749,7 +777,15 @@ export default function CashierPage() {
                 <span>Subtotal</span>
                 <span className="font-semibold">{formatRupiah(subtotal)}</span>
               </div>
-              <Button className="w-full mt-3" disabled={cart.length === 0 || checkoutMutation.isPending} onClick={() => checkoutMutation.mutate()}>
+              <div className="flex justify-between text-sm">
+                <span>Total Diskon</span>
+                <span className="font-semibold text-emerald-600">- {formatRupiah(totalDiscount)}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span className="font-bold">Grand Total</span>
+                <span className="font-bold">{formatRupiah(grandTotal)}</span>
+              </div>
+              <Button className="w-full mt-3" disabled={cart.length === 0 || checkoutMutation.isPending || !buyerName.trim()} onClick={() => checkoutMutation.mutate()}>
                 {checkoutMutation.isPending ? 'Memproses...' : 'Checkout POS'}
               </Button>
             </div>
