@@ -135,6 +135,7 @@ export default function CashierPage() {
   const [receiptDate, setReceiptDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [selectedReceiptId, setSelectedReceiptId] = useState<string>('');
   const [deletedReceiptIds, setDeletedReceiptIds] = useState<string[]>([]);
+  const [printPaper, setPrintPaper] = useState<'58' | '80'>('58');
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -574,6 +575,102 @@ export default function CashierPage() {
     printWindow.document.write(buildInvoiceHtml(selectedReceiptWithItems));
     printWindow.document.close();
   };
+
+  const buildReceiptPlainText = (receipt: ReceiptData) => {
+    const width = printPaper === '58' ? 32 : 42;
+    const line = '-'.repeat(width);
+    const center = (text: string) => {
+      const t = text.slice(0, width);
+      const pad = Math.max(0, Math.floor((width - t.length) / 2));
+      return `${' '.repeat(pad)}${t}`;
+    };
+    const money = (n: number) => `Rp${Math.round(n).toLocaleString('id-ID')}`;
+    const row = (name: string, qty: number, price: number) => {
+      const total = qty * price;
+      return `${name.slice(0, width)}\n${qty} x ${money(price)} = ${money(total)}`;
+    };
+
+    const itemLines = receipt.items.length
+      ? receipt.items.map((i) => row(`${i.productName} (${i.variantName})`, i.qty, i.unitPrice)).join('\n')
+      : 'Detail item belum tersedia';
+
+    return [
+      center('TOKO HERBAL AMIMUM'),
+      center('NOTA PEMBAYARAN'),
+      line,
+      `No    : ${receipt.transactionId}`,
+      `Tgl   : ${new Date(receipt.createdAt).toLocaleString('id-ID')}`,
+      `Kasir : ${receipt.cashierName}`,
+      `Buyer : ${receipt.buyerName || 'Pelanggan POS'}`,
+      `Bayar : ${String(receipt.paymentMethod).toUpperCase()}`,
+      line,
+      itemLines,
+      line,
+      `Subtotal : ${money(receipt.subtotal)}`,
+      `Diskon   : ${money(0)}`,
+      `TOTAL    : ${money(receipt.total)}`,
+      line,
+      center('Terima kasih 🙏'),
+      '\n\n\n',
+    ].join('\n');
+  };
+
+  const handleBluetoothPrint = async () => {
+    if (!selectedReceiptWithItems) {
+      toast.error('Detail nota belum tersedia untuk dicetak.');
+      return;
+    }
+    if (!('bluetooth' in navigator)) {
+      toast.error('Perangkat/browser ini belum mendukung Web Bluetooth. Gunakan Cetak Nota biasa.');
+      return;
+    }
+
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [0xFFE0, 0x18F0],
+      });
+      const server = await device.gatt?.connect();
+      if (!server) throw new Error('Gagal konek ke printer Bluetooth.');
+
+      const candidateServices = [0xFFE0, 0x18F0];
+      let characteristic: BluetoothRemoteGATTCharacteristic | null = null;
+
+      for (const serviceId of candidateServices) {
+        try {
+          const svc = await server.getPrimaryService(serviceId);
+          const chars = await svc.getCharacteristics();
+          characteristic = chars.find((c) => c.properties.writeWithoutResponse || c.properties.write) || null;
+          if (characteristic) break;
+        } catch {
+          // continue
+        }
+      }
+
+      if (!characteristic) {
+        throw new Error('Karakteristik write printer tidak ditemukan.');
+      }
+
+      const text = buildReceiptPlainText(selectedReceiptWithItems);
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(text);
+      const chunkSize = 150;
+
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.slice(i, i + chunkSize);
+        if (characteristic.properties.writeWithoutResponse) {
+          await characteristic.writeValueWithoutResponse(chunk);
+        } else {
+          await characteristic.writeValue(chunk);
+        }
+      }
+
+      try { server.disconnect(); } catch {}
+      toast.success(`Nota terkirim ke printer Bluetooth (${printPaper}mm).`);
+    } catch (error: any) {
+      toast.error(error?.message || 'Gagal cetak Bluetooth. Pastikan printer menyala dan sudah pairing.');
+    }
+  };
   const filteredReceipts = useMemo(() => {
     const q = receiptQuery.trim().toLowerCase();
     return receiptHistory.filter((receipt) => {
@@ -882,7 +979,17 @@ export default function CashierPage() {
               <CardTitle className="flex items-center gap-2"><ReceiptText className="w-4 h-4" /> Detail Nota Pembayaran</CardTitle>
               <CardDescription>Audit-ready detail transaksi kasir.</CardDescription>
             </div>
-            <div className="flex gap-2 print:hidden">
+            <div className="flex gap-2 print:hidden items-center">
+              <select
+                value={printPaper}
+                onChange={(e) => setPrintPaper(e.target.value as '58' | '80')}
+                className="h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
+                title="Lebar kertas"
+              >
+                <option value="58">58mm</option>
+                <option value="80">80mm</option>
+              </select>
+              <Button variant="outline" onClick={handleBluetoothPrint}><Printer className="w-4 h-4 mr-2" />Print Bluetooth</Button>
               <Button variant="outline" onClick={handlePrintReceipt}><Printer className="w-4 h-4 mr-2" />Cetak Nota</Button>
               <Button variant="outline" onClick={() => exportReceiptPdf(selectedReceiptWithItems)}>Export PDF</Button>
             </div>
