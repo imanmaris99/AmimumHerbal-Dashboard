@@ -259,7 +259,7 @@ export default function CashierPage() {
             variant_id: item.variantId,
             qty: item.qty,
             unit_price: item.unitPrice,
-            discount: Number(item.discountValue || 0),
+            discount: Number(item.qty > 0 ? (item.discountValue / item.qty) : 0),
           })),
         });
       } catch (error: any) {
@@ -461,9 +461,10 @@ export default function CashierPage() {
     setCart((prev) => prev.map((row) => {
       if (row.variantId !== variantId) return row;
       const safeInput = Math.max(0, Number(discountInput || 0));
+      const lineSubtotal = row.unitPrice * row.qty;
       const discountValue = row.discountType === 'percent'
-        ? Math.max(0, Math.min((row.unitPrice * safeInput) / 100, row.unitPrice))
-        : Math.max(0, Math.min(safeInput, row.unitPrice));
+        ? Math.max(0, Math.min((lineSubtotal * safeInput) / 100, lineSubtotal))
+        : Math.max(0, Math.min(safeInput, lineSubtotal));
       return { ...row, discountInput: safeInput, discountValue };
     }));
   };
@@ -471,15 +472,16 @@ export default function CashierPage() {
   const updateItemDiscountType = (variantId: number, discountType: DiscountType) => {
     setCart((prev) => prev.map((row) => {
       if (row.variantId !== variantId) return row;
+      const lineSubtotal = row.unitPrice * row.qty;
       const discountValue = discountType === 'percent'
-        ? Math.max(0, Math.min((row.unitPrice * row.discountInput) / 100, row.unitPrice))
-        : Math.max(0, Math.min(row.discountInput, row.unitPrice));
+        ? Math.max(0, Math.min((lineSubtotal * row.discountInput) / 100, lineSubtotal))
+        : Math.max(0, Math.min(row.discountInput, lineSubtotal));
       return { ...row, discountType, discountValue };
     }));
   };
 
   const subtotal = cart.reduce((sum, row) => sum + row.unitPrice * row.qty, 0);
-  const totalDiscount = cart.reduce((sum, row) => sum + (row.discountValue * row.qty), 0);
+  const totalDiscount = cart.reduce((sum, row) => sum + row.discountValue, 0);
   const grandTotal = Math.max(subtotal - totalDiscount, 0);
 
   const buildInvoiceHtml = (receipt: ReceiptData) => {
@@ -771,13 +773,13 @@ export default function CashierPage() {
                       value={row.discountInput}
                       onChange={(e) => updateItemDiscount(row.variantId, Number(e.target.value))}
                       className="h-9"
-                      placeholder={row.discountType === 'percent' ? 'Diskon %/item' : 'Diskon Rp/item'}
+                      placeholder={row.discountType === 'percent' ? 'Diskon % per baris' : 'Diskon Rp per baris'}
                     />
                     <Button variant="outline" size="sm" onClick={() => removeFromCart(row.variantId)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)} • Diskon/item {row.discountType === 'percent' ? `${row.discountInput}%` : formatRupiah(row.discountInput || 0)} (efektif {formatRupiah(row.discountValue || 0)})</p>
+                  <p className="text-xs text-gray-600 mt-2">{row.qty} × {formatRupiah(row.unitPrice)} • Diskon baris {row.discountType === 'percent' ? `${row.discountInput}%` : formatRupiah(row.discountInput || 0)} (efektif {formatRupiah(row.discountValue || 0)})</p>
                 </div>
               ))}
               {cart.length === 0 && <p className="text-sm text-gray-500">Keranjang masih kosong.</p>}
