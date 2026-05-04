@@ -370,6 +370,7 @@
     "subtitle": "Monitor your internal business metrics and latest transactions.",
     "grossRevenue": "Gross Revenue",
     "grossRevenueHelper": "Paid orders revenue",
+    "grossRevenueHelperScope": "Paid/Settlement only",
     "totalOrders": "Total Orders",
     "totalOrdersHelper": "pending orders",
     "activeUsers": "Active Users",

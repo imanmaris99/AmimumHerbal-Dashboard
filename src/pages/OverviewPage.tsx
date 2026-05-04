@@ -130,7 +130,7 @@ export default function OverviewPage() {
         {
           label: t('overview.grossRevenue'),
           value: `Rp ${grossRevenueDisplay.toLocaleString('id-ID')}`,
-          helper: `${t('overview.grossRevenueHelper')} • Paid/Settlement`,
+          helper: `${t('overview.grossRevenueHelper')} • ${t('overview.grossRevenueHelperScope')}`, 
           icon: Wallet,
           color: 'text-emerald-600',
           bg: 'bg-emerald-50',

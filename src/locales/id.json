@@ -370,6 +370,7 @@
     "subtitle": "Pantau metrik bisnis internal dan transaksi terbaru Anda.",
     "grossRevenue": "Pendapatan Kotor",
     "grossRevenueHelper": "Pendapatan pesanan lunas",
+    "grossRevenueHelperScope": "Paid/Settlement saja",
     "totalOrders": "Total Pesanan",
     "totalOrdersHelper": "pesanan tertunda",
     "activeUsers": "Pengguna Aktif",
