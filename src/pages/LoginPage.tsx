@@ -91,13 +91,13 @@ export default function LoginPage() {
           </div>
 
           <CardContent className="bg-white px-6 sm:px-7 pt-6 pb-7">
-            <div className="text-center mb-5">
+            <div className="text-center mb-6">
               <h1 className="text-[28px] font-semibold tracking-tight text-gray-900">{i18n.language === 'id' ? 'Masuk' : 'Sign in'}</h1>
               <p className="text-sm text-emerald-600/90 mt-1">{i18n.language === 'id' ? 'Selamat datang kembali' : 'Welcome back'}</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2.5">
                 <Label htmlFor="email">{t('login.emailLabel')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -114,7 +114,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">{t('login.passwordLabel')}</Label>
                   <Link to="/forgot-password" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600">
@@ -161,7 +161,7 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            <p className="mt-5 text-center text-[11px] leading-relaxed text-gray-400">{t('login.footerNote')}</p>
+            <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">{t('login.footerNote')}</p>
           </CardContent>
         </Card>
       </motion.div>
