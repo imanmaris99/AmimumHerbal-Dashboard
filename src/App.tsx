@@ -10,6 +10,7 @@ import { DashboardLayout } from './components/dashboard/Layout';
 import { useAuthStore } from './store/authStore';
 import { INTERNAL_ALLOWED_ROLES } from './types';
 
+const WelcomePage = React.lazy(() => import('./pages/WelcomePage'));
 const LoginPage = React.lazy(() => import('./pages/LoginPage'));
 const ForgotPasswordPage = React.lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = React.lazy(() => import('./pages/ResetPasswordPage'));
@@ -57,12 +58,13 @@ export default function App() {
           }
         >
           <Routes>
+            <Route path="/" element={<WelcomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route path="/" element={<Navigate to="/overview" replace />} />
+              <Route path="/app" element={<Navigate to="/overview" replace />} />
               <Route path="/overview" element={<OverviewPage />} />
               <Route path="/orders" element={<OrdersPage />} />
               <Route path="/orders/:orderId" element={<OrderDetailPage />} />
