@@ -23,13 +23,13 @@ export default function WelcomePage() {
           }} />
 
           <div
-            className="absolute right-3 bottom-6 w-44 h-44 opacity-[0.11] pointer-events-none"
+            className="absolute right-2 bottom-5 w-48 h-48 opacity-[0.22] pointer-events-none"
             style={{
               backgroundImage: 'url("https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg")',
               backgroundRepeat: 'no-repeat',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
-              filter: 'blur(0.6px) saturate(0.82)'
+              filter: 'brightness(1.18) contrast(1.05) saturate(0.9)'
             }}
           />
 
