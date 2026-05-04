@@ -942,7 +942,20 @@ export default function CashierPage() {
                             <p className="mt-1 text-[11px] font-semibold text-emerald-600">✓ Sudah dipilih • Qty {selectedInCart.qty}</p>
                           ) : null}
                         </div>
-                        <Button className="h-9 sm:h-10 w-full lg:w-auto lg:min-w-[132px] rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>{selectedInCart ? `Dipilih (${selectedInCart.qty})` : '+ Keranjang'}</Button>
+                        <Button
+                          className="h-9 sm:h-10 w-full lg:w-auto lg:min-w-[132px] rounded-xl"
+                          variant={selectedInCart ? 'outline' : 'default'}
+                          onClick={() => {
+                            if (selectedInCart) {
+                              removeFromCart(item.id);
+                              return;
+                            }
+                            addToCart(item);
+                          }}
+                          disabled={!selectedInCart && item.stock <= 0}
+                        >
+                          {selectedInCart ? 'Batal Pilih' : '+ Keranjang'}
+                        </Button>
                       </div>
                     );
                   })}
