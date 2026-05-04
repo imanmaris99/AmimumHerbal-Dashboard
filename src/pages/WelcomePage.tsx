@@ -23,7 +23,7 @@ export default function WelcomePage() {
           }} />
 
           <div
-            className="absolute right-4 top-[132px] w-44 h-44 opacity-[0.2] pointer-events-none"
+            className="absolute right-4 top-[108px] w-44 h-44 opacity-[0.2] pointer-events-none"
             style={{
               backgroundImage: 'url("https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg")',
               backgroundRepeat: 'no-repeat',
