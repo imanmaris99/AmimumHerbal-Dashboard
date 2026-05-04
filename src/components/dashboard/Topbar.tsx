@@ -36,7 +36,24 @@ export function Topbar() {
   const location = useLocation();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => getStoredThemeMode());
+  const [notifRead, setNotifRead] = useState(false);
   const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
+
+  const notifications = useMemo(() => {
+    const list = [
+      {
+        id: 'session-timeout',
+        title: 'Sesi internal aktif',
+        desc: 'Sesi akan berakhir otomatis jika tidak ada aktivitas selama 4 jam.',
+      },
+      {
+        id: 'security-scope',
+        title: 'Akses dibatasi role',
+        desc: 'Menu sensitif hanya tampil untuk owner sesuai matrix akses.',
+      },
+    ];
+    return list;
+  }, []);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
@@ -179,10 +196,37 @@ export function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="ghost" size="icon" className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10 border border-transparent hover:border-emerald-100 hover:bg-emerald-50">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setNotifRead(true)}
+              className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10 border border-transparent hover:border-emerald-100 hover:bg-emerald-50"
+              aria-label="Notifikasi"
+            >
+              <Bell className="w-5 h-5" />
+              {!notifRead ? <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" /> : null}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
+            <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
+              <p className="text-sm font-semibold text-gray-900">Notifikasi</p>
+              <span className="text-xs text-gray-400">{notifications.length} item</span>
+            </div>
+            <div className="max-h-72 overflow-auto">
+              {notifications.map((notif) => (
+                <div key={notif.id} className="px-3 py-2 border-b border-gray-50 last:border-b-0">
+                  <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="px-3 py-2 text-xs text-gray-500 border-t border-gray-100">
+              Terakhir aktif: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="hidden 2xl:block h-8 w-px bg-gray-100 mx-1" />
 
