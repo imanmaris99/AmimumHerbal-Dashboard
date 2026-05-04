@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
 import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -39,7 +41,21 @@ export function Topbar() {
   const [notifRead, setNotifRead] = useState(false);
   const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
 
+  const { data: variantResponse } = useQuery({
+    queryKey: ['topbar-variant-alerts'],
+    queryFn: async () => {
+      const response = await api.get<{ data: Array<{ stock?: number; product?: string; name?: string; variant?: string }> }>('/type/all');
+      return response.data;
+    },
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  });
+
   const notifications = useMemo(() => {
+    const rows = variantResponse?.data || [];
+    const emptyCount = rows.filter((x) => Number(x.stock ?? 0) <= 0).length;
+    const lowCount = rows.filter((x) => Number(x.stock ?? 0) > 0 && Number(x.stock ?? 0) <= 10).length;
+
     const list = [
       {
         id: 'session-timeout',
@@ -51,9 +67,20 @@ export function Topbar() {
         title: 'Akses dibatasi role',
         desc: 'Menu sensitif hanya tampil untuk owner sesuai matrix akses.',
       },
+      {
+        id: 'stock-low',
+        title: `Stok menipis: ${lowCount} varian`,
+        desc: 'Segera cek varian dengan stok rendah agar operasional kasir tetap lancar.',
+      },
+      {
+        id: 'stock-empty',
+        title: `Stok habis: ${emptyCount} varian`,
+        desc: 'Beberapa varian sudah habis dan perlu restock prioritas.',
+      },
     ];
+
     return list;
-  }, []);
+  }, [variantResponse?.data]);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
