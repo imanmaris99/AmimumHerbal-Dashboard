@@ -139,6 +139,8 @@ export default function CashierPage() {
   const [printPaper, setPrintPaper] = useState<'58' | '80'>('58');
   const [isBtPrinting, setIsBtPrinting] = useState(false);
   const [showReceiptHistory, setShowReceiptHistory] = useState(false);
+  const [checkoutStartedAt, setCheckoutStartedAt] = useState<number | null>(null);
+  const [checkoutElapsedSec, setCheckoutElapsedSec] = useState(0);
   const receiptDetailRef = useRef<HTMLDivElement | null>(null);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
@@ -270,6 +272,17 @@ export default function CashierPage() {
     });
   }, [backendOrdersResponse, backendPaymentsResponse, deletedReceiptIds, selectedReceiptId]);
 
+  useEffect(() => {
+    if (!checkoutStartedAt) {
+      setCheckoutElapsedSec(0);
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setCheckoutElapsedSec(Math.max(0, Math.floor((Date.now() - checkoutStartedAt) / 1000)));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [checkoutStartedAt]);
+
   const checkoutMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error('User session tidak valid. Silakan login ulang.');
@@ -308,6 +321,9 @@ export default function CashierPage() {
         throw error;
       }
     },
+    onMutate: () => {
+      setCheckoutStartedAt(Date.now());
+    },
     onSuccess: (response: any) => {
       const trx = response?.data?.transaction_id || response?.data?.order_id || response?.data?.id || `POS-${Date.now()}`;
       toast.success(trx ? `Checkout sukses (${trx})` : 'Checkout POS sukses.');
@@ -339,6 +355,7 @@ export default function CashierPage() {
       queryClient.invalidateQueries({ queryKey: ['cashier-receipt-history-backend'] });
       queryClient.invalidateQueries({ queryKey: ['cashier-variants'] });
       queryClient.invalidateQueries({ queryKey: ['cashier-products'] });
+      setCheckoutStartedAt(null);
     },
     onError: (error: any) => {
       const message =
@@ -347,6 +364,10 @@ export default function CashierPage() {
         error?.message ||
         'Checkout gagal. Mohon cek endpoint backend POS/Orders.';
       toast.error(String(message));
+      setCheckoutStartedAt(null);
+    },
+    onSettled: () => {
+      setCheckoutStartedAt(null);
     },
   });
 
@@ -982,18 +1003,19 @@ export default function CashierPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-2">
-              <Input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Nama pelanggan (wajib)" />
+              <Input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Nama pelanggan (wajib)" disabled={checkoutMutation.isPending} />
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                   className="h-10 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none"
+                  disabled={checkoutMutation.isPending}
                 >
                   <option value="cash">Cash</option>
                   <option value="transfer">Transfer</option>
                   <option value="qris">QRIS</option>
                 </select>
-                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan (opsional)" />
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Catatan (opsional)" disabled={checkoutMutation.isPending} />
               </div>
             </div>
 
@@ -1013,6 +1035,11 @@ export default function CashierPage() {
               <Button className="w-full mt-3" disabled={cart.length === 0 || checkoutMutation.isPending || !buyerName.trim()} onClick={() => checkoutMutation.mutate()}>
                 {checkoutMutation.isPending ? 'Memproses...' : 'Checkout POS'}
               </Button>
+              {checkoutMutation.isPending && (
+                <p className="mt-2 text-xs text-amber-700">
+                  Transaksi sedang dikirim ke server, mohon tunggu… ({checkoutElapsedSec} detik)
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
