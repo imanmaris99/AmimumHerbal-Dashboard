@@ -127,7 +127,6 @@ export default function CashierPage() {
   const [selectedProducer, setSelectedProducer] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState('all');
   const [stockView, setStockView] = useState<'all' | 'low'>('all');
-  const [seniorMode, setSeniorMode] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
@@ -891,15 +890,10 @@ export default function CashierPage() {
             <CardDescription>Data diambil dari endpoint existing: /product/all dan /type/all</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama produk..." className={seniorMode ? 'h-12 text-base' : ''} />
-              <Button type="button" variant={seniorMode ? 'default' : 'outline'} className="h-11 whitespace-nowrap" onClick={() => setSeniorMode((v) => !v)}>
-                {seniorMode ? 'Mode Normal' : 'Mode Mudah Dibaca'}
-              </Button>
-            </div>
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama produk..." />
             <div className="grid grid-cols-2 gap-2">
-              <Button type="button" variant={stockView === 'all' ? 'default' : 'outline'} className={seniorMode ? 'h-12 text-base' : 'h-11'} onClick={() => setStockView('all')}>Semua</Button>
-              <Button type="button" variant={stockView === 'low' ? 'default' : 'outline'} className={seniorMode ? 'h-12 text-base' : 'h-11'} onClick={() => setStockView('low')}>Menipis</Button>
+              <Button type="button" variant={stockView === 'all' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('all')}>Semua</Button>
+              <Button type="button" variant={stockView === 'low' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('low')}>Menipis</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 text-sm text-gray-700 dark:text-slate-200 outline-none">
@@ -923,7 +917,7 @@ export default function CashierPage() {
                   const low = item.stock <= 10;
                   const empty = item.stock <= 0;
                   return (
-                    <div key={item.id} className={`rounded-2xl border bg-white ${seniorMode ? 'p-4 sm:p-5' : 'p-3 sm:p-4'} flex items-center gap-3`}>
+                    <div key={item.id} className="rounded-2xl border bg-white p-3 sm:p-4 flex items-center gap-3">
                       <img
                         src={item.img || 'https://placehold.co/56x56?text=No+Image'}
                         alt={item.variantName}
@@ -935,15 +929,15 @@ export default function CashierPage() {
                         }}
                       />
                       <div className="min-w-0 flex-1">
-                        <p className={`${seniorMode ? 'text-xl' : 'text-lg'} font-semibold text-gray-900 leading-tight truncate`}>{item.productName}</p>
-                        <p className={`${seniorMode ? 'text-base' : 'text-sm'} text-gray-500 truncate`}>{item.variantName}</p>
-                        <div className={`mt-1 flex items-center gap-2 ${seniorMode ? 'text-base' : 'text-sm'}`}>
+                        <p className="text-lg font-semibold text-gray-900 leading-tight truncate">{item.productName}</p>
+                        <p className="text-sm text-gray-500 truncate">{item.variantName}</p>
+                        <div className="mt-1 flex items-center gap-2 text-sm">
                           <span className="font-semibold text-gray-900">Stok: {item.stock}</span>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
                         </div>
-                        <p className={`${seniorMode ? 'text-base' : 'text-sm'} font-medium text-gray-700 mt-0.5`}>{formatRupiah(item.finalPrice)}</p>
+                        <p className="text-sm font-medium text-gray-700 mt-0.5">{formatRupiah(item.finalPrice)}</p>
                       </div>
-                      <Button className={`${seniorMode ? 'h-12 text-base px-6' : 'h-11 px-5'} rounded-xl`} onClick={() => addToCart(item)} disabled={item.stock <= 0}>Tambah</Button>
+                      <Button className="h-11 px-5 rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>Tambah</Button>
                     </div>
                   );
                 })}
