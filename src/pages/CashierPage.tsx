@@ -126,6 +126,7 @@ export default function CashierPage() {
   const [search, setSearch] = useState('');
   const [selectedProducer, setSelectedProducer] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState('all');
+  const [stockView, setStockView] = useState<'all' | 'low'>('all');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
@@ -433,9 +434,10 @@ export default function CashierPage() {
         item.variantName.toLowerCase().includes(q) ||
         String(item.id).includes(q);
 
-      return hitHierarchy && hitSearch;
+      const hitStock = stockView === 'all' ? true : item.stock <= 10;
+      return hitHierarchy && hitSearch && hitStock;
     });
-  }, [cashierVariants, search, selectedProducer, selectedProduct]);
+  }, [cashierVariants, search, selectedProducer, selectedProduct, stockView]);
 
   const addToCart = (item: (typeof cashierVariants)[number]) => {
     if (item.stock <= 0) {
@@ -888,7 +890,11 @@ export default function CashierPage() {
             <CardDescription>Data diambil dari endpoint existing: /product/all dan /type/all</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari produk/variant/id..." />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama produk..." />
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant={stockView === 'all' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('all')}>Semua</Button>
+              <Button type="button" variant={stockView === 'low' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('low')}>Menipis</Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 <option value="all">Semua Produsen</option>
@@ -906,50 +912,36 @@ export default function CashierPage() {
             ) : variantsError ? (
               <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
             ) : (
-              <div className="max-h-[460px] overflow-auto rounded-xl border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Variant</TableHead>
-                      <TableHead>Gambar</TableHead>
-                      <TableHead>Harga</TableHead>
-                      <TableHead>Stok</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filtered.map((item) => (
-                      <TableRow key={item.id} className="dark:hover:bg-slate-700/30 dark:border-slate-700">
-                        <TableCell>
-                          <div className="font-medium text-gray-900 dark:text-slate-100">{item.productName}</div>
-                          <div className="text-xs text-gray-500 dark:text-slate-400">{item.variantName}</div>
-                        </TableCell>
-                        <TableCell>
-                          <img
-                            src={item.img || 'https://placehold.co/56x56?text=No+Image'}
-                            alt={item.variantName}
-                            className="w-12 h-12 rounded-lg object-cover border border-gray-100"
-                            loading="lazy"
-                            onError={(e) => {
-                              const target = e.currentTarget;
-                              if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>{formatRupiah(item.finalPrice)}</TableCell>
-                        <TableCell>{item.stock}</TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" onClick={() => addToCart(item)} disabled={item.stock <= 0}>Tambah</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filtered.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-sm text-gray-500">Tidak ada variant sesuai pencarian.</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <div className="max-h-[520px] overflow-auto rounded-xl border p-3 space-y-3 bg-gray-50/60">
+                {filtered.map((item) => {
+                  const low = item.stock <= 10;
+                  const empty = item.stock <= 0;
+                  return (
+                    <div key={item.id} className="rounded-2xl border bg-white p-3 sm:p-4 flex items-center gap-3">
+                      <img
+                        src={item.img || 'https://placehold.co/56x56?text=No+Image'}
+                        alt={item.variantName}
+                        className="w-14 h-14 rounded-xl object-cover border border-gray-100 shrink-0"
+                        loading="lazy"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-lg font-semibold text-gray-900 leading-tight truncate">{item.productName}</p>
+                        <p className="text-sm text-gray-500 truncate">{item.variantName}</p>
+                        <div className="mt-1 flex items-center gap-2 text-sm">
+                          <span className="font-semibold text-gray-900">Stok: {item.stock}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-700 mt-0.5">{formatRupiah(item.finalPrice)}</p>
+                      </div>
+                      <Button className="h-11 px-5 rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>Tambah</Button>
+                    </div>
+                  );
+                })}
+                {filtered.length === 0 && <p className="text-sm text-gray-500">Tidak ada variant sesuai pencarian.</p>}
               </div>
             )}
           </CardContent>
