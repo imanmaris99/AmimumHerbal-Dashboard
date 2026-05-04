@@ -650,11 +650,11 @@ export default function CashierPage() {
     ].join('\n');
   };
 
-  const getPrinterCharacteristic = async (device: BluetoothDevice) => {
+  const getPrinterCharacteristic = async (device: any) => {
     const server = await device.gatt?.connect();
     if (!server) throw new Error('Gagal konek ke printer Bluetooth.');
 
-    const candidateServices: BluetoothServiceUUID[] = [0xFFE0, 0x18F0, 'battery_service'];
+    const candidateServices: Array<number | string> = [0xFFE0, 0x18F0, 'battery_service'];
     for (const serviceId of candidateServices) {
       try {
         const svc = await server.getPrimaryService(serviceId);
@@ -668,7 +668,7 @@ export default function CashierPage() {
     throw new Error('Karakteristik write printer tidak ditemukan.');
   };
 
-  const writeChunks = async (characteristic: BluetoothRemoteGATTCharacteristic, bytes: Uint8Array) => {
+  const writeChunks = async (characteristic: any, bytes: Uint8Array) => {
     const chunkSize = 140;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       const chunk = bytes.slice(i, i + chunkSize);
@@ -711,7 +711,7 @@ export default function CashierPage() {
   };
 
   const resolveBluetoothPrinter = async () => {
-    const nav = navigator as Navigator & { bluetooth: Bluetooth };
+    const nav = navigator as any;
     const storedId = localStorage.getItem(BT_PRINTER_DEVICE_ID_KEY);
     if (storedId && typeof nav.bluetooth.getDevices === 'function') {
       const trusted = await nav.bluetooth.getDevices();

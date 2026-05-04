@@ -396,7 +396,7 @@ export default function ProductEditPage() {
                         <div className="min-w-0 space-y-1">
                           <p className="text-xs font-semibold text-slate-900 truncate">{variant.variant || `Variant #${variant.id}`}</p>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-600">
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Pack type: {variant.name || '-'}</span>
+                            <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Variant: {variant.variant || '-'}</span>
                             <span>ID: {variant.id}</span>
                             <span>Stock: {variant.stock ?? 0}</span>
                             {Number(variant.discount || 0) > 0 && typeof variant.discounted_price === 'number' ? (
