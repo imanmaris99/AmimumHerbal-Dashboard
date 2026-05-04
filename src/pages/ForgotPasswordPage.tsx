@@ -44,7 +44,8 @@ export default function ForgotPasswordPage() {
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Toko Herbal AmImUm</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-[-0.02em] leading-[0.95]">Dashboard</h1>
+          <p className="text-base sm:text-xl font-semibold text-gray-800 mt-0.5 sm:mt-1 leading-tight">Toko Herbal Amimum</p>
           <p className="text-sm text-gray-500 mt-2">Pemulihan akses internal untuk owner dan admin</p>
         </div>
 
