@@ -912,36 +912,38 @@ export default function CashierPage() {
             ) : variantsError ? (
               <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
             ) : (
-              <div className="max-h-[520px] overflow-auto rounded-xl border p-3 space-y-3 bg-gray-50/60">
-                {filtered.map((item) => {
-                  const low = item.stock <= 10;
-                  const empty = item.stock <= 0;
-                  return (
-                    <div key={item.id} className="rounded-2xl border bg-white p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                      <img
-                        src={item.img || 'https://placehold.co/56x56?text=No+Image'}
-                        alt={item.variantName}
-                        className="w-14 h-14 rounded-xl object-cover border border-gray-100 shrink-0"
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-lg font-semibold text-gray-900 leading-tight break-words line-clamp-2">{item.productName}</p>
-                        <p className="text-sm text-gray-500 break-words line-clamp-2">{item.variantName}</p>
-                        <div className="mt-1 flex items-center gap-2 text-sm">
-                          <span className="font-semibold text-gray-900">Stok: {item.stock}</span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
+              <div className="max-h-[560px] overflow-auto rounded-xl border p-3 bg-gray-50/60">
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                  {filtered.map((item) => {
+                    const low = item.stock <= 10;
+                    const empty = item.stock <= 0;
+                    return (
+                      <div key={item.id} className="rounded-2xl border bg-white p-3 flex flex-col gap-2">
+                        <img
+                          src={item.img || 'https://placehold.co/56x56?text=No+Image'}
+                          alt={item.variantName}
+                          className="w-full h-24 rounded-xl object-cover border border-gray-100"
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
+                          }}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2">{item.productName}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{item.variantName}</p>
+                          <p className="text-sm sm:text-base font-bold text-gray-900 mt-1">{formatRupiah(item.finalPrice)}</p>
+                          <div className="mt-1 flex items-center justify-between gap-2">
+                            <span className="text-xs font-semibold text-gray-700">Stok: {item.stock}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
+                          </div>
                         </div>
-                        <p className="text-sm font-medium text-gray-700 mt-0.5">{formatRupiah(item.finalPrice)}</p>
+                        <Button className="h-9 sm:h-10 w-full rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>+ Keranjang</Button>
                       </div>
-                      <Button className="h-10 sm:h-11 w-full sm:w-auto px-4 sm:px-5 rounded-xl shrink-0" onClick={() => addToCart(item)} disabled={item.stock <= 0}>Tambah</Button>
-                    </div>
-                  );
-                })}
-                {filtered.length === 0 && <p className="text-sm text-gray-500">Tidak ada variant sesuai pencarian.</p>}
+                    );
+                  })}
+                </div>
+                {filtered.length === 0 && <p className="text-sm text-gray-500 mt-2">Tidak ada variant sesuai pencarian.</p>}
               </div>
             )}
           </CardContent>
