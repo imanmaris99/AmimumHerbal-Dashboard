@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { motion } from 'motion/react';
-import { KeyRound, Mail, LayoutDashboard, Loader2, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import logoAmimum from '@/assets/logo-amimum-premium.svg';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -75,8 +76,8 @@ export default function LoginPage() {
       >
         <div className="flex justify-center mb-10">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-500 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center rotate-3 hover:rotate-0 transition-transform duration-300">
-               <LayoutDashboard className="text-white w-7 h-7" />
+            <div className="w-12 h-12 rounded-2xl shadow-lg shadow-emerald-200 overflow-hidden ring-1 ring-emerald-100 bg-white rotate-3 hover:rotate-0 transition-transform duration-300">
+              <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">Dashboard Toko Herbal AmImUm</h1>
