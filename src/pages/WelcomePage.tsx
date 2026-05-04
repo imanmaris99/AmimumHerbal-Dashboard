@@ -23,17 +23,17 @@ export default function WelcomePage() {
           }} />
 
           <div
-            className="absolute left-1/2 -translate-x-1/2 top-[170px] w-52 h-52 opacity-[0.18] pointer-events-none"
+            className="absolute right-4 top-[132px] w-44 h-44 opacity-[0.2] pointer-events-none"
             style={{
               backgroundImage: 'url("https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg")',
               backgroundRepeat: 'no-repeat',
               backgroundSize: 'contain',
               backgroundPosition: 'center',
-              filter: 'brightness(1.16) contrast(1.03) saturate(0.9)'
+              filter: 'brightness(1.18) contrast(1.05) saturate(0.9)'
             }}
           />
 
-          <div className="absolute -bottom-1 left-0 right-0 h-24 bg-white rounded-t-[50px]" />
+          <div className="absolute -bottom-1 left-0 right-0 h-14 bg-white rounded-t-[50px]" />
 
           <div className="relative z-10 p-6 pt-8 text-white">
             <p className="text-xs font-semibold tracking-[0.2em] uppercase text-emerald-50/90">Dashboard Internal</p>
@@ -44,7 +44,7 @@ export default function WelcomePage() {
           </div>
         </div>
 
-        <div className="px-6 pt-4 pb-6">
+        <div className="px-6 pt-2 pb-6">
           <h2 className="text-[28px] leading-tight font-semibold text-gray-900">Siap Masuk?</h2>
           <p className="mt-2 text-sm text-gray-500 leading-relaxed">
             Gunakan akun internal owner atau admin untuk melanjutkan ke halaman login dashboard.
