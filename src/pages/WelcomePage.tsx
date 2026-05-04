@@ -45,6 +45,17 @@ export default function WelcomePage() {
             <div className="mt-4 inline-flex items-center rounded-full border border-emerald-200/40 bg-white/10 px-3 py-1 text-[11px] font-medium text-emerald-50/95">
               Akses hanya untuk Owner & Admin
             </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2 max-w-[300px]">
+              <div className="rounded-xl border border-emerald-200/45 bg-white/10 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide text-emerald-100/80">Status</p>
+                <p className="text-xs font-semibold text-white mt-0.5">Sistem Internal Aktif</p>
+              </div>
+              <div className="rounded-xl border border-emerald-200/45 bg-white/10 px-3 py-2">
+                <p className="text-[10px] uppercase tracking-wide text-emerald-100/80">Sesi</p>
+                <p className="text-xs font-semibold text-white mt-0.5">Auto-timeout 4 jam</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -53,17 +64,6 @@ export default function WelcomePage() {
           <p className="mt-2 text-sm text-gray-500 leading-relaxed">
             Gunakan akun internal owner atau admin untuk melanjutkan ke halaman login dashboard.
           </p>
-
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-gray-200 bg-white px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wide text-gray-400">Status</p>
-              <p className="text-xs font-semibold text-emerald-600 mt-0.5">Sistem Internal Aktif</p>
-            </div>
-            <div className="rounded-xl border border-gray-200 bg-white px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wide text-gray-400">Sesi</p>
-              <p className="text-xs font-semibold text-gray-700 mt-0.5">Auto-timeout 4 jam</p>
-            </div>
-          </div>
 
           <div className="mt-5 flex items-center justify-between">
             <button onClick={handleSkip} className="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">
