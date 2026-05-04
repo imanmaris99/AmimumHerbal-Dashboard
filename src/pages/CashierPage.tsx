@@ -895,7 +895,7 @@ export default function CashierPage() {
               <Button type="button" variant={stockView === 'all' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('all')}>Semua</Button>
               <Button type="button" variant={stockView === 'low' ? 'default' : 'outline'} className="h-11" onClick={() => setStockView('low')}>Menipis</Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               <select value={selectedProducer} onChange={(e) => { setSelectedProducer(e.target.value); setSelectedProduct('all'); }} className="h-10 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 px-3 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 <option value="all">Semua Produsen</option>
                 {producerOptions.map((x) => <option key={x} value={x}>{x}</option>)}
@@ -913,7 +913,7 @@ export default function CashierPage() {
               <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
             ) : (
               <div className="max-h-[560px] overflow-auto rounded-xl border p-3 bg-gray-50/60">
-                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
                   {filtered.map((item) => {
                     const low = item.stock <= 10;
                     const empty = item.stock <= 0;
