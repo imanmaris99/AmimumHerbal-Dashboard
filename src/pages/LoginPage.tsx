@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { motion } from 'motion/react';
-import { KeyRound, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Mail, Loader2, Eye, EyeOff, Chrome } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg?v=20260504-0630';
@@ -162,11 +162,27 @@ export default function LoginPage() {
                   t('login.submit')
                 )}
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-12 rounded-xl border-gray-200 text-gray-500 bg-white"
+                disabled
+                title={i18n.language === 'id' ? 'Login Google belum aktif (billing Google Cloud belum dikonfigurasi).' : 'Google Login is not active yet (Google Cloud billing is not configured).'}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                {i18n.language === 'id' ? 'Masuk dengan Google (segera hadir)' : 'Continue with Google (coming soon)'}
+              </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pb-8 pt-2">
             <p className="text-xs text-center text-gray-400 px-8 leading-relaxed">
               {t('login.footerNote')}
+            </p>
+            <p className="text-[11px] text-center text-amber-600 px-8 leading-relaxed">
+              {i18n.language === 'id'
+                ? 'Catatan: Login Google belum aktif. Sementara gunakan email & password internal.'
+                : 'Note: Google Login is not active yet. Please use internal email & password for now.'}
             </p>
           </CardFooter>
         </Card>
