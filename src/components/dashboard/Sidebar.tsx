@@ -16,6 +16,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoAmimum from '@/assets/logo-amimum.svg';
 import { RoleGuard } from '../RoleGuard';
 import { useAuthStore } from '@/store/authStore';
 import { ROLE_LABELS } from '@/types';
@@ -63,8 +64,8 @@ function SidebarContent() {
     <>
       <div className="p-6 border-b border-gray-50 dark:border-slate-800 shrink-0 bg-white dark:bg-slate-900">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-100">
-            <span className="text-white font-bold text-xl">U</span>
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-white ring-1 ring-emerald-100 shadow-sm shadow-emerald-100">
+            <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-cover" />
           </div>
           <div>
             <span className="font-bold text-base text-gray-900 dark:text-slate-100 tracking-tight block leading-tight">Dashboard Toko Herbal AmImUm</span>
