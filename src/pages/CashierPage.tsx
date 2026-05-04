@@ -913,7 +913,7 @@ export default function CashierPage() {
               <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
             ) : (
               <div className="max-h-[560px] overflow-auto rounded-xl border p-3 bg-gray-50/60">
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
                   {filtered.map((item) => {
                     const low = item.stock <= 10;
                     const empty = item.stock <= 0;
@@ -930,8 +930,8 @@ export default function CashierPage() {
                           }}
                         />
                         <div className="min-w-0 flex-1 lg:pr-2">
-                          <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2">{item.productName}</p>
-                          <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{item.variantName}</p>
+                          <p className="text-sm font-semibold text-gray-900 leading-tight line-clamp-2">{item.productName}</p>
+                          <p className="text-xs text-gray-500 line-clamp-1">{item.variantName}</p>
                           <p className="text-sm sm:text-base font-bold text-gray-900 mt-1">{formatRupiah(item.finalPrice)}</p>
                           <div className="mt-1 flex items-center justify-between gap-2">
                             <span className="text-xs font-semibold text-gray-700">Stok: {item.stock}</span>
