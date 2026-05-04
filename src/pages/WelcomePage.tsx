@@ -1,25 +1,15 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const WELCOME_SEEN_KEY = 'amimum.dashboard.welcome.seen.v1';
-
 export default function WelcomePage() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const seen = localStorage.getItem(WELCOME_SEEN_KEY);
-    if (seen === '1') navigate('/login', { replace: true });
-  }, [navigate]);
-
   const handleContinue = () => {
-    localStorage.setItem(WELCOME_SEEN_KEY, '1');
     navigate('/login');
   };
 
   const handleSkip = () => {
-    localStorage.setItem(WELCOME_SEEN_KEY, '1');
     navigate('/login');
   };
 
