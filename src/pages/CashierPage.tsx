@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, ShoppingCart, Trash2, ReceiptText, Printer, History } from 'lucide-react';
 import { toast } from 'sonner';
@@ -138,6 +138,8 @@ export default function CashierPage() {
   const [deletedReceiptIds, setDeletedReceiptIds] = useState<string[]>([]);
   const [printPaper, setPrintPaper] = useState<'58' | '80'>('58');
   const [isBtPrinting, setIsBtPrinting] = useState(false);
+  const [showReceiptHistory, setShowReceiptHistory] = useState(false);
+  const receiptDetailRef = useRef<HTMLDivElement | null>(null);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -324,6 +326,7 @@ export default function CashierPage() {
 
       setLastReceipt(receiptPayload);
       setSelectedReceiptId(receiptPayload.transactionId);
+      setShowReceiptHistory(false);
       setReceiptHistory((prev) => {
         const next = [receiptPayload, ...prev].slice(0, 500);
         localStorage.setItem(RECEIPT_STORAGE_KEY, JSON.stringify(next));
@@ -805,6 +808,11 @@ export default function CashierPage() {
     };
   }, [selectedReceipt, selectedOrderDetailResponse]);
 
+  useEffect(() => {
+    if (!selectedReceiptWithItems) return;
+    receiptDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [selectedReceiptWithItems?.transactionId]);
+
   const exportReceiptPdf = (receipt: ReceiptData) => {
     const w = window.open('', '_blank');
     if (!w) return toast.error('Popup diblokir browser. Izinkan pop-up untuk export PDF.');
@@ -1012,47 +1020,57 @@ export default function CashierPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Riwayat Nota Kasir</CardTitle>
-          <CardDescription>Cek ulang transaksi dengan filter tanggal dan pencarian cepat.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-            <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
-            <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
-            <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(new Date().toISOString().slice(0, 10)); }}>Reset Filter</Button>
-            <Button variant="destructive" onClick={clearReceiptHistory} className="flex items-center gap-2">
-              <History className="w-4 h-4" /> Hapus Riwayat
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CardTitle>Riwayat Nota Kasir</CardTitle>
+              <CardDescription>Cek ulang transaksi dengan filter tanggal dan pencarian cepat.</CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => setShowReceiptHistory((v) => !v)}>
+              {showReceiptHistory ? 'Sembunyikan Riwayat' : 'Tampilkan Riwayat'}
             </Button>
           </div>
-          <div className="rounded-xl border overflow-auto max-h-[260px]">
-            <Table>
-              <TableHeader><TableRow><TableHead>Transaksi</TableHead><TableHead>Tanggal</TableHead><TableHead>Kasir</TableHead><TableHead>Total</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {filteredReceipts.map((r) => (
-                  <TableRow key={r.transactionId}>
-                    <TableCell>{r.transactionId}</TableCell>
-                    <TableCell>{new Date(r.createdAt).toLocaleString('id-ID')}</TableCell>
-                    <TableCell>{r.cashierName}</TableCell>
-                    <TableCell>{formatRupiah(r.total)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button>
-                        <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${r.transactionId}`)}>Audit</Button>
-                        <Button size="sm" variant="destructive" onClick={() => deleteSingleReceipt(r.transactionId)}>
-                          Hapus
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredReceipts.length === 0 && <TableRow><TableCell colSpan={5} className="text-sm text-gray-500">Belum ada data nota.</TableCell></TableRow>}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
+        </CardHeader>
+        {showReceiptHistory && (
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+              <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
+              <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
+              <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(new Date().toISOString().slice(0, 10)); }}>Reset Filter</Button>
+              <Button variant="destructive" onClick={clearReceiptHistory} className="flex items-center gap-2">
+                <History className="w-4 h-4" /> Hapus Riwayat
+              </Button>
+            </div>
+            <div className="rounded-xl border overflow-auto max-h-[260px]">
+              <Table>
+                <TableHeader><TableRow><TableHead>Transaksi</TableHead><TableHead>Tanggal</TableHead><TableHead>Kasir</TableHead><TableHead>Total</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {filteredReceipts.map((r) => (
+                    <TableRow key={r.transactionId}>
+                      <TableCell>{r.transactionId}</TableCell>
+                      <TableCell>{new Date(r.createdAt).toLocaleString('id-ID')}</TableCell>
+                      <TableCell>{r.cashierName}</TableCell>
+                      <TableCell>{formatRupiah(r.total)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${r.transactionId}`)}>Audit</Button>
+                          <Button size="sm" variant="destructive" onClick={() => deleteSingleReceipt(r.transactionId)}>
+                            Hapus
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredReceipts.length === 0 && <TableRow><TableCell colSpan={5} className="text-sm text-gray-500">Belum ada data nota.</TableCell></TableRow>}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       {selectedReceiptWithItems && (
+        <div ref={receiptDetailRef}>
         <Card id="receipt-detail-print-area" className="print:shadow-none print:border-none overflow-hidden">
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -1146,6 +1164,7 @@ export default function CashierPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       )}
     </div>
   );
