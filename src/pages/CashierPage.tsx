@@ -917,8 +917,9 @@ export default function CashierPage() {
                   {filtered.map((item) => {
                     const low = item.stock <= 10;
                     const empty = item.stock <= 0;
+                    const selectedInCart = cart.find((c) => c.variantId === item.id);
                     return (
-                      <div key={item.id} className="rounded-2xl border bg-white p-3 flex flex-col lg:flex-row lg:items-center gap-3">
+                      <div key={item.id} className={`rounded-2xl border bg-white p-3 flex flex-col lg:flex-row lg:items-center gap-3 transition-all ${selectedInCart ? 'border-emerald-300 ring-2 ring-emerald-100' : 'hover:border-emerald-200'}`}>
                         <img
                           src={item.img || 'https://placehold.co/56x56?text=No+Image'}
                           alt={item.variantName}
@@ -937,8 +938,11 @@ export default function CashierPage() {
                             <span className="text-xs font-semibold text-gray-700">Stok: {item.stock}</span>
                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
                           </div>
+                          {selectedInCart ? (
+                            <p className="mt-1 text-[11px] font-semibold text-emerald-600">✓ Sudah dipilih • Qty {selectedInCart.qty}</p>
+                          ) : null}
                         </div>
-                        <Button className="h-9 sm:h-10 w-full lg:w-auto lg:min-w-[132px] rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>+ Keranjang</Button>
+                        <Button className="h-9 sm:h-10 w-full lg:w-auto lg:min-w-[132px] rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>{selectedInCart ? `Dipilih (${selectedInCart.qty})` : '+ Keranjang'}</Button>
                       </div>
                     );
                   })}
