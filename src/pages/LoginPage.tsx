@@ -80,8 +80,9 @@ export default function LoginPage() {
               <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-contain p-1" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight truncate">Dashboard Toko Herbal AmImUm</h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-snug">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">Dashboard</h1>
+              <p className="text-base sm:text-xl font-semibold text-gray-800 mt-1 leading-tight truncate">Toko Herbal AmImUm</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1.5 leading-snug">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
             </div>
           </div>
         </div>
