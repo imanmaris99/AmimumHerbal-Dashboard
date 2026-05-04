@@ -978,14 +978,16 @@ export default function CashierPage() {
                   <p className="font-medium text-gray-900 dark:text-slate-100 text-sm">{row.productName}</p>
                   <p className="text-xs text-gray-500 dark:text-slate-400">{row.variantName}</p>
                   <div className="mt-3 flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" className="h-9 w-9 p-0" onClick={() => updateQty(row.variantId, row.qty - 1)} disabled={row.qty <= 1}>-</Button>
                     <Input
                       type="number"
                       min={1}
                       max={row.stock}
                       value={row.qty}
                       onChange={(e) => updateQty(row.variantId, Number(e.target.value))}
-                      className="h-9"
+                      className="h-9 text-center"
                     />
+                    <Button type="button" variant="outline" size="sm" className="h-9 w-9 p-0" onClick={() => updateQty(row.variantId, row.qty + 1)} disabled={row.qty >= row.stock}>+</Button>
                     <select
                       value={row.discountType}
                       onChange={(e) => updateItemDiscountType(row.variantId, e.target.value as DiscountType)}
