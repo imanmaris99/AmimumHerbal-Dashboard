@@ -64,15 +64,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 px-4 py-8 sm:py-12 selection:bg-emerald-100">
+    <div className="min-h-screen bg-gradient-to-br from-[#F2FBF7] via-[#ECF9F4] to-[#E3F5EE] px-4 py-8 sm:py-12 selection:bg-emerald-100">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
         className="mx-auto w-full max-w-md"
       >
-        <Card className="overflow-hidden rounded-3xl border-none shadow-2xl shadow-emerald-900/20">
-          <div className="bg-emerald-400/90 px-6 pt-6 pb-7 text-white">
+        <Card className="overflow-hidden rounded-3xl border border-emerald-100/80 bg-white/95 backdrop-blur shadow-2xl shadow-emerald-100/50">
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 px-6 pt-6 pb-7 text-white">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/95 p-1.5 shadow-md">
                 <img src={logoAmimum} alt="Logo Toko Herbal Amimum" className="h-full w-full object-contain" />
@@ -83,7 +83,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <p className="mt-5 text-sm leading-relaxed text-emerald-50/95">
+            <p className="mt-5 text-sm leading-relaxed text-emerald-50/90 max-w-[92%]">
               {i18n.language === 'id'
                 ? 'Akses internal untuk owner dan admin. Masuk untuk melanjutkan operasional dashboard.'
                 : 'Internal access for owners and admins. Sign in to continue dashboard operations.'}
@@ -92,8 +92,8 @@ export default function LoginPage() {
 
           <CardContent className="bg-white px-6 sm:px-7 pt-6 pb-7">
             <div className="text-center mb-5">
-              <h1 className="text-2xl font-bold text-gray-900">{i18n.language === 'id' ? 'Masuk' : 'Sign in'}</h1>
-              <p className="text-sm text-emerald-600 mt-1">{i18n.language === 'id' ? 'Selamat datang kembali' : 'Welcome back'}</p>
+              <h1 className="text-[28px] font-semibold tracking-tight text-gray-900">{i18n.language === 'id' ? 'Masuk' : 'Sign in'}</h1>
+              <p className="text-sm text-emerald-600/90 mt-1">{i18n.language === 'id' ? 'Selamat datang kembali' : 'Welcome back'}</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -107,7 +107,7 @@ export default function LoginPage() {
                     placeholder="owner@amimum.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-xl border-gray-200 bg-gray-50 pl-10 focus:bg-white"
+                    className="h-11 rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 focus:bg-white focus:border-emerald-200"
                     autoComplete="email"
                     required
                   />
@@ -129,7 +129,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 rounded-xl border-gray-200 bg-gray-50 pl-10 pr-11 focus:bg-white"
+                    className="h-11 rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 pr-11 focus:bg-white focus:border-emerald-200"
                     autoComplete="current-password"
                     required
                   />
@@ -147,7 +147,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="h-11 w-full rounded-xl bg-emerald-500 shadow-lg shadow-emerald-200 hover:bg-emerald-600"
+                className="h-11 w-full rounded-xl bg-emerald-500 shadow-lg shadow-emerald-200/80 hover:bg-emerald-600 active:scale-[0.99] transition-all"
                 disabled={isLoading}
               >
                 {isLoading ? (
