@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, KeyRound, Loader2, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Loader2, Mail } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
@@ -9,7 +9,9 @@ import { BasicStatusResponse, ResetPasswordPayload } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+
+const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg?v=20260504-0630';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -47,34 +49,39 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 selection:bg-emerald-100">
+    <div className="min-h-screen bg-gradient-to-br from-[#F2FBF7] via-[#ECF9F4] to-[#E3F5EE] px-4 py-8 sm:py-12 selection:bg-emerald-100">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.45 }}
+        className="mx-auto w-full max-w-md"
       >
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-[-0.02em] leading-[0.95]">Dashboard</h1>
-          <p className="text-base sm:text-xl font-semibold text-gray-800 mt-0.5 sm:mt-1 leading-tight">Toko Herbal Amimum</p>
-          <p className="text-sm text-gray-500 mt-2">Reset akses internal untuk owner dan admin</p>
-        </div>
-
-        <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden">
-          <CardHeader className="space-y-2 pb-2 pt-8 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
-              <ShieldCheck className="h-6 w-6" />
+        <Card className="overflow-hidden rounded-3xl border border-emerald-100/80 bg-white/95 backdrop-blur shadow-2xl shadow-emerald-100/50">
+          <div className="bg-gradient-to-br from-emerald-500/95 to-emerald-600/95 px-6 pt-6 pb-7 text-white">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/95 p-1.5 shadow-md">
+                <img src={logoAmimum} alt="Logo Toko Herbal Amimum" className="h-full w-full object-contain" />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold leading-none">Dashboard</p>
+                <p className="text-sm text-emerald-50/95 font-medium mt-1">Toko Herbal Amimum</p>
+              </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Reset password dashboard</CardTitle>
-            <CardDescription className="text-gray-500">
-              Masukkan email, kode verifikasi, dan password baru untuk akun internal Anda.
-            </CardDescription>
-          </CardHeader>
 
-          <CardContent className="pt-6">
+            <p className="mt-5 text-sm leading-relaxed text-emerald-50/90 max-w-[92%]">
+              Reset akses internal untuk owner dan admin. Masukkan data verifikasi dengan benar.
+            </p>
+          </div>
+
+          <CardContent className="bg-white px-6 sm:px-7 pt-6 pb-7">
+            <div className="text-center mb-6">
+              <h1 className="text-[28px] font-semibold tracking-tight text-gray-900">Reset Password</h1>
+              <p className="text-sm text-emerald-600/90 mt-1">Atur ulang password akun internal Anda</p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email internal</Label>
+              <div className="space-y-2.5">
+                <Label htmlFor="email" className="text-[13px] font-medium text-gray-600 tracking-[0.01em]">Email internal</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
@@ -82,27 +89,27 @@ export default function ResetPasswordPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 rounded-xl border-gray-100 bg-gray-50 pl-10 focus:bg-white"
+                    className="h-[42px] rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 focus:bg-white focus:border-emerald-200"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="code">Kode verifikasi</Label>
+              <div className="space-y-2.5">
+                <Label htmlFor="code" className="text-[13px] font-medium text-gray-600 tracking-[0.01em]">Kode verifikasi</Label>
                 <Input
                   id="code"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Masukkan kode dari email"
-                  className="h-12 rounded-xl border-gray-100 bg-gray-50 focus:bg-white"
+                  className="h-[42px] rounded-xl border-gray-200 bg-[#F7FAF9] focus:bg-white focus:border-emerald-200"
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">Password baru</Label>
+              <div className="space-y-2.5">
+                <Label htmlFor="newPassword" className="text-[13px] font-medium text-gray-600 tracking-[0.01em]">Password baru</Label>
                 <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
@@ -111,7 +118,7 @@ export default function ResetPasswordPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimal 8 karakter, kombinasi lengkap"
-                    className="h-12 rounded-xl border-gray-100 bg-gray-50 pl-10 pr-11 focus:bg-white"
+                    className="h-[42px] rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 pr-11 focus:bg-white focus:border-emerald-200"
                     required
                   />
                   <button
@@ -128,7 +135,7 @@ export default function ResetPasswordPage() {
 
               <Button
                 type="submit"
-                className="h-12 w-full rounded-xl bg-emerald-500 shadow-lg shadow-emerald-200 hover:bg-emerald-600"
+                className="h-11 w-full rounded-xl bg-emerald-500 shadow-lg shadow-emerald-200/80 hover:bg-emerald-600 active:scale-[0.99] transition-all"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -147,22 +154,23 @@ export default function ResetPasswordPage() {
                 Email atau kode sudah terisi dari tautan email. Silakan cek ulang sebelum submit.
               </div>
             ) : null}
+
+            <div className="mt-6 space-y-2 text-sm text-gray-500 text-center">
+              <p>Setelah reset berhasil, login kembali memakai password baru Anda.</p>
+              <Link to="/forgot-password" className="font-semibold text-emerald-600 hover:text-emerald-700 block">
+                Belum punya kode? Minta email reset dulu
+              </Link>
+              <Link to="/login" className="text-gray-500 hover:text-gray-700 block">
+                Kembali ke login
+              </Link>
+            </div>
+
+            <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">
+              &copy; 2026 Dashboard Toko Herbal Amimum. All rights reserved.
+            </p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
           </CardContent>
-
-          <CardFooter className="flex flex-col gap-3 pb-8 pt-2 text-sm text-gray-500">
-            <p className="text-center">Setelah reset berhasil, login kembali memakai password baru Anda.</p>
-            <Link to="/forgot-password" className="font-semibold text-emerald-600 hover:text-emerald-700">
-              Belum punya kode? Minta email reset dulu
-            </Link>
-            <Link to="/login" className="text-gray-500 hover:text-gray-700">
-              Kembali ke login
-            </Link>
-          </CardFooter>
         </Card>
-
-        <p className="text-center mt-8 text-sm text-gray-400">
-          &copy; 2026 Dashboard Toko Herbal AmImUm. All rights reserved.
-        </p>
       </motion.div>
     </div>
   );

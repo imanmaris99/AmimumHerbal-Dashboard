@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
         className="mx-auto w-full max-w-md"
       >
         <Card className="overflow-hidden rounded-3xl border border-emerald-100/80 bg-white/95 backdrop-blur shadow-2xl shadow-emerald-100/50">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 px-6 pt-6 pb-7 text-white">
+          <div className="bg-gradient-to-br from-emerald-500/95 to-emerald-600/95 px-6 pt-6 pb-7 text-white">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/95 p-1.5 shadow-md">
                 <img src={logoAmimum} alt="Logo Toko Herbal Amimum" className="h-full w-full object-contain" />
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
                     placeholder="owner@amimum.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 focus:bg-white focus:border-emerald-200"
+                    className="h-[42px] rounded-xl border-gray-200 bg-[#F7FAF9] pl-10 focus:bg-white focus:border-emerald-200"
                     required
                   />
                 </div>
@@ -120,6 +120,7 @@ export default function ForgotPasswordPage() {
             <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">
               &copy; 2026 Dashboard Toko Herbal Amimum. All rights reserved.
             </p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
           </CardContent>
         </Card>
       </motion.div>
