@@ -67,39 +67,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 selection:bg-emerald-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-6 sm:p-6 selection:bg-emerald-100">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-[420px]"
       >
-        <div className="flex justify-center mb-10">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl shadow-lg shadow-emerald-200 overflow-hidden ring-1 ring-emerald-100 bg-white rotate-3 hover:rotate-0 transition-transform duration-300">
-              <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-cover" />
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <div className="flex items-center gap-3 sm:gap-4 w-full max-w-[360px] sm:max-w-none">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-emerald-200 overflow-hidden ring-1 ring-emerald-100 bg-white shrink-0">
+              <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-contain p-1" />
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">Dashboard Toko Herbal AmImUm</h1>
-              <p className="text-sm text-gray-500 mt-1">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight truncate">Dashboard Toko Herbal AmImUm</h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-snug">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
             </div>
           </div>
         </div>
 
-        <Card className="border-none shadow-2xl shadow-gray-200/50 rounded-3xl overflow-hidden bg-white/95 backdrop-blur">
-          <CardHeader className="space-y-1 pb-2 pt-8">
-            <CardTitle className="text-2xl font-bold text-center">{t('login.title')}</CardTitle>
+        <Card className="border border-gray-100 shadow-xl sm:shadow-2xl shadow-gray-200/50 rounded-2xl sm:rounded-3xl overflow-hidden bg-white/95 backdrop-blur">
+          <CardHeader className="space-y-1 pb-2 pt-6 sm:pt-8">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">{t('login.title')}</CardTitle>
             <CardDescription className="text-center text-gray-500">
               {t('login.subtitle')}
             </CardDescription>
-            <div className="mx-auto mt-4 max-w-[320px] text-center text-xs text-emerald-700 leading-relaxed">
+            <div className="mx-auto mt-4 max-w-[320px] text-center text-[11px] sm:text-xs text-emerald-700 leading-relaxed">
               {t('login.languageIntro')}
             </div>
             <div className="mx-auto mt-3 inline-flex items-center rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
               {t('login.sessionNotice')}
             </div>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-5 sm:pt-6">
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email">{t('login.emailLabel')}</Label>
@@ -170,7 +170,7 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
         
-        <p className="text-center mt-8 text-sm text-gray-400">
+        <p className="text-center mt-6 sm:mt-8 text-xs sm:text-sm text-gray-400">
           &copy; 2026 Dashboard Toko Herbal AmImUm. All rights reserved.
         </p>
       </motion.div>
