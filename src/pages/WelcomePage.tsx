@@ -32,6 +32,13 @@ export default function WelcomePage() {
               'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.35) 0, rgba(255,255,255,0) 40%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.3) 0, rgba(255,255,255,0) 42%)'
           }} />
 
+          <div className="absolute inset-0 opacity-[0.14]" style={{
+            backgroundImage: 'url("https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg")',
+            backgroundRepeat: 'repeat',
+            backgroundSize: '58px 58px',
+            backgroundPosition: '12px 10px'
+          }} />
+
           <div className="absolute -bottom-1 left-0 right-0 h-24 bg-white rounded-t-[50px]" />
 
           <div className="relative z-10 p-6 pt-8 text-white">
