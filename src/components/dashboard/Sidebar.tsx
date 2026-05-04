@@ -16,7 +16,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import logoAmimum from '@/assets/logo-amimum.svg';
+import logoAmimum from '@/assets/logo-amimum-premium.svg';
 import { RoleGuard } from '../RoleGuard';
 import { useAuthStore } from '@/store/authStore';
 import { ROLE_LABELS } from '@/types';
