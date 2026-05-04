@@ -78,6 +78,11 @@ export default function WelcomePage() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
+
+          <div className="mt-4 text-center space-y-1">
+            <p className="text-[11px] text-gray-400">© 2026 Dashboard Toko Herbal Amimum</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
+          </div>
         </div>
       </div>
     </div>
