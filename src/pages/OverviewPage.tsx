@@ -235,7 +235,7 @@ export default function OverviewPage() {
         <p className="text-gray-500 mt-1">{t('overview.subtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {summaryLoading
           ? Array.from({ length: 4 }).map((_, index) => (
               <Card key={index} className="border-none shadow-sm rounded-3xl">
@@ -243,27 +243,27 @@ export default function OverviewPage() {
               </Card>
             ))
           : stats.map((stat) => (
-              <Card key={stat.label} className="border-none shadow-sm rounded-3xl group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden relative bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:border-slate-600">
+              <Card key={stat.label} className="border-none shadow-sm rounded-2xl sm:rounded-3xl group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 overflow-hidden relative bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:border-slate-600">
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-[0.06] dark:group-hover:opacity-[0.12] transition-opacity bg-gradient-to-tr from-gray-50 to-emerald-500" />
 
-                <CardContent className="p-6 relative">
+                <CardContent className="p-4 sm:p-6 relative">
                   <div className="flex items-center justify-between">
-                    <div className={stat.bg + ' p-3 rounded-2xl'}>
-                      <stat.icon className={stat.color + ' w-6 h-6'} />
+                    <div className={stat.bg + ' p-2.5 sm:p-3 rounded-xl sm:rounded-2xl'}>
+                      <stat.icon className={stat.color + ' w-5 h-5 sm:w-6 sm:h-6'} />
                     </div>
                     <MoreVertical className="w-4 h-4 text-gray-300" />
                   </div>
-                  <div className="mt-5">
-                    <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                    <div className="flex items-end justify-between mt-1.5 gap-3">
-                      <h3 className="text-xl font-bold text-gray-900 break-words">{stat.value}</h3>
-                      <div className="flex items-center gap-1 text-xs font-bold text-green-600">
+                  <div className="mt-4 sm:mt-5">
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 leading-snug">{stat.label}</p>
+                    <div className="flex items-end justify-between mt-1.5 gap-2 sm:gap-3">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words leading-tight">{stat.value}</h3>
+                      <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-green-600 shrink-0">
                         <ArrowUpRight className="w-3 h-3" />
                         Live
                       </div>
                     </div>
                   </div>
-                  <p className="text-[11px] text-gray-400 font-medium tracking-wide mt-2.5">{stat.helper}</p>
+                  <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium tracking-wide mt-2">{stat.helper}</p>
                 </CardContent>
               </Card>
             ))}
