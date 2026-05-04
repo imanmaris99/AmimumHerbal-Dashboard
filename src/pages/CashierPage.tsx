@@ -929,7 +929,7 @@ export default function CashierPage() {
                             if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
                           }}
                         />
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 lg:pr-2">
                           <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2">{item.productName}</p>
                           <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{item.variantName}</p>
                           <p className="text-sm sm:text-base font-bold text-gray-900 mt-1">{formatRupiah(item.finalPrice)}</p>
@@ -938,7 +938,7 @@ export default function CashierPage() {
                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${empty ? 'bg-red-100 text-red-700' : low ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{empty ? 'Habis' : low ? 'Menipis' : 'Aman'}</span>
                           </div>
                         </div>
-                        <Button className="h-9 sm:h-10 w-full rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>+ Keranjang</Button>
+                        <Button className="h-9 sm:h-10 w-full lg:w-auto lg:min-w-[132px] rounded-xl" onClick={() => addToCart(item)} disabled={item.stock <= 0}>+ Keranjang</Button>
                       </div>
                     );
                   })}
