@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ProfileDialog } from './ProfileDialog';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getPageHandbook } from '@/lib/pageHandbook';
 import { getStoredThemeMode, setThemeMode, type ThemeMode } from '@/lib/theme';
 
@@ -36,6 +36,7 @@ export function Topbar() {
   const { toggleSidebar } = useUiStore();
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => getStoredThemeMode());
   const [notifRead, setNotifRead] = useState(false);
@@ -242,12 +243,23 @@ export function Topbar() {
               <span className="text-xs text-gray-400">{notifications.length} item</span>
             </div>
             <div className="max-h-72 overflow-auto">
-              {notifications.map((notif) => (
-                <div key={notif.id} className="px-3 py-2 border-b border-gray-50 last:border-b-0">
-                  <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
-                </div>
-              ))}
+              {notifications.map((notif) => {
+                const isStockNotif = notif.id === 'stock-low' || notif.id === 'stock-empty';
+                return (
+                  <button
+                    key={notif.id}
+                    type="button"
+                    onClick={() => {
+                      if (notif.id === 'stock-low') navigate('/variants?stock=low');
+                      if (notif.id === 'stock-empty') navigate('/variants?stock=empty');
+                    }}
+                    className={`w-full text-left px-3 py-2 border-b border-gray-50 last:border-b-0 ${isStockNotif ? 'hover:bg-emerald-50/60 cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
+                  </button>
+                );
+              })}
             </div>
             <div className="px-3 py-2 text-xs text-gray-500 border-t border-gray-100">
               Terakhir aktif: {lastActivityAt ? new Date(lastActivityAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'}
