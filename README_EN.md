@@ -1,5 +1,7 @@
 # Amimum Herbal Internal Dashboard
 
+![Amimum Dashboard Cover](docs/screenshots/00-cover-dashboard.png)
+
 A professional internal operations dashboard for **Owner** and **Admin** teams of Amimum Herbal.
 
 This app is intentionally separated from the public storefront to keep authentication boundaries, security posture, and internal UX clean.

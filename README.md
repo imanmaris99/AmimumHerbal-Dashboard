@@ -1,5 +1,7 @@
 # Dashboard Internal Toko Herbal Amimum
 
+![Amimum Dashboard Cover](docs/screenshots/00-cover-dashboard.png)
+
 Dashboard internal profesional untuk operasional **Owner** dan **Admin** Toko Herbal Amimum.
 
 Aplikasi ini dipisahkan dari storefront customer agar boundary auth, keamanan, dan UX tetap bersih.
