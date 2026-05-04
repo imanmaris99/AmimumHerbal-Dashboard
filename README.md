@@ -81,6 +81,8 @@ Aplikasi ini dipisahkan dari storefront customer agar boundary auth, keamanan, d
 ## 🖼️ Screenshot UI (Professional Showcase)
 
 > Simpan semua screenshot di folder: `docs/screenshots/`
+>
+> Standar pengambilan screenshot: lihat `docs/screenshots/SCREENSHOT_GUIDE.md`
 
 ### Authentication Flow
 
