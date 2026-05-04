@@ -75,14 +75,14 @@ export default function LoginPage() {
         className="w-full max-w-[420px]"
       >
         <div className="flex justify-center mb-6 sm:mb-8">
-          <div className="flex items-center gap-3 sm:gap-4 w-full max-w-[360px] sm:max-w-none">
+          <div className="flex items-center gap-2.5 sm:gap-4 w-full max-w-[360px] sm:max-w-none">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-emerald-200 overflow-hidden ring-1 ring-emerald-100 bg-white shrink-0">
               <img src={logoAmimum} alt="Logo Toko Herbal AmImUm" className="w-full h-full object-contain p-1" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-none">Dashboard</h1>
-              <p className="text-base sm:text-xl font-semibold text-gray-800 mt-1 leading-tight truncate">Toko Herbal AmImUm</p>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1.5 leading-snug">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-[-0.02em] leading-[0.95]">Dashboard</h1>
+              <p className="text-base sm:text-xl font-semibold text-gray-800 mt-0.5 sm:mt-1 leading-tight truncate">Toko Herbal Amimum</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-1.5 leading-snug">{i18n.language === 'id' ? 'Akses internal untuk owner dan admin' : 'Internal access for owners and admins'}</p>
             </div>
           </div>
         </div>
