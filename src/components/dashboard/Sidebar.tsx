@@ -16,7 +16,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg';
+const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg?v=20260504-0630';
 import { RoleGuard } from '../RoleGuard';
 import { useAuthStore } from '@/store/authStore';
 import { ROLE_LABELS } from '@/types';
