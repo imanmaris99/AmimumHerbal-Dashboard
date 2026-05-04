@@ -98,7 +98,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-2.5">
-                <Label htmlFor="email">{t('login.emailLabel')}</Label>
+                <Label htmlFor="email" className="text-[13px] font-medium text-gray-600 tracking-[0.01em]">{t('login.emailLabel')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
@@ -116,7 +116,7 @@ export default function LoginPage() {
 
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">{t('login.passwordLabel')}</Label>
+                  <Label htmlFor="password" className="text-[13px] font-medium text-gray-600 tracking-[0.01em]">{t('login.passwordLabel')}</Label>
                   <Link to="/forgot-password" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600">
                     {t('login.forgotPassword')}
                   </Link>
