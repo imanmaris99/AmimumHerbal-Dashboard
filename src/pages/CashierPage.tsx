@@ -918,18 +918,18 @@ export default function CashierPage() {
                     const low = item.stock <= 10;
                     const empty = item.stock <= 0;
                     return (
-                      <div key={item.id} className="rounded-2xl border bg-white p-3 flex flex-col gap-2">
+                      <div key={item.id} className="rounded-2xl border bg-white p-3 flex flex-col lg:flex-row lg:items-center gap-3">
                         <img
                           src={item.img || 'https://placehold.co/56x56?text=No+Image'}
                           alt={item.variantName}
-                          className="w-full h-24 rounded-xl object-cover border border-gray-100"
+                          className="w-full h-24 lg:w-24 lg:h-24 rounded-xl object-contain bg-gray-50 border border-gray-100 p-1"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.currentTarget;
                             if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
                           }}
                         />
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2">{item.productName}</p>
                           <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{item.variantName}</p>
                           <p className="text-sm sm:text-base font-bold text-gray-900 mt-1">{formatRupiah(item.finalPrice)}</p>
