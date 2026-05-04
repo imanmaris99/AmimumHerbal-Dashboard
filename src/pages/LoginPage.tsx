@@ -119,8 +119,14 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 text-center">{t('login.title')}</CardTitle>
-              <CardDescription className="text-center text-gray-500">{t('login.subtitle')}</CardDescription>
+              <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 text-center tracking-tight">
+                {i18n.language === 'id' ? 'Masuk' : 'Sign in'}
+              </CardTitle>
+              <CardDescription className="text-center text-gray-500 max-w-[520px] mx-auto leading-relaxed">
+                {i18n.language === 'id'
+                  ? 'Masukkan email dan password akun internal untuk melanjutkan ke dashboard Toko Herbal Amimum.'
+                  : 'Use your internal email and password to continue to the Toko Herbal Amimum dashboard.'}
+              </CardDescription>
             </CardHeader>
 
             <CardContent className="pt-5 px-5 sm:px-7">
