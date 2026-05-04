@@ -11,7 +11,7 @@ import { motion } from 'motion/react';
 import { KeyRound, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import logoAmimum from '@/assets/logo-amimum-premium.svg';
+const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');

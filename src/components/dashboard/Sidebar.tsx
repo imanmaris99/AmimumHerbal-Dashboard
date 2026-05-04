@@ -16,7 +16,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import logoAmimum from '@/assets/logo-amimum-premium.svg';
+const logoAmimum = 'https://res.cloudinary.com/disuo2s21/image/upload/v1777875211/logo_toko_cppj3d.svg';
 import { RoleGuard } from '../RoleGuard';
 import { useAuthStore } from '@/store/authStore';
 import { ROLE_LABELS } from '@/types';
