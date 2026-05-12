@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -55,8 +56,25 @@ export default function LoginPage() {
 
       toast.success(t('login.welcomeBack', { name: displayName }));
       navigate('/overview');
-    } catch (err: any) {
-      const message = err?.response?.data?.detail?.message || err?.message || 'Login gagal. Silakan periksa kembali email dan password Anda.';
+    } catch (err: unknown) {
+      let message = 'Login gagal. Silakan periksa kembali email dan password Anda.';
+
+      if (axios.isAxiosError(err)) {
+        const backendMessage = err.response?.data?.detail?.message;
+
+        if (backendMessage) {
+          message = backendMessage;
+        } else if (!err.response) {
+          if (err.code === 'ECONNABORTED') {
+            message = 'Koneksi ke server timeout. Coba ulang beberapa saat lagi.';
+          } else {
+            message = 'Tidak bisa terhubung ke server API. Cek koneksi internet, CORS, atau status backend.';
+          }
+        }
+      } else if (err instanceof Error && err.message) {
+        message = err.message;
+      }
+
       toast.error(message);
     } finally {
       setIsLoading(false);
