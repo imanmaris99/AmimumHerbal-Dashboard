@@ -563,7 +563,7 @@ export default function CashierPage() {
         .wrap { width: ${printPaper === '58' ? '50mm' : '72mm'}; margin:0 auto; font-size:11px; line-height:1.35; }
         .brand-header { text-align:center; margin-bottom:8px; }
         .brand-header svg { display:block; margin:0 auto 4px auto; width:36px; height:36px; }
-        .brand-header .title { font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; }
+        .brand-header .title { font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
         .brand-header .address { font-size:9px; color:var(--muted); margin-top:2px; line-height:1.2; }
         .brand-header .contact { font-size:9px; color:var(--muted); margin-top:1px; }
         hr { border:none; border-top:1px solid var(--line); margin:6px 0; }
@@ -588,7 +588,7 @@ export default function CashierPage() {
         </svg>
         <div class="title">Toko Herbal AmImUm</div>
         <div class="address">74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah</div>
-        <div class="contact">Telp/WA: 0812-3456-7890</div>
+        <div class="contact">Telp/WA: 085296708577</div>
       </div>
       <hr/>
       <div class="meta">
@@ -685,7 +685,7 @@ export default function CashierPage() {
       center('TOKO HERBAL AMIMUM'),
       center('74VG+FH Bakaran Kulon'),
       center('Kab. Pati, Jawa Tengah'),
-      center('Telp/WA: 0812-3456-7890'),
+      center('Telp/WA: 085296708577'),
       line,
       center('NOTA PEMBAYARAN'),
       line,
@@ -1222,10 +1222,10 @@ export default function CashierPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-base font-bold text-gray-900 dark:text-slate-100">Toko Herbal AmImUm</p>
+                    <p className="text-base font-black text-gray-900 dark:text-slate-100">Toko Herbal AmImUm</p>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400 max-w-[320px] leading-snug">
                       74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah<br />
-                      Telp/WA: 0812-3456-7890
+                      Telp/WA: 085296708577
                     </p>
                   </div>
                 </div>
