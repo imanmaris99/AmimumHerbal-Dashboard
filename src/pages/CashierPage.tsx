@@ -58,6 +58,11 @@ interface AdminOrderInfoDetail {
 
 interface AdminOrderDetailData {
   id: string;
+  status?: string | null;
+  delivery_type?: string | null;
+  notes?: string | null;
+  customer_name?: string | null;
+  created_at?: string | null;
   order_item_lists: Array<{
     id: number;
     product_name?: string | null;
@@ -121,6 +126,18 @@ const RECEIPT_DELETED_IDS_KEY = 'amimum.pos.receipts.deleted.v1';
 const BT_PRINTER_DEVICE_ID_KEY = 'amimum.pos.btPrinterDeviceId.v1';
 
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
+
+const normalizePaymentMethod = (value?: string | null, notes?: string | null): PaymentMethod => {
+  const n = String(notes || '').toLowerCase();
+  if (n.includes('[payment: qris]')) return 'qris';
+  if (n.includes('[payment: transfer]')) return 'transfer';
+  if (n.includes('[payment: cash]')) return 'cash';
+
+  const v = String(value || '').toLowerCase();
+  if (v.includes('qris') || v.includes('gopay') || v.includes('shopeepay') || v.includes('ovo')) return 'qris';
+  if (v.includes('bank') || v.includes('transfer') || v.includes('va') || v.includes('permata') || v.includes('bca') || v.includes('bni') || v.includes('bri')) return 'transfer';
+  return 'cash';
+};
 
 export default function CashierPage() {
   const [search, setSearch] = useState('');
@@ -218,18 +235,6 @@ export default function CashierPage() {
 
     const paymentRows = backendPaymentsResponse?.data || [];
     const paymentMap = new Map(paymentRows.map((p) => [String(p.order_id), p]));
-
-    const normalizePaymentMethod = (value?: string | null, notes?: string | null): PaymentMethod => {
-      const n = String(notes || '').toLowerCase();
-      if (n.includes('[payment: qris]')) return 'qris';
-      if (n.includes('[payment: transfer]')) return 'transfer';
-      if (n.includes('[payment: cash]')) return 'cash';
-
-      const v = String(value || '').toLowerCase();
-      if (v.includes('qris') || v.includes('gopay') || v.includes('shopeepay') || v.includes('ovo')) return 'qris';
-      if (v.includes('bank') || v.includes('transfer') || v.includes('va') || v.includes('permata') || v.includes('bca') || v.includes('bni') || v.includes('bri')) return 'transfer';
-      return 'cash';
-    };
 
     const mapped: ReceiptData[] = backendOrders
       .filter((o) => !deletedReceiptIds.includes(String(o.id)))
@@ -812,7 +817,25 @@ export default function CashierPage() {
   const selectedReceiptWithItems = useMemo(() => {
     if (!selectedReceipt) return null;
     const orderItems = selectedOrderDetailResponse?.data?.order_item_lists || [];
-    if (!orderItems.length) return selectedReceipt;
+
+    const detailData = selectedOrderDetailResponse?.data;
+    const detailNotes = detailData?.notes;
+
+    const resolvedPaymentMethod = detailNotes
+      ? normalizePaymentMethod(undefined, detailNotes)
+      : selectedReceipt.paymentMethod;
+
+    const resolvedNotes = detailNotes
+      ? (detailNotes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || undefined)
+      : selectedReceipt.notes;
+
+    if (!orderItems.length) {
+      return {
+        ...selectedReceipt,
+        paymentMethod: resolvedPaymentMethod,
+        notes: resolvedNotes,
+      };
+    }
 
     const mappedItems: ReceiptItem[] = orderItems.map((item) => ({
       variantId: Number(item.id || 0),
@@ -844,6 +867,8 @@ export default function CashierPage() {
 
     return {
       ...selectedReceipt,
+      paymentMethod: resolvedPaymentMethod,
+      notes: resolvedNotes,
       items: groupedItems,
       subtotal: computedTotal || selectedReceipt.subtotal,
       total: computedTotal || selectedReceipt.total,
