@@ -365,6 +365,7 @@ export default function CashierPage() {
       setNotes('');
       setBuyerName('');
       queryClient.invalidateQueries({ queryKey: ['cashier-receipt-history-backend'] });
+      queryClient.invalidateQueries({ queryKey: ['cashier-receipt-payments-backend'] });
       queryClient.invalidateQueries({ queryKey: ['cashier-variants'] });
       queryClient.invalidateQueries({ queryKey: ['cashier-products'] });
       setCheckoutStartedAt(null);
@@ -831,9 +832,17 @@ export default function CashierPage() {
     const detailData = selectedOrderDetailResponse?.data;
     const detailNotes = detailData?.notes;
 
-    const resolvedPaymentMethod = detailNotes
-      ? normalizePaymentMethod(undefined, detailNotes)
-      : selectedReceipt.paymentMethod;
+    let resolvedPaymentMethod = selectedReceipt.paymentMethod;
+    if (detailNotes) {
+      const lowerNotes = detailNotes.toLowerCase();
+      if (lowerNotes.includes('[payment: qris]')) {
+        resolvedPaymentMethod = 'qris';
+      } else if (lowerNotes.includes('[payment: transfer]')) {
+        resolvedPaymentMethod = 'transfer';
+      } else if (lowerNotes.includes('[payment: cash]')) {
+        resolvedPaymentMethod = 'cash';
+      }
+    }
 
     const resolvedNotes = detailNotes
       ? (detailNotes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || undefined)
