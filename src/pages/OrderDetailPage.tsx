@@ -231,7 +231,9 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <span>{t('orderDetailPage.notes')}</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{order.notes || '-'}</strong>
+                  <strong className="text-slate-900 text-right max-w-[220px]">
+                    {order.notes ? order.notes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || '-' : '-'}
+                  </strong>
                 </div>
               </div>
 

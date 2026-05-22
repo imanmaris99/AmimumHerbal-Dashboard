@@ -219,7 +219,12 @@ export default function CashierPage() {
     const paymentRows = backendPaymentsResponse?.data || [];
     const paymentMap = new Map(paymentRows.map((p) => [String(p.order_id), p]));
 
-    const normalizePaymentMethod = (value?: string | null): PaymentMethod => {
+    const normalizePaymentMethod = (value?: string | null, notes?: string | null): PaymentMethod => {
+      const n = String(notes || '').toLowerCase();
+      if (n.includes('[payment: qris]')) return 'qris';
+      if (n.includes('[payment: transfer]')) return 'transfer';
+      if (n.includes('[payment: cash]')) return 'cash';
+
       const v = String(value || '').toLowerCase();
       if (v.includes('qris') || v.includes('gopay') || v.includes('shopeepay') || v.includes('ovo')) return 'qris';
       if (v.includes('bank') || v.includes('transfer') || v.includes('va') || v.includes('permata') || v.includes('bca') || v.includes('bni') || v.includes('bri')) return 'transfer';
@@ -236,8 +241,8 @@ export default function CashierPage() {
         cashierName: 'Kasir Toko',
         buyerName: 'Pembeli',
         buyerEmail: undefined,
-        paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type),
-        notes: o.notes || undefined,
+        paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type, o.notes),
+        notes: o.notes ? o.notes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || undefined : undefined,
         items: [],
         subtotal: Number(o.total_price || 0),
         total: Number(o.total_price || 0),
@@ -305,6 +310,7 @@ export default function CashierPage() {
 
         const posNotes = [`POS Buyer: ${buyerName.trim()}`];
         if (notes.trim()) posNotes.push(`Catatan: ${notes.trim()}`);
+        posNotes.push(`[PAYMENT: ${paymentMethod}]`);
 
         return await posCheckout({
           cashier_id: user.id,

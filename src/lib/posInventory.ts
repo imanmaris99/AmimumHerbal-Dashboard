@@ -39,32 +39,49 @@ export interface StockMovementListResponse {
 }
 
 export async function posCheckout(payload: PosCheckoutPayload) {
-  const cartOps: Array<() => Promise<unknown>> = [];
+  try {
+    // 1. Coba panggil endpoint resmi POS checkout terlebih dahulu
+    const response = await api.post('/admin/pos/checkout', payload);
+    return response.data;
+  } catch (error: any) {
+    const status = error?.response?.status;
+    // Jika backend mengembalikan 404 atau 405, berarti endpoint /admin/pos/checkout belum ada.
+    // Kita gunakan fallback compatibility mode (cart checkout).
+    if (status === 404 || status === 405) {
+      const cartOps: Array<() => Promise<unknown>> = [];
 
-  for (const item of payload.items) {
-    if (!item.product_id) {
-      throw new Error(`Variant ${item.variant_id} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
+      for (const item of payload.items) {
+        if (!item.product_id) {
+          throw new Error(`Variant ${item.variant_id} tidak punya product_id, checkout tidak bisa dilanjutkan.`);
+        }
+
+        for (let i = 0; i < item.qty; i++) {
+          cartOps.push(() => api.post(`/cart/product/${item.product_id}/${item.variant_id}`, {
+            product_id: item.product_id,
+            variant_id: item.variant_id,
+          }));
+        }
+      }
+
+      const concurrency = 5;
+      for (let i = 0; i < cartOps.length; i += concurrency) {
+        const chunk = cartOps.slice(i, i + concurrency);
+        await Promise.all(chunk.map((run) => run()));
+      }
+
+      const response = await api.post('/orders/checkout', {
+        notes: payload.notes,
+        payment_method: payload.payment_method,
+      });
+
+      return {
+        ...response.data,
+        compatibility_mode: true,
+      };
     }
-
-    for (let i = 0; i < item.qty; i++) {
-      cartOps.push(() => api.post(`/cart/product/${item.product_id}/${item.variant_id}`, {
-        product_id: item.product_id,
-        variant_id: item.variant_id,
-      }));
-    }
+    // Jika error lain (seperti 400 bad request, 409 out of stock), lempar kembali
+    throw error;
   }
-
-  const concurrency = 5;
-  for (let i = 0; i < cartOps.length; i += concurrency) {
-    const chunk = cartOps.slice(i, i + concurrency);
-    await Promise.all(chunk.map((run) => run()));
-  }
-
-  const response = await api.post('/orders/checkout');
-  return {
-    ...response.data,
-    compatibility_mode: true,
-  };
 }
 
 export async function getStockMovements(params: {

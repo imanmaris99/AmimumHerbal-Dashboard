@@ -46,6 +46,7 @@ interface AdminOrdersResponse {
     customer_email?: string | null;
     total_price: number;
     status: string;
+    notes?: string | null;
     created_at: string;
     updated_at?: string;
   }>;
@@ -104,13 +105,19 @@ export default function PaymentsPage() {
     const orderRows = ordersResponse?.data ?? [];
 
     const paymentByOrderId = new Map(paymentRows.map((p) => [String(p.order_id), p]));
+    const extractPaymentFromNotes = (notes?: string | null): string => {
+      if (!notes) return 'cash';
+      const match = notes.match(/\[PAYMENT:\s*(\w+)\]/i);
+      return match ? match[1].toLowerCase() : 'cash';
+    };
+
     const syntheticFromOrders: AdminPaymentInfo[] = orderRows
       .filter((order) => !paymentByOrderId.has(String(order.id)))
       .map((order) => ({
         id: `POS-${order.id}`,
         order_id: String(order.id),
         transaction_id: `POS-${order.id}`,
-        payment_type: 'cash',
+        payment_type: extractPaymentFromNotes(order.notes),
         gross_amount: Number(order.total_price || 0),
         transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
         fraud_status: null,
