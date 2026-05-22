@@ -104,21 +104,29 @@ export default function OrdersPage() {
       return match ? match[1].toLowerCase() : 'cash';
     };
 
+    const localPosReceiptMap = new Map<string, { transactionId: string; createdAt: string; total: number; paymentMethod?: string; buyerName?: string }>(
+      localPosReceipts.map((r) => [String(r.transactionId), r])
+    );
+
     const syntheticFromOrders: AdminPaymentInfo[] = orderRows
       .filter((order) => !paymentByOrderId.has(String(order.id)))
-      .map((order) => ({
-        id: `POS-${order.id}`,
-        order_id: String(order.id),
-        transaction_id: String(order.id),
-        payment_type: extractPaymentFromNotes(order.notes),
-        gross_amount: Number(order.total_price || 0),
-        transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
-        fraud_status: null,
-        customer_name: order.customer_name || 'Pelanggan POS',
-        customer_email: '-',
-        order_status: order.status || 'paid',
-        updated_at: order.created_at,
-      }));
+      .map((order) => {
+        const localReceipt = localPosReceiptMap.get(String(order.id));
+        return {
+          id: `POS-${order.id}`,
+          order_id: String(order.id),
+          transaction_id: String(order.id),
+          payment_type: localReceipt?.paymentMethod || extractPaymentFromNotes(order.notes),
+          gross_amount: Number(order.total_price || 0),
+          transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
+          fraud_status: null,
+          customer_name: localReceipt?.buyerName || order.customer_name || 'Pelanggan POS',
+          customer_email: '-',
+          order_status: order.status || 'paid',
+          updated_at: order.created_at,
+        };
+      });
+
 
     const knownTxn = new Set([...paymentRows.map((p) => String(p.transaction_id)), ...syntheticFromOrders.map((p) => String(p.transaction_id))]);
     const syntheticFromLocal: AdminPaymentInfo[] = localPosReceipts

@@ -255,8 +255,18 @@ export default function CashierPage() {
     });
 
     setReceiptHistory((prev) => {
-      const merged = [...mapped, ...prev].reduce<ReceiptData[]>((acc, curr) => {
-        if (!acc.find((x) => x.transactionId === curr.transactionId)) acc.push(curr);
+      const merged = [...prev, ...mapped].reduce<ReceiptData[]>((acc, curr) => {
+        const existingIdx = acc.findIndex((x) => x.transactionId === curr.transactionId);
+        if (existingIdx > -1) {
+          const existing = acc[existingIdx];
+          acc[existingIdx] = {
+            ...curr,
+            ...existing,
+            items: (existing.items && existing.items.length > 0) ? existing.items : (curr.items || []),
+          };
+        } else {
+          acc.push(curr);
+        }
         return acc;
       }, []);
 
