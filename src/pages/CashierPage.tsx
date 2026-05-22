@@ -547,13 +547,14 @@ export default function CashierPage() {
     return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${receipt.transactionId}</title>
       <style>
         :root { --text:#111827; --muted:#6b7280; --line:#d1d5db; }
-        @page { size: 80mm auto; margin: 4mm; }
+        @page { size: ${printPaper === '58' ? '58mm' : '80mm'} auto; margin: 3mm; }
         body { font-family: Inter, Arial, Helvetica, sans-serif; color:var(--text); margin:0; }
-        .wrap { width: 72mm; margin:0 auto; font-size:11px; line-height:1.35; }
-        .top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
-        h1 { margin:0; font-size:22px; letter-spacing:0.8px; }
-        .brand { text-align:right; }
-        .brand .title { font-size:13px; font-weight:700; }
+        .wrap { width: ${printPaper === '58' ? '50mm' : '72mm'}; margin:0 auto; font-size:11px; line-height:1.35; }
+        .brand-header { text-align:center; margin-bottom:8px; }
+        .brand-header svg { display:block; margin:0 auto 4px auto; width:36px; height:36px; }
+        .brand-header .title { font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; }
+        .brand-header .address { font-size:9px; color:var(--muted); margin-top:2px; line-height:1.2; }
+        .brand-header .contact { font-size:9px; color:var(--muted); margin-top:1px; }
         hr { border:none; border-top:1px solid var(--line); margin:6px 0; }
         .meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
         .meta b { display:block; margin-bottom:2px; font-size:10px; }
@@ -569,9 +570,14 @@ export default function CashierPage() {
         .footer { margin-top:10px; font-weight:700; font-size:10px; text-align:center; }
       </style>
     </head><body><div class="wrap">
-      <div class="top">
-        <h1>INVOICE</h1>
-        <div class="brand"><div class="title">Toko Herbal AmImUm</div><div>POS Internal</div></div>
+      <div class="brand-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 8a7 7 0 0 1-9 10Z"/>
+          <path d="M19 2c-2.26 4.33-5.27 7.14-8 10"/>
+        </svg>
+        <div class="title">Toko Herbal AmImUm</div>
+        <div class="address">74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah</div>
+        <div class="contact">Telp/WA: 0812-3456-7890</div>
       </div>
       <hr/>
       <div class="meta">
@@ -666,6 +672,10 @@ export default function CashierPage() {
 
     return [
       center('TOKO HERBAL AMIMUM'),
+      center('74VG+FH Bakaran Kulon'),
+      center('Kab. Pati, Jawa Tengah'),
+      center('Telp/WA: 0812-3456-7890'),
+      line,
       center('NOTA PEMBAYARAN'),
       line,
       `No   : ${receipt.transactionId}`,
@@ -1184,18 +1194,29 @@ export default function CashierPage() {
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-base font-bold text-gray-900">Toko Herbal AmImUm</p>
-                  <p className="text-xs text-gray-500">Nota Pembayaran Resmi (POS Internal)</p>
+              <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-4 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/30">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" className="h-6 w-6">
+                      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 8a7 7 0 0 1-9 10Z"/>
+                      <path d="M19 2c-2.26 4.33-5.27 7.14-8 10"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-gray-900 dark:text-slate-100">Toko Herbal AmImUm</p>
+                    <p className="text-[11px] text-gray-500 dark:text-slate-400 max-w-[320px] leading-snug">
+                      74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah<br />
+                      Telp/WA: 0812-3456-7890
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">Status</p>
-                  <p className="text-sm font-semibold text-emerald-600">PAID</p>
+                <div className="text-center sm:text-right">
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Status</p>
+                  <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">PAID</p>
                 </div>
               </div>
-              <div className="mt-3 h-px bg-gray-100" />
-              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm">
+              <div className="mt-3 h-px bg-gray-100 dark:bg-slate-800" />
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs md:text-sm text-gray-700 dark:text-slate-300">
                 <p><strong>No. Nota:</strong> {selectedReceiptWithItems.transactionId}</p>
                 <p><strong>Tanggal:</strong> {new Date(selectedReceiptWithItems.createdAt).toLocaleString('id-ID')}</p>
                 <p><strong>Kasir:</strong> {selectedReceiptWithItems.cashierName}</p>
