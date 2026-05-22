@@ -821,11 +821,24 @@ export default function CashierPage() {
       discountValue: 0,
     }));
 
-    const computedTotal = mappedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
+    // Group identical items (same product name, variant name, and price) to prevent excessively long receipts
+    const groupedItemsMap = new Map<string, ReceiptItem>();
+    for (const item of mappedItems) {
+      const key = `${item.productName}|||${item.variantName}|||${item.unitPrice}`;
+      const existing = groupedItemsMap.get(key);
+      if (existing) {
+        existing.qty += item.qty;
+      } else {
+        groupedItemsMap.set(key, { ...item });
+      }
+    }
+    const groupedItems = Array.from(groupedItemsMap.values());
+
+    const computedTotal = groupedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
 
     return {
       ...selectedReceipt,
-      items: mappedItems,
+      items: groupedItems,
       subtotal: computedTotal || selectedReceipt.subtotal,
       total: computedTotal || selectedReceipt.total,
     };

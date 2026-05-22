@@ -105,6 +105,24 @@ export default function OrderDetailPage() {
 
   const order = orderDetailQuery.data;
 
+  const groupedOrderItems = React.useMemo(() => {
+    const items = order?.order_item_lists || [];
+    if (!items.length) return [];
+
+    const groupedMap = new Map<string, OrderItemDto>();
+    for (const item of items) {
+      const key = `${item.product_name || ''}|||${item.variant_product || ''}|||${item.price_per_item || 0}|||${item.variant_discount || 0}`;
+      const existing = groupedMap.get(key);
+      if (existing) {
+        existing.quantity = (existing.quantity || 0) + (item.quantity || 0);
+        existing.total_price = (existing.total_price || 0) + (item.total_price || 0);
+      } else {
+        groupedMap.set(key, { ...item });
+      }
+    }
+    return Array.from(groupedMap.values());
+  }, [order?.order_item_lists]);
+
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
       try {
@@ -219,7 +237,7 @@ export default function OrderDetailPage() {
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2"><Package2 className="w-4 h-4" />{t('orderDetailPage.totalItems')}</span>
-                <strong>{order.order_item_lists?.length || 0}</strong>
+                <strong>{groupedOrderItems.length}</strong>
               </div>
 
               <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 space-y-4">
@@ -263,7 +281,7 @@ export default function OrderDetailPage() {
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8 space-y-4">
-                {order.order_item_lists?.length ? order.order_item_lists.map((item) => (
+                {groupedOrderItems.length ? groupedOrderItems.map((item) => (
                   <div key={item.id} className="rounded-2xl border border-gray-100 bg-white p-4 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <div>
