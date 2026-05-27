@@ -545,7 +545,11 @@ export default function CashierPage() {
   const totalDiscount = cart.reduce((sum, row) => sum + row.discountValue, 0);
   const grandTotal = Math.max(subtotal - totalDiscount, 0);
 
-  const getReceiptDiscountTotal = (receipt: ReceiptData) => receipt.items.reduce((sum, item) => sum + Number(item.discountValue || 0), 0);
+  const getReceiptDiscountTotal = (receipt: ReceiptData) => {
+    const itemDiscount = receipt.items.reduce((sum, item) => sum + Number(item.discountValue || 0), 0);
+    const summaryDiscount = Math.max(Number(receipt.subtotal || 0) - Number(receipt.total || 0), 0);
+    return Math.max(itemDiscount, summaryDiscount);
+  };
 
   const buildInvoiceHtml = (receipt: ReceiptData) => {
     const rows = receipt.items.map((i) => {
@@ -913,15 +917,15 @@ export default function CashierPage() {
     }
     const groupedItems = Array.from(groupedItemsMap.values());
 
-    const computedTotal = groupedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
+    const computedSubtotal = groupedItems.reduce((sum, row) => sum + (row.unitPrice * row.qty), 0);
 
     return {
       ...selectedReceipt,
       paymentMethod: resolvedPaymentMethod,
       notes: resolvedNotes,
       items: groupedItems,
-      subtotal: computedTotal || selectedReceipt.subtotal,
-      total: computedTotal || selectedReceipt.total,
+      subtotal: computedSubtotal || selectedReceipt.subtotal,
+      total: Number(selectedReceipt.total || 0) || computedSubtotal,
     };
   }, [selectedReceipt, selectedOrderDetailResponse]);
 
@@ -1298,7 +1302,7 @@ export default function CashierPage() {
 
             <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 space-y-2">
               <div className="flex items-center justify-between"><span>Subtotal</span><span>{formatRupiah(selectedReceiptWithItems.subtotal)}</span></div>
-              <div className="flex items-center justify-between"><span>Diskon</span><span>{formatRupiah(0)}</span></div>
+              <div className="flex items-center justify-between"><span>Diskon</span><span>{formatRupiah(getReceiptDiscountTotal(selectedReceiptWithItems))}</span></div>
               <div className="h-px bg-gray-200" />
               <div className="flex items-center justify-between text-base font-bold"><span>Total Bayar</span><span>{formatRupiah(selectedReceiptWithItems.total)}</span></div>
             </div>
