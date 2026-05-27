@@ -545,15 +545,29 @@ export default function CashierPage() {
   const totalDiscount = cart.reduce((sum, row) => sum + row.discountValue, 0);
   const grandTotal = Math.max(subtotal - totalDiscount, 0);
 
+  const getReceiptDiscountTotal = (receipt: ReceiptData) => receipt.items.reduce((sum, item) => sum + Number(item.discountValue || 0), 0);
+
   const buildInvoiceHtml = (receipt: ReceiptData) => {
-    const rows = receipt.items.map((i) => `
+    const rows = receipt.items.map((i) => {
+      const lineSubtotal = i.qty * i.unitPrice;
+      const lineDiscount = Number(i.discountValue || 0);
+      const lineTotal = Math.max(lineSubtotal - lineDiscount, 0);
+      const discountLabel = i.discountType === 'percent'
+        ? `${Number(i.discountInput || 0)}%`
+        : formatRupiah(Number(i.discountInput || 0));
+
+      return `
       <tr>
-        <td>${i.productName} <span class="muted">(${i.variantName})</span></td>
+        <td>
+          ${i.productName} <span class="muted">(${i.variantName})</span>
+          ${lineDiscount > 0 ? `<div class="muted">Diskon: ${discountLabel} (efektif ${formatRupiah(lineDiscount)})</div>` : ''}
+        </td>
         <td class="text-right">${formatRupiah(i.unitPrice)}</td>
         <td class="text-center">${i.qty}</td>
-        <td class="text-right">${formatRupiah(i.qty * i.unitPrice)}</td>
+        <td class="text-right">${formatRupiah(lineTotal)}</td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
 
     return `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${receipt.transactionId}</title>
       <style>
@@ -609,6 +623,7 @@ export default function CashierPage() {
       </table>
       <div class="sum">
         <div class="sum-row"><span>SUBTOTAL</span><b>${formatRupiah(receipt.subtotal)}</b></div>
+        <div class="sum-row"><span>TOTAL DISKON</span><b>- ${formatRupiah(getReceiptDiscountTotal(receipt))}</b></div>
         <div class="sum-row"><span>PAJAK</span><b>${formatRupiah(0)}</b></div>
         <div class="sum-row total"><span>TOTAL</span><span>${formatRupiah(receipt.total)}</span></div>
       </div>
@@ -667,11 +682,17 @@ export default function CashierPage() {
     const itemRows = receipt.items.length
       ? receipt.items.map((i) => {
         const name = `${i.productName} (${i.variantName})`;
-        const subtotal = money(i.qty * i.unitPrice);
+        const lineSubtotalNum = i.qty * i.unitPrice;
+        const lineDiscountNum = Number(i.discountValue || 0);
+        const lineTotalNum = Math.max(lineSubtotalNum - lineDiscountNum, 0);
+        const lineTotal = money(lineTotalNum);
         const wrapped = wrapName(name, leftCol);
-        const first = `${fit(wrapped[0] || '', leftCol)}${right(String(i.qty), qtyCol)}${right(subtotal, priceCol)}`;
+        const first = `${fit(wrapped[0] || '', leftCol)}${right(String(i.qty), qtyCol)}${right(lineTotal, priceCol)}`;
         const cont = wrapped.slice(1).map((part) => `${fit(part, leftCol)}${' '.repeat(qtyCol)}${' '.repeat(priceCol)}`);
-        return [first, ...cont].join('\n');
+        const discountRow = lineDiscountNum > 0
+          ? `${fit(`  disc -Rp${money(lineDiscountNum)}`, leftCol)}${' '.repeat(qtyCol)}${' '.repeat(priceCol)}`
+          : null;
+        return [first, ...cont, ...(discountRow ? [discountRow] : [])].join('\n');
       }).join('\n')
       : fit('Detail item belum tersedia', width);
 
@@ -700,7 +721,7 @@ export default function CashierPage() {
       itemRows,
       line,
       sumRow('Subtotal', receipt.subtotal),
-      sumRow('Diskon', 0),
+      sumRow('Diskon', getReceiptDiscountTotal(receipt)),
       sumRow('TOTAL', receipt.total),
       line,
       center('Terima kasih'),
