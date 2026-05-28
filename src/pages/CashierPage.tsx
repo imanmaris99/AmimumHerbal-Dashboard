@@ -140,6 +140,13 @@ const normalizePaymentMethod = (value?: string | null, notes?: string | null): P
   return 'cash';
 };
 
+const extractBuyerNameFromNotes = (notes?: string | null): string | undefined => {
+  const raw = String(notes || '');
+  const match = raw.match(/POS Buyer:\s*([^|\[]+)/i);
+  const name = match?.[1]?.trim();
+  return name || undefined;
+};
+
 export default function CashierPage() {
   const [search, setSearch] = useState('');
   const [selectedProducer, setSelectedProducer] = useState('all');
@@ -256,7 +263,7 @@ export default function CashierPage() {
         transactionId: String(o.id),
         createdAt: o.created_at,
         cashierName: 'Kasir Toko',
-        buyerName: 'Pembeli',
+        buyerName: extractBuyerNameFromNotes(o.notes) || 'Pembeli',
         buyerEmail: undefined,
         paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type, o.notes),
         notes: rawNotes
