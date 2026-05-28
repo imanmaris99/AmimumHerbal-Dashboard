@@ -200,8 +200,19 @@ export default function OverviewPage() {
 
   const extractBuyerFromNotes = (notes?: string | null) => {
     const raw = String(notes || '');
-    const match = raw.match(/POS Buyer:\s*([^|]+)/i);
-    return match?.[1]?.trim() || '';
+    const match = raw.match(/POS\s*Buyer\s*:\s*([^|\[\n\r]+)/i)
+      || raw.match(/\[?POS_BUYER\]?\s*:\s*([^|\[\n\r]+)/i);
+    if (match?.[1]?.trim()) return match[1].trim();
+
+    const marker = raw.toLowerCase().indexOf('pos buyer');
+    if (marker >= 0) {
+      const tail = raw.slice(marker);
+      const afterColon = tail.split(':').slice(1).join(':').trim();
+      const candidate = afterColon.split('|')[0]?.split('[')[0]?.trim();
+      return candidate || '';
+    }
+
+    return '';
   };
 
   const resolveCustomerLabel = (orderId: string, customerName: string | null, notes?: string | null) => {
