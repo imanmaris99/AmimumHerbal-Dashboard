@@ -363,6 +363,9 @@ export default function CashierPage() {
           cashier_id: user.id,
           payment_method: paymentMethod,
           notes: posNotes.join(' | '),
+          subtotal,
+          discount_total: totalDiscount,
+          final_total: grandTotal,
           items: cart.map((item) => ({
             variant_id: item.variantId,
             product_id: item.productId,

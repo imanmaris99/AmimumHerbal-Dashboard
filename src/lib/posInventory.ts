@@ -14,6 +14,9 @@ export interface PosCheckoutPayload {
   cashier_id: string;
   payment_method: PaymentMethod;
   notes?: string;
+  subtotal?: number;
+  discount_total?: number;
+  final_total?: number;
   items: PosCheckoutItemPayload[];
 }
 
