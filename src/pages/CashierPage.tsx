@@ -240,6 +240,17 @@ export default function CashierPage() {
       .filter((o) => !deletedReceiptIds.includes(String(o.id)))
       .map((o) => {
       const paymentInfo = paymentMap.get(String(o.id));
+      const rawNotes = o.notes || '';
+      const subtotalMatch = rawNotes.match(/\[POS_SUBTOTAL:\s*(\d+)\]/i);
+      const discountMatch = rawNotes.match(/\[POS_DISCOUNT:\s*(\d+)\]/i);
+      const totalMatch = rawNotes.match(/\[POS_TOTAL:\s*(\d+)\]/i);
+
+      const subtotalFromMeta = subtotalMatch ? Number(subtotalMatch[1]) : Number(o.total_price || 0);
+      const discountFromMeta = discountMatch ? Number(discountMatch[1]) : 0;
+      const totalFromMeta = totalMatch
+        ? Number(totalMatch[1])
+        : Math.max(subtotalFromMeta - discountFromMeta, 0);
+
       return {
         transactionId: String(o.id),
         createdAt: o.created_at,
@@ -247,10 +258,17 @@ export default function CashierPage() {
         buyerName: 'Pembeli',
         buyerEmail: undefined,
         paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type, o.notes),
-        notes: o.notes ? o.notes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || undefined : undefined,
+        notes: rawNotes
+          ? rawNotes
+            .replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '')
+            .replace(/\[POS_SUBTOTAL:\s*\d+\]\s*\|?\s*/gi, '')
+            .replace(/\[POS_DISCOUNT:\s*\d+\]\s*\|?\s*/gi, '')
+            .replace(/\[POS_TOTAL:\s*\d+\]\s*\|?\s*/gi, '')
+            .trim() || undefined
+          : undefined,
         items: [],
-        subtotal: Number(o.total_price || 0),
-        total: Number(o.total_price || 0),
+        subtotal: subtotalFromMeta,
+        total: totalFromMeta,
       };
     });
 
@@ -326,6 +344,9 @@ export default function CashierPage() {
         const posNotes = [`POS Buyer: ${buyerName.trim()}`];
         if (notes.trim()) posNotes.push(`Catatan: ${notes.trim()}`);
         posNotes.push(`[PAYMENT: ${paymentMethod}]`);
+        posNotes.push(`[POS_SUBTOTAL: ${Math.round(subtotal)}]`);
+        posNotes.push(`[POS_DISCOUNT: ${Math.round(totalDiscount)}]`);
+        posNotes.push(`[POS_TOTAL: ${Math.round(grandTotal)}]`);
 
         return await posCheckout({
           cashier_id: user.id,
@@ -880,7 +901,14 @@ export default function CashierPage() {
     }
 
     const resolvedNotes = detailNotes
-      ? (detailNotes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || undefined)
+      ? (
+        detailNotes
+          .replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '')
+          .replace(/\[POS_SUBTOTAL:\s*\d+\]\s*\|?\s*/gi, '')
+          .replace(/\[POS_DISCOUNT:\s*\d+\]\s*\|?\s*/gi, '')
+          .replace(/\[POS_TOTAL:\s*\d+\]\s*\|?\s*/gi, '')
+          .trim() || undefined
+      )
       : selectedReceipt.notes;
 
     if (!orderItems.length) {
