@@ -279,9 +279,18 @@ export default function CashierPage() {
         const existingIdx = acc.findIndex((x) => x.transactionId === curr.transactionId);
         if (existingIdx > -1) {
           const existing = acc[existingIdx];
+          const shouldKeepExistingNetTotal =
+            !curr.hasPosDiscountMeta &&
+            Number(existing.total || 0) > 0 &&
+            Number(existing.total || 0) < Number(curr.total || 0) &&
+            Number(existing.subtotal || 0) >= Number(existing.total || 0);
+
           acc[existingIdx] = {
             ...existing,
             ...curr,
+            subtotal: shouldKeepExistingNetTotal ? Number(existing.subtotal || curr.subtotal || 0) : curr.subtotal,
+            total: shouldKeepExistingNetTotal ? Number(existing.total || curr.total || 0) : curr.total,
+            hasPosDiscountMeta: curr.hasPosDiscountMeta || existing.hasPosDiscountMeta,
             items: (existing.items && existing.items.length > 0) ? existing.items : (curr.items || []),
           };
         } else {
