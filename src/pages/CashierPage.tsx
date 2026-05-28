@@ -116,6 +116,7 @@ type ReceiptData = {
   buyerEmail?: string;
   paymentMethod: PaymentMethod;
   notes?: string;
+  hasPosDiscountMeta?: boolean;
   items: ReceiptItem[];
   subtotal: number;
   total: number;
@@ -266,6 +267,7 @@ export default function CashierPage() {
             .replace(/\[POS_TOTAL:\s*\d+\]\s*\|?\s*/gi, '')
             .trim() || undefined
           : undefined,
+        hasPosDiscountMeta: Boolean(discountMatch),
         items: [],
         subtotal: subtotalFromMeta,
         total: totalFromMeta,
@@ -566,11 +568,18 @@ export default function CashierPage() {
   const totalDiscount = cart.reduce((sum, row) => sum + row.discountValue, 0);
   const grandTotal = Math.max(subtotal - totalDiscount, 0);
 
-  const getReceiptDiscountTotal = (receipt: ReceiptData) => {
+  const getReceiptDiscountMeta = (receipt: ReceiptData) => {
     const itemDiscount = receipt.items.reduce((sum, item) => sum + Number(item.discountValue || 0), 0);
     const summaryDiscount = Math.max(Number(receipt.subtotal || 0) - Number(receipt.total || 0), 0);
-    return Math.max(itemDiscount, summaryDiscount);
+    const hasTaggedDiscount = Boolean(receipt.hasPosDiscountMeta);
+
+    if (itemDiscount > 0) return { amount: itemDiscount, estimated: false };
+    if (hasTaggedDiscount) return { amount: summaryDiscount, estimated: false };
+    if (summaryDiscount > 0) return { amount: summaryDiscount, estimated: true };
+    return { amount: 0, estimated: false };
   };
+
+  const getReceiptDiscountTotal = (receipt: ReceiptData) => getReceiptDiscountMeta(receipt).amount;
 
   const buildInvoiceHtml = (receipt: ReceiptData) => {
     const rows = receipt.items.map((i) => {
@@ -1330,7 +1339,7 @@ export default function CashierPage() {
 
             <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 space-y-2">
               <div className="flex items-center justify-between"><span>Subtotal</span><span>{formatRupiah(selectedReceiptWithItems.subtotal)}</span></div>
-              <div className="flex items-center justify-between"><span>Diskon</span><span>{formatRupiah(getReceiptDiscountTotal(selectedReceiptWithItems))}</span></div>
+              <div className="flex items-center justify-between"><span>{getReceiptDiscountMeta(selectedReceiptWithItems).estimated ? 'Diskon (estimasi)' : 'Diskon'}</span><span>{formatRupiah(getReceiptDiscountTotal(selectedReceiptWithItems))}</span></div>
               <div className="h-px bg-gray-200" />
               <div className="flex items-center justify-between text-base font-bold"><span>Total Bayar</span><span>{formatRupiah(selectedReceiptWithItems.total)}</span></div>
             </div>
