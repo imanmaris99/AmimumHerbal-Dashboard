@@ -605,7 +605,7 @@ export default function CashierPage() {
           <path d="M19 2c-2.26 4.33-5.27 7.14-8 10"/>
         </svg>
         <div class="title">Toko Herbal AmImUm</div>
-        <div class="address">74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah</div>
+        <div class="address">Ds. Bakaran Kulon, Kec. Juwana, Kabupaten Pati, Jawa Tengah 59151</div>
         <div class="contact">Telp/WA: 085296708577</div>
       </div>
       <hr/>
@@ -631,7 +631,7 @@ export default function CashierPage() {
         <div class="sum-row total"><span>TOTAL</span><span>${formatRupiah(receipt.total)}</span></div>
       </div>
       ${receipt.notes ? `<div class="muted" style="margin-top:6px">Catatan: ${receipt.notes}</div>` : ''}
-      <div class="footer">TERIMAKASIH ATAS PEMBELIAN ANDA</div>
+      <div class="footer">TERIMAKASIH ATAS PEMBELIAN ANDA<br/>Tokopedia: tokopedia.com/herbalamimum</div>
     </div><script>window.print();</script></body></html>`;
   };
 
@@ -707,8 +707,8 @@ export default function CashierPage() {
 
     return [
       center('TOKO HERBAL AMIMUM'),
-      center('74VG+FH Bakaran Kulon'),
-      center('Kab. Pati, Jawa Tengah'),
+      center('Ds. Bakaran Kulon, Kec. Juwana'),
+      center('Kabupaten Pati, Jawa Tengah 59151'),
       center('Telp/WA: 085296708577'),
       line,
       center('NOTA PEMBAYARAN'),
@@ -726,6 +726,8 @@ export default function CashierPage() {
       sumRow('Diskon', getReceiptDiscountTotal(receipt)),
       sumRow('TOTAL', receipt.total),
       line,
+      center('Tokopedia: herbalamimum'),
+      center('www.tokopedia.com/herbalamimum'),
       center('Terima kasih'),
       '\n\n\n',
     ].join('\n');
@@ -1247,7 +1249,7 @@ export default function CashierPage() {
                   <div>
                     <p className="text-base font-black text-gray-900 dark:text-slate-100">Toko Herbal AmImUm</p>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400 max-w-[320px] leading-snug">
-                      74VG+FH Bakaran Kulon, Kabupaten Pati, Jawa Tengah<br />
+                      Ds. Bakaran Kulon, Kec. Juwana, Kabupaten Pati, Jawa Tengah 59151<br />
                       Telp/WA: 085296708577
                     </p>
                   </div>
@@ -1307,6 +1309,7 @@ export default function CashierPage() {
 
             <div className="text-xs text-gray-500 space-y-1">
               <p>Terima kasih telah bertransaksi di Toko Herbal AmImUm.</p>
+              <p>Tokopedia: https://www.tokopedia.com/herbalamimum</p>
               <p>Nota ini sah tanpa tanda tangan. Simpan nota untuk kebutuhan komplain/retur sesuai kebijakan toko.</p>
             </div>
           </CardContent>
