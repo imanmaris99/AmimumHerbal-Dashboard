@@ -585,10 +585,16 @@ export default function CashierPage() {
     const summaryDiscount = Math.max(Number(receipt.subtotal || 0) - Number(receipt.total || 0), 0);
     const hasTaggedDiscount = Boolean(receipt.hasPosDiscountMeta);
 
-    if (itemDiscount > 0) return { amount: itemDiscount, estimated: false };
-    if (hasTaggedDiscount) return { amount: summaryDiscount, estimated: false };
-    if (summaryDiscount > 0) return { amount: summaryDiscount, estimated: true };
-    return { amount: 0, estimated: false };
+    // 1) Most trustworthy: line-level discount present in receipt items
+    if (itemDiscount > 0) return { amount: itemDiscount, estimated: false, source: 'line-item' as const };
+
+    // 2) Trusted POS metadata from backend notes
+    if (hasTaggedDiscount) return { amount: summaryDiscount, estimated: false, source: 'pos-meta' as const };
+
+    // 3) Legacy fallback for older records lacking metadata
+    if (summaryDiscount > 0) return { amount: summaryDiscount, estimated: true, source: 'summary-diff' as const };
+
+    return { amount: 0, estimated: false, source: 'none' as const };
   };
 
   const getReceiptDiscountTotal = (receipt: ReceiptData) => getReceiptDiscountMeta(receipt).amount;
