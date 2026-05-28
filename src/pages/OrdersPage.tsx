@@ -93,6 +93,19 @@ export default function OrdersPage() {
   });
 
   const orders = ordersResponse?.data ?? [];
+
+  const extractBuyerFromNotes = (notes?: string | null) => {
+    const raw = String(notes || '');
+    const match = raw.match(/POS Buyer:\s*([^|\[]+)/i);
+    return match?.[1]?.trim() || '';
+  };
+
+  const resolveOrderCustomerName = (order: AdminOrderInfo) => {
+    const buyerFromNotes = extractBuyerFromNotes(order.notes);
+    if (buyerFromNotes) return buyerFromNotes;
+    return order.customer_name || '-';
+  };
+
   const payments = useMemo(() => {
     const paymentRows = paymentsResponse?.data ?? [];
     const orderRows = ordersResponse?.data ?? [];
@@ -120,7 +133,7 @@ export default function OrdersPage() {
           gross_amount: Number(order.total_price || 0),
           transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
           fraud_status: null,
-          customer_name: localReceipt?.buyerName || order.customer_name || 'Pelanggan POS',
+          customer_name: localReceipt?.buyerName || extractBuyerFromNotes(order.notes) || order.customer_name || 'Pelanggan POS',
           customer_email: '-',
           order_status: order.status || 'paid',
           updated_at: order.created_at,
@@ -153,7 +166,7 @@ export default function OrdersPage() {
     if (!q) return orders;
     return orders.filter((order) =>
       order.id.toLowerCase().includes(q) ||
-      (order.customer_name || '').toLowerCase().includes(q) ||
+      resolveOrderCustomerName(order).toLowerCase().includes(q) ||
       (order.status || '').toLowerCase().includes(q)
     );
   }, [orders, search]);
@@ -246,7 +259,7 @@ export default function OrdersPage() {
                   : filteredOrders.map((order) => (
                     <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
                       <TableCell><p className="font-bold text-sm">{order.id}</p></TableCell>
-                      <TableCell>{order.customer_name || '-'}</TableCell>
+                      <TableCell>{resolveOrderCustomerName(order)}</TableCell>
                       <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{order.delivery_type}</span></TableCell>
                       <TableCell className="font-bold">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
                       <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{order.status}</Badge></TableCell>

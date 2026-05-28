@@ -81,6 +81,12 @@ interface UpdateOrderStatusResponse {
 
 const orderStatusOptions = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'refund'];
 
+const extractBuyerFromNotes = (notes?: string | null) => {
+  const raw = String(notes || '');
+  const match = raw.match(/POS Buyer:\s*([^|\[]+)/i);
+  return match?.[1]?.trim() || '';
+};
+
 export default function OrderDetailPage() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
@@ -209,7 +215,7 @@ export default function OrderDetailPage() {
 
               <div>
                 <h2 className="text-lg font-bold text-gray-900 break-all">{order.id}</h2>
-                <p className="text-sm text-gray-500 mt-1">{t('orderDetailPage.customer')}: {order.customer_name || t('paymentsPage.table.unknownCustomer')}</p>
+                <p className="text-sm text-gray-500 mt-1">{t('orderDetailPage.customer')}: {extractBuyerFromNotes(order.notes) || order.customer_name || t('paymentsPage.table.unknownCustomer')}</p>
               </div>
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
