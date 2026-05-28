@@ -262,7 +262,7 @@ export default function CashierPage() {
       return {
         transactionId: String(o.id),
         createdAt: o.created_at,
-        cashierName: 'Kasir Toko',
+        cashierName: (o.customer_name || '').trim() || 'Kasir Toko',
         buyerName: extractBuyerNameFromNotes(o.notes) || 'Pembeli',
         buyerEmail: undefined,
         paymentMethod: normalizePaymentMethod(paymentInfo?.payment_type, o.notes),
@@ -1334,6 +1334,7 @@ export default function CashierPage() {
                 <p><strong>No. Nota:</strong> {selectedReceiptWithItems.transactionId}</p>
                 <p><strong>Tanggal:</strong> {new Date(selectedReceiptWithItems.createdAt).toLocaleString('id-ID')}</p>
                 <p><strong>Kasir:</strong> {selectedReceiptWithItems.cashierName}</p>
+                <p><strong>Pelanggan:</strong> {selectedReceiptWithItems.buyerName || 'Pelanggan POS'}</p>
                 <p><strong>Metode Bayar:</strong> {String(selectedReceiptWithItems.paymentMethod).toUpperCase()}</p>
               </div>
             </div>
