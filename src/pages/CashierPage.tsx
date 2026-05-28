@@ -617,7 +617,6 @@ export default function CashierPage() {
         </div>
         <div class="text-right">
           <b>TANGGAL</b><div>${new Date(receipt.createdAt).toLocaleString('id-ID')}</div>
-          <b style="margin-top:4px">NO INVOICE</b><div>${receipt.transactionId}</div>
           <b style="margin-top:4px">METODE</b><div>${String(receipt.paymentMethod).toUpperCase()}</div>
         </div>
       </div>
@@ -714,7 +713,6 @@ export default function CashierPage() {
       line,
       center('NOTA PEMBAYARAN'),
       line,
-      `No   : ${receipt.transactionId}`,
       `Tgl  : ${new Date(receipt.createdAt).toLocaleString('id-ID')}`,
       `Kasir: ${receipt.cashierName}`,
       `Cust : ${receipt.buyerName || 'Pelanggan POS'}`,
