@@ -206,6 +206,9 @@ export default function OverviewPage() {
 
   const resolveCustomerLabel = (orderId: string, customerName: string | null, notes?: string | null) => {
     const raw = (customerName || '').trim();
+    const buyerFromNotes = extractBuyerFromNotes(notes);
+    if (buyerFromNotes) return buyerFromNotes;
+
     const adminFullName = [user?.firstname, user?.lastname].filter(Boolean).join(' ').trim().toLowerCase();
     const adminName = String(user?.name || '').trim().toLowerCase();
     const adminEmailPrefix = String(user?.email || '').split('@')[0]?.trim().toLowerCase();
@@ -217,13 +220,13 @@ export default function OverviewPage() {
       normalized === adminEmailPrefix
     );
 
-    if (looksLikeAdmin) {
-      const buyerFromNotes = extractBuyerFromNotes(notes);
-      if (buyerFromNotes) return buyerFromNotes;
+    const looksLikePlaceholder = ['pembeli', 'pelanggan pos', 'customer', 'ibu'].includes(normalized);
 
+    if (looksLikeAdmin || looksLikePlaceholder) {
       const buyerFromPos = posReceiptMap.get(String(orderId));
-      return buyerFromPos || 'Pelanggan POS';
+      return buyerFromPos || (raw || 'Pelanggan POS');
     }
+
     if (!raw) return t('overview.table.unknown');
     return raw;
   };
