@@ -785,7 +785,7 @@ export default function CashierPage() {
       center('Tokopedia: herbalamimum'),
       center('www.tokopedia.com/herbalamimum'),
       center('Terima kasih'),
-      '\n\n\n',
+      '\n',
     ].join('\n');
   };
 
@@ -829,7 +829,7 @@ export default function CashierPage() {
     const boldOff = new Uint8Array([0x1b, 0x45, 0x00]);
     const normalSize = new Uint8Array([0x1d, 0x21, 0x00]);
     const bigSize = new Uint8Array([0x1d, 0x21, 0x11]);
-    const feedAndCut = new Uint8Array([0x1b, 0x64, 0x04, 0x1d, 0x56, 0x00]);
+    const feedAndCut = new Uint8Array([0x1b, 0x64, 0x01, 0x1d, 0x56, 0x00]);
 
     const payload = encoder.encode(text);
     const out = new Uint8Array(

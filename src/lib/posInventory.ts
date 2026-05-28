@@ -66,7 +66,7 @@ export async function posCheckout(payload: PosCheckoutPayload) {
         }
       }
 
-      const concurrency = 5;
+      const concurrency = 20;
       for (let i = 0; i < cartOps.length; i += concurrency) {
         const chunk = cartOps.slice(i, i + concurrency);
         await Promise.all(chunk.map((run) => run()));
