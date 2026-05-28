@@ -44,7 +44,7 @@ export interface StockMovementListResponse {
 export async function posCheckout(payload: PosCheckoutPayload) {
   try {
     // 1. Coba panggil endpoint resmi POS checkout terlebih dahulu
-    const response = await api.post('/admin/pos/checkout', payload);
+    const response = await api.post('/admin/pos/checkout', payload, { timeout: 10_000 });
     return response.data;
   } catch (error: any) {
     const status = error?.response?.status;
@@ -75,7 +75,10 @@ export async function posCheckout(payload: PosCheckoutPayload) {
       const response = await api.post('/orders/checkout', {
         notes: payload.notes,
         payment_method: payload.payment_method,
-      });
+        subtotal: payload.subtotal,
+        discount_total: payload.discount_total,
+        final_total: payload.final_total,
+      }, { timeout: 10_000 });
 
       return {
         ...response.data,

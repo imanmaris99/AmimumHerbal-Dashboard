@@ -416,11 +416,15 @@ export default function CashierPage() {
       setCheckoutStartedAt(null);
     },
     onError: (error: any) => {
-      const message =
-        error?.response?.data?.detail?.message ||
-        error?.response?.data?.detail ||
-        error?.message ||
-        'Checkout gagal. Mohon cek endpoint backend POS/Orders.';
+      const isTimeout = error?.code === 'ECONNABORTED' || String(error?.message || '').toLowerCase().includes('timeout');
+      const message = isTimeout
+        ? 'Checkout timeout >10 detik. Silakan coba lagi (server sedang lambat) atau cek koneksi backend.'
+        : (
+          error?.response?.data?.detail?.message ||
+          error?.response?.data?.detail ||
+          error?.message ||
+          'Checkout gagal. Mohon cek endpoint backend POS/Orders.'
+        );
       toast.error(String(message));
       setCheckoutStartedAt(null);
     },
@@ -990,7 +994,7 @@ export default function CashierPage() {
 
   useEffect(() => {
     if (!selectedReceiptWithItems) return;
-    receiptDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    receiptDetailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   }, [selectedReceiptWithItems?.transactionId]);
 
   const exportReceiptPdf = (receipt: ReceiptData) => {
