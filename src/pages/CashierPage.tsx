@@ -280,8 +280,8 @@ export default function CashierPage() {
         if (existingIdx > -1) {
           const existing = acc[existingIdx];
           acc[existingIdx] = {
-            ...curr,
             ...existing,
+            ...curr,
             items: (existing.items && existing.items.length > 0) ? existing.items : (curr.items || []),
           };
         } else {
