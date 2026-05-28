@@ -584,6 +584,7 @@ export default function CashierPage() {
     const itemDiscount = receipt.items.reduce((sum, item) => sum + Number(item.discountValue || 0), 0);
     const summaryDiscount = Math.max(Number(receipt.subtotal || 0) - Number(receipt.total || 0), 0);
     const hasTaggedDiscount = Boolean(receipt.hasPosDiscountMeta);
+    const isRecentPosReceipt = !!receipt.createdAt && new Date(receipt.createdAt).getTime() >= new Date('2026-05-28T00:00:00Z').getTime();
 
     // 1) Most trustworthy: line-level discount present in receipt items
     if (itemDiscount > 0) return { amount: itemDiscount, estimated: false, source: 'line-item' as const };
@@ -591,7 +592,10 @@ export default function CashierPage() {
     // 2) Trusted POS metadata from backend notes
     if (hasTaggedDiscount) return { amount: summaryDiscount, estimated: false, source: 'pos-meta' as const };
 
-    // 3) Legacy fallback for older records lacking metadata
+    // 3) For newer POS receipts after backend fix rollout, trust summary diff as non-estimated
+    if (summaryDiscount > 0 && isRecentPosReceipt) return { amount: summaryDiscount, estimated: false, source: 'post-fix-summary' as const };
+
+    // 4) Legacy fallback for older records lacking metadata
     if (summaryDiscount > 0) return { amount: summaryDiscount, estimated: true, source: 'summary-diff' as const };
 
     return { amount: 0, estimated: false, source: 'none' as const };
