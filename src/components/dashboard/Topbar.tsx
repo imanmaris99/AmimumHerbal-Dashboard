@@ -9,7 +9,7 @@ import {
   AvatarImage,
 } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ROLE_LABELS } from '@/types';
+import { AdminProfileResponse, ROLE_LABELS } from '@/types';
 import { useUiStore } from '@/store/uiStore';
 import { useTranslation } from 'react-i18next';
 import {
@@ -32,7 +32,7 @@ import { getPageHandbook } from '@/lib/pageHandbook';
 import { getStoredThemeMode, setThemeMode, type ThemeMode } from '@/lib/theme';
 
 export function Topbar() {
-  const { user, lastActivityAt } = useAuthStore();
+  const { user, lastActivityAt, updateUser } = useAuthStore();
   const { toggleSidebar } = useUiStore();
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -42,6 +42,17 @@ export function Topbar() {
   const [notifRead, setNotifRead] = useState(false);
   const [lastSeenOrderAt, setLastSeenOrderAt] = useState<string>('');
   const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
+
+  const { data: profileData } = useQuery({
+    queryKey: ['topbar-admin-profile'],
+    queryFn: async () => {
+      const response = await api.get<AdminProfileResponse>('/admin/profile');
+      return response.data.data;
+    },
+    enabled: user?.role === 'owner' || user?.role === 'admin',
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  });
 
   const { data: variantResponse } = useQuery({
     queryKey: ['topbar-variant-alerts'],
@@ -78,6 +89,23 @@ export function Topbar() {
       // ignore storage errors
     }
   }, [recentOrdersResponse?.data]);
+
+  useEffect(() => {
+    if (!profileData) return;
+    const latestName = [profileData.firstname, profileData.lastname].filter(Boolean).join(' ').trim();
+    updateUser({
+      name: latestName || user?.name || profileData.email,
+      email: profileData.email,
+      role: profileData.role,
+      isActive: profileData.is_active,
+      gender: profileData.gender || undefined,
+      firstname: profileData.firstname || undefined,
+      lastname: profileData.lastname || undefined,
+      phone: profileData.phone || undefined,
+      address: profileData.address || undefined,
+      photoUrl: profileData.photo_url || undefined,
+    });
+  }, [profileData, updateUser, user?.name]);
 
   const newTransactionsCount = useMemo(() => {
     const orderRows = recentOrdersResponse?.data || [];
@@ -123,8 +151,9 @@ export function Topbar() {
     return list;
   }, [variantResponse?.data, newTransactionsCount]);
 
-  const displayName = user?.name || user?.email || 'Internal User';
-  const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
+  const profileDisplayName = [profileData?.firstname, profileData?.lastname].filter(Boolean).join(' ').trim();
+  const displayName = profileDisplayName || user?.name || profileData?.email || user?.email || 'Internal User';
+  const roleLabel = (profileData?.role || user?.role) ? ROLE_LABELS[(profileData?.role || user?.role)!] : 'Internal User';
 
   const getAvatarUrl = (name: string, gender?: 'male' | 'female') => {
     if (gender === 'female') {
