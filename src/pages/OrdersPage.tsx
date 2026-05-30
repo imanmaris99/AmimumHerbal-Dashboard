@@ -111,7 +111,7 @@ export default function OrdersPage() {
     return '';
   };
 
-  const resolveOrderCustomerName = (order: AdminOrderInfo) => {
+  const resolveOrderCustomerName = (order: AdminOrderItem) => {
     const buyerFromNotes = extractBuyerFromNotes(order.notes);
     if (buyerFromNotes) return buyerFromNotes;
     return order.customer_name || '-';
