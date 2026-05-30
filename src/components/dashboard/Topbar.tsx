@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText, Moon, Sun } from 'lucide-react';
@@ -40,6 +40,7 @@ export function Topbar() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [themeMode, setThemeModeState] = useState<ThemeMode>(() => getStoredThemeMode());
   const [notifRead, setNotifRead] = useState(false);
+  const [lastSeenOrderAt, setLastSeenOrderAt] = useState<string>('');
   const handbook = useMemo(() => getPageHandbook(location.pathname), [location.pathname]);
 
   const { data: variantResponse } = useQuery({
@@ -52,10 +53,40 @@ export function Topbar() {
     refetchInterval: 60_000,
   });
 
+  const { data: recentOrdersResponse } = useQuery({
+    queryKey: ['topbar-recent-orders'],
+    queryFn: async () => {
+      const response = await api.get<{ data: Array<{ id: string; created_at: string }> }>('/admin/orders', {
+        params: { limit: 20, skip: 0 },
+      });
+      return response.data;
+    },
+    staleTime: 30_000,
+    refetchInterval: 30_000,
+  });
+
+  useEffect(() => {
+    const key = 'amimum.dashboard.lastSeenOrderAt';
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) setLastSeenOrderAt(stored);
+      else if (recentOrdersResponse?.data?.[0]?.created_at) {
+        localStorage.setItem(key, recentOrdersResponse.data[0].created_at);
+        setLastSeenOrderAt(recentOrdersResponse.data[0].created_at);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [recentOrdersResponse?.data]);
+
   const notifications = useMemo(() => {
     const rows = variantResponse?.data || [];
     const emptyCount = rows.filter((x) => Number(x.stock ?? 0) <= 0).length;
     const lowCount = rows.filter((x) => Number(x.stock ?? 0) > 0 && Number(x.stock ?? 0) <= 10).length;
+    const orderRows = recentOrdersResponse?.data || [];
+    const newTransactionsCount = lastSeenOrderAt
+      ? orderRows.filter((o) => new Date(o.created_at).getTime() > new Date(lastSeenOrderAt).getTime()).length
+      : 0;
 
     const list = [
       {
@@ -67,6 +98,13 @@ export function Topbar() {
         id: 'security-scope',
         title: 'Akses dibatasi role',
         desc: 'Menu sensitif hanya tampil untuk owner sesuai matrix akses.',
+      },
+      {
+        id: 'new-transactions',
+        title: `Transaksi baru: ${newTransactionsCount}`,
+        desc: newTransactionsCount > 0
+          ? 'Ada transaksi baru masuk. Segera cek halaman pesanan untuk tindak lanjut.'
+          : 'Belum ada transaksi baru sejak pengecekan terakhir.',
       },
       {
         id: 'stock-low',
@@ -81,7 +119,7 @@ export function Topbar() {
     ];
 
     return list;
-  }, [variantResponse?.data]);
+  }, [variantResponse?.data, recentOrdersResponse?.data, lastSeenOrderAt]);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
@@ -229,7 +267,19 @@ export function Topbar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setNotifRead(true)}
+              onClick={() => {
+                setNotifRead(true);
+                const latest = recentOrdersResponse?.data?.[0]?.created_at;
+                if (latest) {
+                  const key = 'amimum.dashboard.lastSeenOrderAt';
+                  try {
+                    localStorage.setItem(key, latest);
+                    setLastSeenOrderAt(latest);
+                  } catch {
+                    // ignore storage errors
+                  }
+                }
+              }}
               className="relative text-gray-500 hover:text-emerald-500 rounded-full transition-colors shrink-0 h-9 w-9 md:h-10 md:w-10 border border-transparent hover:border-emerald-100 hover:bg-emerald-50"
               aria-label="Notifikasi"
             >
@@ -245,15 +295,17 @@ export function Topbar() {
             <div className="max-h-72 overflow-auto">
               {notifications.map((notif) => {
                 const isStockNotif = notif.id === 'stock-low' || notif.id === 'stock-empty';
+                const isOrderNotif = notif.id === 'new-transactions';
                 return (
                   <button
                     key={notif.id}
                     type="button"
                     onClick={() => {
+                      if (notif.id === 'new-transactions') navigate('/orders');
                       if (notif.id === 'stock-low') navigate('/variants?stock=low');
                       if (notif.id === 'stock-empty') navigate('/variants?stock=empty');
                     }}
-                    className={`w-full text-left px-3 py-2 border-b border-gray-50 last:border-b-0 ${isStockNotif ? 'hover:bg-emerald-50/60 cursor-pointer' : 'cursor-default'}`}
+                    className={`w-full text-left px-3 py-2 border-b border-gray-50 last:border-b-0 ${(isStockNotif || isOrderNotif) ? 'hover:bg-emerald-50/60 cursor-pointer' : 'cursor-default'}`}
                   >
                     <p className="text-sm font-medium text-gray-900">{notif.title}</p>
                     <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
