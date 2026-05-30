@@ -79,14 +79,16 @@ export function Topbar() {
     }
   }, [recentOrdersResponse?.data]);
 
+  const newTransactionsCount = useMemo(() => {
+    const orderRows = recentOrdersResponse?.data || [];
+    if (!lastSeenOrderAt) return 0;
+    return orderRows.filter((o) => new Date(o.created_at).getTime() > new Date(lastSeenOrderAt).getTime()).length;
+  }, [recentOrdersResponse?.data, lastSeenOrderAt]);
+
   const notifications = useMemo(() => {
     const rows = variantResponse?.data || [];
     const emptyCount = rows.filter((x) => Number(x.stock ?? 0) <= 0).length;
     const lowCount = rows.filter((x) => Number(x.stock ?? 0) > 0 && Number(x.stock ?? 0) <= 10).length;
-    const orderRows = recentOrdersResponse?.data || [];
-    const newTransactionsCount = lastSeenOrderAt
-      ? orderRows.filter((o) => new Date(o.created_at).getTime() > new Date(lastSeenOrderAt).getTime()).length
-      : 0;
 
     const list = [
       {
@@ -119,7 +121,7 @@ export function Topbar() {
     ];
 
     return list;
-  }, [variantResponse?.data, recentOrdersResponse?.data, lastSeenOrderAt]);
+  }, [variantResponse?.data, newTransactionsCount]);
 
   const displayName = user?.name || user?.email || 'Internal User';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : 'Internal User';
@@ -284,7 +286,13 @@ export function Topbar() {
               aria-label="Notifikasi"
             >
               <Bell className="w-5 h-5" />
-              {!notifRead ? <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" /> : null}
+              {newTransactionsCount > 0 ? (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-rose-500 text-white text-[10px] leading-4 rounded-full border border-white text-center font-semibold">
+                  {newTransactionsCount > 9 ? '9+' : newTransactionsCount}
+                </span>
+              ) : !notifRead ? (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
+              ) : null}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 rounded-xl border-gray-100 shadow-lg shadow-gray-200/50">
