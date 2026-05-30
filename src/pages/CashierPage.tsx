@@ -617,7 +617,8 @@ export default function CashierPage() {
   const buildInvoiceHtml = (receipt: ReceiptData) => {
     const formatReceiptItemName = (productName: string, variantName: string) => {
       const cleanVariant = String(variantName || '').trim();
-      if (!cleanVariant || cleanVariant.toLowerCase() === 'original') return productName;
+      const normalizedVariant = cleanVariant.replace(/[()]/g, '').trim().toLowerCase();
+      if (!normalizedVariant || normalizedVariant === 'original') return productName;
       return `${productName} (${cleanVariant})`;
     };
 
@@ -722,7 +723,8 @@ export default function CashierPage() {
   const buildReceiptPlainText = (receipt: ReceiptData) => {
     const formatReceiptItemName = (productName: string, variantName: string) => {
       const cleanVariant = String(variantName || '').trim();
-      if (!cleanVariant || cleanVariant.toLowerCase() === 'original') return productName;
+      const normalizedVariant = cleanVariant.replace(/[()]/g, '').trim().toLowerCase();
+      if (!normalizedVariant || normalizedVariant === 'original') return productName;
       return `${productName} (${cleanVariant})`;
     };
 
