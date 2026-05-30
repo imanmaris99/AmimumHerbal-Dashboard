@@ -615,6 +615,12 @@ export default function CashierPage() {
   const getReceiptDiscountTotal = (receipt: ReceiptData) => getReceiptDiscountMeta(receipt).amount;
 
   const buildInvoiceHtml = (receipt: ReceiptData) => {
+    const formatReceiptItemName = (productName: string, variantName: string) => {
+      const cleanVariant = String(variantName || '').trim();
+      if (!cleanVariant || cleanVariant.toLowerCase() === 'original') return productName;
+      return `${productName} (${cleanVariant})`;
+    };
+
     const rows = receipt.items.map((i) => {
       const lineSubtotal = i.qty * i.unitPrice;
       const lineDiscount = Number(i.discountValue || 0);
@@ -626,7 +632,7 @@ export default function CashierPage() {
       return `
       <tr>
         <td>
-          ${i.productName} <span class="muted">(${i.variantName})</span>
+          ${formatReceiptItemName(i.productName, i.variantName)}
           ${lineDiscount > 0 ? `<div class="muted">Diskon: ${discountLabel} (efektif ${formatRupiah(lineDiscount)})</div>` : ''}
         </td>
         <td class="text-right">${formatRupiah(i.unitPrice)}</td>
@@ -714,6 +720,12 @@ export default function CashierPage() {
   };
 
   const buildReceiptPlainText = (receipt: ReceiptData) => {
+    const formatReceiptItemName = (productName: string, variantName: string) => {
+      const cleanVariant = String(variantName || '').trim();
+      if (!cleanVariant || cleanVariant.toLowerCase() === 'original') return productName;
+      return `${productName} (${cleanVariant})`;
+    };
+
     const width = printPaper === '58' ? 32 : 42;
     const line = '-'.repeat(width);
     const leftCol = printPaper === '58' ? 18 : 26;
@@ -747,7 +759,7 @@ export default function CashierPage() {
 
     const itemRows = receipt.items.length
       ? receipt.items.map((i) => {
-        const name = `${i.productName} (${i.variantName})`;
+        const name = formatReceiptItemName(i.productName, i.variantName);
         const lineSubtotalNum = i.qty * i.unitPrice;
         const lineDiscountNum = Number(i.discountValue || 0);
         const lineTotalNum = Math.max(lineSubtotalNum - lineDiscountNum, 0);
