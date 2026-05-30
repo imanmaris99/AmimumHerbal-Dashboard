@@ -367,7 +367,7 @@ export function Topbar() {
             <p className="text-xs font-medium text-gray-500 capitalize mt-1">Akun internal</p>
           </div>
           <Avatar className="h-8 w-8 md:h-10 md:w-10 border-2 border-gray-100 ring-2 ring-transparent group-hover:ring-emerald-200 transition-all">
-            <AvatarImage src={getAvatarUrl(displayName, user?.gender)} />
+            <AvatarImage src={profileData?.photo_url || getAvatarUrl(displayName, user?.gender)} />
             <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
