@@ -111,30 +111,46 @@ export default function CatalogPage() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const { data: productionsResponse, isLoading: productionsLoading } = useQuery({
+  const {
+    data: productionsResponse,
+    isLoading: productionsLoading,
+    isError: productionsError,
+    error: productionsErrorDetail,
+    refetch: refetchProductions,
+  } = useQuery({
     queryKey: ['catalog-productions'],
     queryFn: async () => {
       const response = await api.get<ProductionResponse>('/brand/all');
       return response.data;
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: productsResponse, isLoading: productsLoading } = useQuery({
+  const {
+    data: productsResponse,
+    isLoading: productsLoading,
+    isError: productsError,
+    error: productsErrorDetail,
+    refetch: refetchProducts,
+  } = useQuery({
     queryKey: ['catalog-products'],
     queryFn: async () => {
       try {
-        const response = await api.get<ProductResponse>('/product/all');
+        const response = await api.get<ProductResponse>('/product/all', {
+          timeout: 15000,
+        });
         return response.data;
       } catch (error: any) {
         const status = error?.response?.status;
         if (status !== 404 && status !== 409) throw error;
 
         // Fallback: tarik produk per production jika endpoint /product/all sedang conflict.
-        const brands = await api.get<ProductionResponse>('/brand/all');
+        const brands = await api.get<ProductionResponse>('/brand/all', { timeout: 15000 });
         const brandIds = (brands.data?.data || []).map((b) => b.id);
 
         const settled = await Promise.allSettled(
-          brandIds.map((id) => api.get<ProductResponse>(`/product/production/${id}`))
+          brandIds.map((id) => api.get<ProductResponse>(`/product/production/${id}`, { timeout: 15000 }))
         );
 
         const merged: ProductItem[] = [];
@@ -153,6 +169,8 @@ export default function CatalogPage() {
         } as ProductResponse;
       }
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   const createProductMutation = useMutation({
@@ -498,6 +516,29 @@ export default function CatalogPage() {
                 <TableBody>
                   {productsLoading || productionsLoading ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
+                  ) : productsError || productionsError ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-gray-500 py-8 space-y-3">
+                        <p>Gagal memuat data katalog. Cek koneksi backend lalu coba lagi.</p>
+                        <p className="text-xs text-gray-400">
+                          {String((productsErrorDetail as Error)?.message || (productionsErrorDetail as Error)?.message || 'Unknown error')}
+                        </p>
+                        <div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="rounded-xl"
+                            onClick={() => {
+                              void refetchProductions();
+                              void refetchProducts();
+                            }}
+                          >
+                            Retry load catalog
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   ) : filteredProducts.length === 0 ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                   ) : (
