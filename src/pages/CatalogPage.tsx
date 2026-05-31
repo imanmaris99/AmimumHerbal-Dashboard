@@ -514,14 +514,14 @@ export default function CatalogPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {productsLoading || productionsLoading ? (
+                  {productsLoading ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
-                  ) : productsError || productionsError ? (
+                  ) : productsError ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-gray-500 py-8 space-y-3">
                         <p>Gagal memuat data katalog. Cek koneksi backend lalu coba lagi.</p>
                         <p className="text-xs text-gray-400">
-                          {String((productsErrorDetail as Error)?.message || (productionsErrorDetail as Error)?.message || 'Unknown error')}
+                          {String((productsErrorDetail as Error)?.message || 'Unknown error')}
                         </p>
                         <div>
                           <Button
