@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getStatusStyle, orderStatusStyles } from '@/lib/dashboard';
 import { toast } from 'sonner';
@@ -43,6 +44,7 @@ interface ShippingInfoDto {
     estimated_delivery?: string | null;
     created_at: string;
   } | null;
+  code_tracking?: string | null;
   created_at: string;
 }
 
@@ -106,6 +108,7 @@ export default function OrderDetailPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === 'en' ? 'en-US' : 'id-ID';
   const [nextStatus, setNextStatus] = useState('');
+  const [trackingCode, setTrackingCode] = useState('');
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
     return <Navigate to="/overview" replace />;
@@ -121,6 +124,10 @@ export default function OrderDetailPage() {
   });
 
   const order = orderDetailQuery.data;
+
+  React.useEffect(() => {
+    setTrackingCode(order?.my_shipping?.code_tracking || '');
+  }, [order?.my_shipping?.code_tracking]);
 
   const groupedOrderItems = React.useMemo(() => {
     const items = order?.order_item_lists || [];
@@ -142,15 +149,19 @@ export default function OrderDetailPage() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
+      const payload = {
+        status,
+        ...(trackingCode.trim() ? { code_tracking: trackingCode.trim() } : {}),
+      };
       try {
-        const response = await api.patch<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
+        const response = await api.patch<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, payload);
         return response.data;
       } catch (error) {
         const axiosError = error as AxiosError<any>;
         const responseStatus = axiosError.response?.status;
 
         if (responseStatus === 404 || responseStatus === 405) {
-          const fallbackResponse = await api.put<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, { status });
+          const fallbackResponse = await api.put<UpdateOrderStatusResponse>(`/admin/orders/${orderId}/status`, payload);
           return fallbackResponse.data;
         }
 
@@ -280,6 +291,21 @@ export default function OrderDetailPage() {
                     ))}
                   </select>
                 </div>
+                {order.delivery_type === 'delivery' && order.my_shipping ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="order-tracking-code">No. Resi / Kode Tracking</Label>
+                    <Input
+                      id="order-tracking-code"
+                      value={trackingCode}
+                      onChange={(event) => setTrackingCode(event.target.value.slice(0, 50))}
+                      placeholder="Contoh: JNE123456789"
+                      className="h-11 rounded-xl border-emerald-200 bg-white"
+                    />
+                    <p className="text-xs text-emerald-700">
+                      Isi resi saat pesanan dikirim. Resi akan tampil di halaman tracking customer.
+                    </p>
+                  </div>
+                ) : null}
                 <Button type="button" onClick={submitStatusUpdate} disabled={updateStatusMutation.isPending} className="rounded-xl bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
                   {updateStatusMutation.isPending ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('orderDetailPage.updating')}</>
@@ -354,6 +380,7 @@ export default function OrderDetailPage() {
                       <p>{t('orderDetailPage.service')}: {order.my_shipping.my_courier?.service_type || '-'}</p>
                       <p>{t('orderDetailPage.estimate')}: {order.my_shipping.my_courier?.estimated_delivery || '-'}</p>
                       <p>{t('orderDetailPage.cost')}: Rp {Number(order.my_shipping.my_courier?.cost || 0).toLocaleString('id-ID')}</p>
+                      <p>No. Resi: {order.my_shipping.code_tracking || 'Belum tersedia'}</p>
                     </div>
                   </div>
                 ) : (
