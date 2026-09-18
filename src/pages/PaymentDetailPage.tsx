@@ -9,7 +9,14 @@ import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { getStatusStyle, paymentStatusStyles, orderStatusStyles } from '@/lib/dashboard';
+import {
+  getStatusLabel,
+  getStatusStyle,
+  orderStatusLabels,
+  orderStatusStyles,
+  paymentStatusLabels,
+  paymentStatusStyles,
+} from '@/lib/dashboard';
 
 interface AdminPaymentDetailData {
   id: string;
@@ -70,7 +77,7 @@ export default function PaymentDetailPage() {
         </div>
         {payment ? (
           <Badge className={`border-none px-3 py-2 rounded-xl ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
-            {payment.transaction_status}
+            {getStatusLabel(paymentStatusLabels, payment.transaction_status)}
           </Badge>
         ) : null}
       </div>
@@ -129,7 +136,7 @@ export default function PaymentDetailPage() {
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2"><Wallet className="w-4 h-4" />{t('paymentDetailPage.relatedOrderStatus')}</span>
-                <strong>{payment.order_status || 'unknown'}</strong>
+                <strong>{getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}</strong>
               </div>
             </CardContent>
           </Card>
@@ -147,13 +154,13 @@ export default function PaymentDetailPage() {
                   <div className="flex items-center justify-between gap-3">
                     <span>{t('paymentDetailPage.transactionStatus')}</span>
                     <Badge className={`border-none px-3 py-1 rounded-xl ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
-                      {payment.transaction_status}
+                      {getStatusLabel(paymentStatusLabels, payment.transaction_status)}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span>{t('paymentDetailPage.orderStatus')}</span>
-                    <Badge className={`border-none px-3 py-1 rounded-xl ${getStatusStyle(orderStatusStyles, payment.order_status || 'unknown')}`}>
-                      {payment.order_status || 'unknown'}
+                    <Badge className={`border-none px-3 py-1 rounded-xl ${getStatusStyle(orderStatusStyles, payment.order_status || '')}`}>
+                      {getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">

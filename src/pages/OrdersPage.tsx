@@ -10,7 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, ShoppingBag, PackageCheck, Clock3, Wallet, Truck, Store, Eye, CreditCard } from 'lucide-react';
 import api from '@/lib/api';
-import { getStatusStyle, orderStatusStyles, paymentStatusStyles } from '@/lib/dashboard';
+import {
+  deliveryTypeLabels,
+  getStatusLabel,
+  getStatusStyle,
+  orderStatusLabels,
+  orderStatusStyles,
+  paymentStatusLabels,
+  paymentStatusStyles,
+} from '@/lib/dashboard';
 
 interface AdminOrderItem {
   id: string;
@@ -45,7 +53,7 @@ interface ApiResponse<T> {
   meta?: { count: number };
 }
 
-const orderStatusOptions = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'refund'];
+const orderStatusOptions = ['all', 'pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'settlement', 'refund'];
 const paymentStatusOptions = ['all', 'pending', 'settlement', 'expire', 'cancel', 'deny', 'refund', 'capture', 'authorize', 'challenge', 'partial_refund'];
 const POS_RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 
@@ -253,7 +261,7 @@ export default function OrdersPage() {
               <Filter className="w-4 h-4 text-gray-400" />
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-11 rounded-xl border border-gray-100 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 text-sm text-gray-700 dark:text-slate-200 outline-none">
                 {(activeTab === 'orders' ? orderStatusOptions : paymentStatusOptions).map((status) => (
-                  <option key={status} value={status}>{status === 'all' ? t('ordersPage.allStatuses') : status}</option>
+                  <option key={status} value={status}>{status === 'all' ? t('ordersPage.allStatuses') : getStatusLabel(activeTab === 'orders' ? orderStatusLabels : paymentStatusLabels, status)}</option>
                 ))}
               </select>
             </div>
@@ -271,9 +279,9 @@ export default function OrdersPage() {
                     <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
                       <TableCell><p className="font-bold text-sm">{order.id}</p></TableCell>
                       <TableCell>{resolveOrderCustomerName(order)}</TableCell>
-                      <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{order.delivery_type}</span></TableCell>
+                      <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{getStatusLabel(deliveryTypeLabels, order.delivery_type)}</span></TableCell>
                       <TableCell className="font-bold">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
-                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{order.status}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{getStatusLabel(orderStatusLabels, order.status)}</Badge></TableCell>
                       <TableCell className="text-xs">{new Date(order.created_at).toLocaleString(locale)}</TableCell>
                       <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />{t('ordersPage.table.detail')}</Button></TableCell>
                     </TableRow>
@@ -293,8 +301,8 @@ export default function OrdersPage() {
                       <TableCell>{payment.customer_name || '-'}</TableCell>
                       <TableCell className="uppercase">{payment.payment_type || 'N/A'}</TableCell>
                       <TableCell className="font-bold">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</TableCell>
-                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>{payment.transaction_status}</Badge></TableCell>
-                      <TableCell><Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">{payment.order_status || 'unknown'}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>{getStatusLabel(paymentStatusLabels, payment.transaction_status)}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">{getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}</Badge></TableCell>
                       <TableCell className="text-xs">{new Date(payment.updated_at).toLocaleString(locale)}</TableCell>
                       <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}><Eye className="w-4 h-4 mr-2" />{t('paymentsPage.table.detail')}</Button></TableCell>
                     </TableRow>

@@ -9,7 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, CreditCard, Clock3, ShieldAlert, Wallet, Eye } from 'lucide-react';
 import api from '@/lib/api';
-import { getStatusStyle, paymentStatusStyles } from '@/lib/dashboard';
+import {
+  getAdminSafeErrorMessage,
+  getStatusLabel,
+  getStatusStyle,
+  orderStatusLabels,
+  orderStatusStyles,
+  paymentStatusLabels,
+  paymentStatusStyles,
+} from '@/lib/dashboard';
 
 interface AdminPaymentInfo {
   id: string;
@@ -268,7 +276,7 @@ export default function PaymentsPage() {
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto items-stretch sm:items-center">
               {isError ? (
                 <span className="text-xs text-red-500 font-medium max-w-[280px]">
-                  {String((error as any)?.response?.data?.detail?.message || (error as any)?.message || t('paymentsPage.loadErrorInline'))}
+                  {getAdminSafeErrorMessage(error, t('paymentsPage.loadErrorInline'))}
                 </span>
               ) : null}
               <Filter className="w-4 h-4 text-gray-400" />
@@ -279,7 +287,7 @@ export default function PaymentsPage() {
               >
                 {paymentStatusOptions.map((status) => (
                   <option key={status} value={status}>
-                    {status === 'all' ? t('paymentsPage.allStatuses') : status}
+                    {status === 'all' ? t('paymentsPage.allStatuses') : getStatusLabel(paymentStatusLabels, status)}
                   </option>
                 ))}
               </select>
@@ -339,7 +347,7 @@ export default function PaymentsPage() {
                     <TableCell>
                       <div className="space-y-1">
                         <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
-                          {payment.transaction_status}
+                          {getStatusLabel(paymentStatusLabels, payment.transaction_status)}
                         </Badge>
                         {payment.fraud_status ? (
                           <p className={`text-[10px] uppercase ${String(payment.fraud_status).toLowerCase() === 'accept' ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -350,7 +358,7 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                        {payment.order_status || 'unknown'}
+                        {getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs font-medium text-gray-500">

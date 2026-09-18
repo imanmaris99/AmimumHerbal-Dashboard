@@ -12,7 +12,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getStatusStyle, orderStatusStyles } from '@/lib/dashboard';
+import {
+  deliveryTypeLabels,
+  getAdminSafeErrorMessage,
+  getStatusLabel,
+  getStatusStyle,
+  orderStatusLabels,
+  orderStatusStyles,
+  sanitizeOrderNotes,
+} from '@/lib/dashboard';
 import { toast } from 'sonner';
 
 interface OrderItemDto {
@@ -81,7 +89,7 @@ interface UpdateOrderStatusResponse {
   };
 }
 
-const orderStatusOptions = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'refund'];
+const orderStatusOptions = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'settlement', 'refund'];
 
 const extractBuyerFromNotes = (notes?: string | null) => {
   const raw = String(notes || '');
@@ -168,23 +176,25 @@ export default function OrderDetailPage() {
         throw error;
       }
     },
-    onSuccess: (response) => {
-      toast.success(response.message || t('orderDetailPage.updateButton'));
+    onSuccess: () => {
+      toast.success('Status order berhasil diperbarui.');
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin-order-detail', orderId] });
       setNextStatus('');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const responseStatus = error?.response?.status;
-      const message = detail?.message || detail || error?.message || t('orderDetailPage.updateError');
-      toast.error(responseStatus ? `(${responseStatus}) ${String(message)}` : String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('orderDetailPage.updateError')));
     },
   });
 
   const submitStatusUpdate = () => {
     if (!nextStatus) {
       toast.error(t('orderDetailPage.selectStatusError'));
+      return;
+    }
+
+    if (nextStatus === 'shipped' && order?.delivery_type === 'delivery' && !trackingCode.trim()) {
+      toast.error('Isi No. Resi / Kode Tracking sebelum mengubah status menjadi Dikirim.');
       return;
     }
 
@@ -206,7 +216,7 @@ export default function OrderDetailPage() {
         </div>
         {order ? (
           <Badge className={`border-none px-3 py-2 rounded-xl ${getStatusStyle(orderStatusStyles, order.status)}`}>
-            {order.status}
+            {getStatusLabel(orderStatusLabels, order.status)}
           </Badge>
         ) : null}
       </div>
@@ -243,11 +253,11 @@ export default function OrderDetailPage() {
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.status')}</span>
-                  <strong className="text-slate-900 capitalize">{order.status}</strong>
+                  <strong className="text-slate-900 capitalize">{getStatusLabel(orderStatusLabels, order.status)}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.deliveryType')}</span>
-                  <strong className="text-slate-900 capitalize">{order.delivery_type}</strong>
+                  <strong className="text-slate-900 capitalize">{getStatusLabel(deliveryTypeLabels, order.delivery_type)}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.totalOrder')}</span>
@@ -255,12 +265,12 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.shippingCost')}</span>
-                  <strong className="text-slate-900">Rp {Number(order.shipping_cost || 0).toLocaleString('id-ID')}</strong>
+                  <strong className="text-slate-900">{order.shipping_cost == null ? 'Belum tersedia' : `Rp ${Number(order.shipping_cost).toLocaleString('id-ID')}`}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <span>{t('orderDetailPage.notes')}</span>
                   <strong className="text-slate-900 text-right max-w-[220px]">
-                    {order.notes ? order.notes.replace(/\[PAYMENT:\s*\w+\]\s*\|?\s*/gi, '').trim() || '-' : '-'}
+                    {sanitizeOrderNotes(order.notes)}
                   </strong>
                 </div>
               </div>
@@ -286,7 +296,7 @@ export default function OrderDetailPage() {
                     <option value="">{t('orderDetailPage.selectStatus')}</option>
                     {orderStatusOptions.map((status) => (
                       <option key={status} value={status}>
-                        {status}
+                        {getStatusLabel(orderStatusLabels, status)}
                       </option>
                     ))}
                   </select>
@@ -379,7 +389,7 @@ export default function OrderDetailPage() {
                       <p>{order.my_shipping.my_courier?.courier_name || '-'}</p>
                       <p>{t('orderDetailPage.service')}: {order.my_shipping.my_courier?.service_type || '-'}</p>
                       <p>{t('orderDetailPage.estimate')}: {order.my_shipping.my_courier?.estimated_delivery || '-'}</p>
-                      <p>{t('orderDetailPage.cost')}: Rp {Number(order.my_shipping.my_courier?.cost || 0).toLocaleString('id-ID')}</p>
+                      <p>{t('orderDetailPage.cost')}: {order.my_shipping.my_courier?.cost == null ? 'Belum tersedia' : `Rp ${Number(order.my_shipping.my_courier.cost).toLocaleString('id-ID')}`}</p>
                       <p>No. Resi: {order.my_shipping.code_tracking || 'Belum tersedia'}</p>
                     </div>
                   </div>
