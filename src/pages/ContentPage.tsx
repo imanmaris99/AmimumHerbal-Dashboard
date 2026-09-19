@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FileText, PlusCircle, Search, LayoutList, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 
 interface ArticleItem {
   id: number;
@@ -62,9 +63,7 @@ export default function ContentPage() {
       queryClient.invalidateQueries({ queryKey: ['content-articles'] });
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal membuat artikel baru.';
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal membuat artikel baru.'));
     },
   });
 
@@ -122,7 +121,7 @@ export default function ContentPage() {
               </div>
               <Button type="submit" disabled={createArticleMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                 <PlusCircle className="w-4 h-4 mr-2" />
-                {createArticleMutation.isPending ? 'Submitting...' : 'Submit Article'}
+                {createArticleMutation.isPending ? 'Menyimpan...' : 'Simpan Artikel'}
               </Button>
             </form>
           </CardContent>
@@ -166,7 +165,7 @@ export default function ContentPage() {
             </TableHeader>
             <TableBody>
               {articlesLoading ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Loading articles...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Memuat artikel...</TableCell></TableRow>
               ) : filteredArticles.length === 0 ? (
                 <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Tidak ada article yang cocok.</TableCell></TableRow>
               ) : (

@@ -6,6 +6,7 @@ import { ArrowLeft, Factory, Loader2, PencilLine, Save, Tags } from 'lucide-reac
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
@@ -95,9 +96,9 @@ export default function ProductionEditPage() {
               setLogoUploadProgress(progress);
             },
           });
-          toast.success('Production dan logo berhasil diupdate');
+          toast.success('Brand/production dan logo berhasil diperbarui');
         } catch (error: any) {
-          toast.error(String(error?.response?.data?.detail?.message || 'Update production sukses, upload logo gagal'));
+          toast.error(getAdminSafeErrorMessage(error, 'Brand/production berhasil diperbarui, tetapi logo belum berhasil di-upload.'));
         } finally {
           setLogoUploading(false);
           setLogoUploadProgress(0);
@@ -112,13 +113,11 @@ export default function ProductionEditPage() {
       navigate('/productions');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('productionEditPage.updateError');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('productionEditPage.updateError')));
     },
   });
 
-  const summaryDescription = useMemo(() => productionDetailQuery.data?.description_list?.[0] || '-', [productionDetailQuery.data]);
+  const summaryDeskripsi = useMemo(() => productionDetailQuery.data?.description_list?.[0] || '-', [productionDetailQuery.data]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -174,7 +173,7 @@ export default function ProductionEditPage() {
                 <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
                   <Factory className="w-5 h-5" />
                 </div>
-                <Badge className="bg-slate-100 text-slate-700 border-none">Production layer</Badge>
+                <Badge className="bg-slate-100 text-slate-700 border-none">Layer brand/production</Badge>
               </div>
 
               <div>
@@ -194,18 +193,18 @@ export default function ProductionEditPage() {
                 </div>
               ) : (
                 <div className="h-32 rounded-3xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-400">
-                  No preview image
+                  Belum ada preview gambar
                 </div>
               )}
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="flex items-center gap-2"><Tags className="w-4 h-4" />Category</span>
+                  <span className="flex items-center gap-2"><Tags className="w-4 h-4" />Kategori</span>
                   <strong className="text-slate-900 text-right">{productionDetailQuery.data.category || '-'}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <span>Description</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDescription}</strong>
+                  <span>Deskripsi</span>
+                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDeskripsi}</strong>
                 </div>
               </div>
             </CardContent>
@@ -221,7 +220,7 @@ export default function ProductionEditPage() {
             <CardContent className="px-6 sm:px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-production-name-page">Production name</Label>
+                  <Label htmlFor="edit-production-name-page">Nama brand/production</Label>
                   <Input
                     id="edit-production-name-page"
                     value={form.name || ''}
@@ -232,7 +231,7 @@ export default function ProductionEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-production-description-page">Description</Label>
+                  <Label htmlFor="edit-production-description-page">Deskripsi</Label>
                   <textarea
                     id="edit-production-description-page"
                     value={form.description || ''}

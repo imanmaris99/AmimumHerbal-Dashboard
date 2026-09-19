@@ -6,6 +6,7 @@ import { ArrowLeft, Boxes, ImagePlus, Loader2, Save, Trash2 } from 'lucide-react
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
@@ -76,7 +77,7 @@ export default function VariantEditPage() {
       const variants = response.data.data ?? [];
       const target = variants.find((item) => String(item.id) === variantId);
       if (!target) {
-        throw new Error('Variant not found.');
+        throw new Error('Varian tidak ditemukan.');
       }
       return target;
     },
@@ -115,9 +116,7 @@ export default function VariantEditPage() {
       navigate(parentProductId ? `/variants?productId=${parentProductId}` : '/variants');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('variantsPage.messages.updateError');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('variantsPage.messages.updateError')));
     },
   });
 
@@ -143,9 +142,7 @@ export default function VariantEditPage() {
       invalidateVariantData();
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('variantsPage.messages.imageError');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('variantsPage.messages.imageError')));
     },
   });
 
@@ -164,9 +161,7 @@ export default function VariantEditPage() {
       navigate(parentProductId ? `/variants?productId=${parentProductId}` : '/variants');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || 'Gagal menghapus variant.';
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal menghapus varian. Pastikan varian tidak sedang dipakai data transaksi aktif.'));
     },
   });
 
@@ -183,7 +178,32 @@ export default function VariantEditPage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    updateVariantMutation.mutate(form);
+
+    const name = form.name.trim();
+    const variant = form.variant.trim();
+    const expiration = form.expiration.trim();
+    const stock = Number(form.stock || 0);
+    const price = Number(form.price || 0);
+    const discount = Number(form.discount || 0);
+
+    if (!name || !variant || !expiration) {
+      toast.error('Nama kemasan, varian, dan kedaluwarsa wajib diisi.');
+      return;
+    }
+    if (!Number.isFinite(stock) || stock < 0) {
+      toast.error('Stok varian tidak boleh negatif.');
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error('Harga varian wajib lebih dari Rp0 agar produk siap dijual.');
+      return;
+    }
+    if (!Number.isFinite(discount) || discount < 0 || discount > 100) {
+      toast.error('Diskon varian harus berada di rentang 0 sampai 100.');
+      return;
+    }
+
+    updateVariantMutation.mutate({ ...form, name, variant, expiration, stock, price, discount });
   };
 
   const handleImageUpload = () => {
@@ -213,19 +233,19 @@ export default function VariantEditPage() {
           onClick={() => navigate(parentProductId ? `/catalog/edit/${parentProductId}` : '/variants')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          {parentProductId ? 'Kembali ke Edit Product' : 'Back to Variants'}
+          {parentProductId ? 'Kembali ke Edit Product' : 'Kembali ke Varian'}
         </Button>
         <div className="flex flex-col gap-2 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight">Edit Variant</h1>
+            <h1 className="text-[28px] font-semibold text-gray-900 tracking-tight">Edit Varian</h1>
             <p className="text-sm text-gray-500 mt-1 max-w-3xl">
               Kelola data, gambar, dan status variant dari satu halaman kerja yang lebih ringkas dan fokus.
             </p>
             {parentProductId ? (
-              <p className="text-xs text-emerald-700 mt-2">Context product induk aktif: {parentProductId}</p>
+              <p className="text-xs text-emerald-700 mt-2">Konteks produk induk aktif: {parentProductId}</p>
             ) : null}
           </div>
-          <p className="text-xs font-medium text-emerald-600">Admin & Owner access</p>
+          <p className="text-xs font-medium text-emerald-600">Akses admin & owner</p>
         </div>
       </div>
 
@@ -233,7 +253,7 @@ export default function VariantEditPage() {
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Loading variant detail...
+            Memuat detail varian...
           </CardContent>
         </Card>
       ) : variantDetailQuery.isError || !variantDetailQuery.data ? (
@@ -407,7 +427,7 @@ export default function VariantEditPage() {
             <Card className="border border-red-100 bg-red-50/60 shadow-sm rounded-3xl overflow-hidden">
               <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-red-100">
                 <div>
-                  <h2 className="text-lg font-semibold text-red-900">Delete variant</h2>
+                  <h2 className="text-lg font-semibold text-red-900">Hapus varian</h2>
                   <p className="text-sm text-red-700 mt-1">Hapus hanya jika variant memang tidak lagi dibutuhkan.</p>
                 </div>
               </CardHeader>
@@ -420,7 +440,7 @@ export default function VariantEditPage() {
                     {deleteVariantMutation.isPending ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Deleting...</>
                     ) : (
-                      <><Trash2 className="w-4 h-4 mr-2" />Delete variant</>
+                      <><Trash2 className="w-4 h-4 mr-2" />Hapus varian</>
                     )}
                   </Button>
                 </div>

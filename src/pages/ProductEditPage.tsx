@@ -6,6 +6,7 @@ import { ArrowLeft, Box, Boxes, Loader2, PencilLine, PlusCircle, Save } from 'lu
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -132,9 +133,7 @@ export default function ProductEditPage() {
       navigate('/catalog');
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('productEditPage.updateError');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('productEditPage.updateError')));
     },
   });
 
@@ -196,8 +195,7 @@ export default function ProductEditPage() {
         });
         successCount += 1;
       } catch (error: any) {
-        const msg = error?.response?.data?.detail?.message || 'Gagal upload';
-        setUploadErrors((prev) => ({ ...prev, [file.name]: String(msg) }));
+        setUploadErrors((prev) => ({ ...prev, [file.name]: getAdminSafeErrorMessage(error, 'Gagal upload gambar.') }));
       }
     }
 
@@ -219,21 +217,21 @@ export default function ProductEditPage() {
     await uploadFiles(retries as File[]);
   };
 
-  const handleSetPrimary = async (imageId: number) => {
+  const handleSetUtama = async (imageId: number) => {
     if (!productId) return;
     const prev = images;
     setImages((curr) => curr.map((img) => ({ ...img, is_primary: img.id === imageId })));
     try {
       await api.patch(`/product/${productId}/images/${imageId}/primary`);
-      toast.success('Primary image diperbarui');
+      toast.success('Gambar utama diperbarui');
       await refreshDetail();
     } catch (error: any) {
       setImages(prev);
-      toast.error(String(error?.response?.data?.detail?.message || 'Gagal set primary image'));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal menjadikan gambar sebagai gambar utama.'));
     }
   };
 
-  const handleDeleteImage = async (imageId: number) => {
+  const handleHapusImage = async (imageId: number) => {
     if (!productId) return;
     if (!window.confirm('Hapus gambar ini?')) return;
     try {
@@ -241,7 +239,7 @@ export default function ProductEditPage() {
       toast.success('Gambar dihapus');
       await refreshDetail();
     } catch (error: any) {
-      toast.error(String(error?.response?.data?.detail?.message || 'Gagal hapus gambar'));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal menghapus gambar produk.'));
     }
   };
 
@@ -256,7 +254,7 @@ export default function ProductEditPage() {
       await refreshDetail();
     } catch (error: any) {
       setImages(prev);
-      toast.error(String(error?.response?.data?.detail?.message || 'Gagal reorder gambar'));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal menyimpan urutan gambar.'));
     } finally {
       setReorderBusy(false);
     }
@@ -289,8 +287,12 @@ export default function ProductEditPage() {
       return;
     }
 
-    if (!price || price < 0) {
-      toast.error(t('productEditPage.validation.price'));
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error('Harga dasar produk wajib lebih dari Rp0 agar katalog tidak tampil membingungkan.');
+      return;
+    }
+    if (!Number.isFinite(weight) || weight < 0) {
+      toast.error('Berat produk tidak boleh negatif.');
       return;
     }
 
@@ -341,7 +343,7 @@ export default function ProductEditPage() {
                 <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
                   <Box className="w-5 h-5" />
                 </div>
-                <Badge className="bg-slate-100 text-slate-700 border-none">Product layer</Badge>
+                <Badge className="bg-slate-100 text-slate-700 border-none">Layer produk</Badge>
               </div>
 
               <div>
@@ -355,7 +357,7 @@ export default function ProductEditPage() {
                   <strong className="text-slate-900">{productDetailQuery.data.is_active ? 'Active' : 'Inactive'}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <span>Company</span>
+                  <span>Brand/production</span>
                   <strong className="text-slate-900 text-right max-w-[220px]">{productDetailQuery.data.company || '-'}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
@@ -394,19 +396,19 @@ export default function ProductEditPage() {
                     {(productDetailQuery.data?.variants_list || []).map((variant) => (
                       <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-3">
                         <div className="min-w-0 space-y-1">
-                          <p className="text-xs font-semibold text-slate-900 truncate">{variant.variant || `Variant #${variant.id}`}</p>
+                          <p className="text-xs font-semibold text-slate-900 truncate">{variant.variant || `Varian #${variant.id}`}</p>
                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-600">
                             <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Variant: {variant.variant || '-'}</span>
                             <span>ID: {variant.id}</span>
-                            <span>Stock: {variant.stock ?? 0}</span>
+                            <span>Stok: {variant.stock ?? 0}</span>
                             {Number(variant.discount || 0) > 0 && typeof variant.discounted_price === 'number' ? (
                               <span>
-                                Price: <span className="line-through text-slate-400">Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>{' '}
+                                Harga: <span className="line-through text-slate-400">Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>{' '}
                                 <span className="font-semibold text-emerald-700">Rp {Number(variant.discounted_price).toLocaleString('id-ID')}</span>{' '}
                                 <span className="inline-flex items-center rounded-md bg-emerald-100 px-1.5 py-0.5 text-emerald-700">-{Number(variant.discount || 0)}%</span>
                               </span>
                             ) : (
-                              <span>Price: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
+                              <span>Harga: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
                             )}
                           </div>
                         </div>
@@ -444,7 +446,7 @@ export default function ProductEditPage() {
                     <div className="flex flex-wrap gap-2">
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Upload / Pilih File</Button>
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Ambil dari Kamera</Button>
-                      {uploading && <span className="text-sm text-gray-600">Uploading...</span>}
+                      {uploading && <span className="text-sm text-gray-600">Mengunggah...</span>}
                       {reorderBusy && <span className="text-sm text-gray-600">Menyimpan urutan...</span>}
                     </div>
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
@@ -477,8 +479,8 @@ export default function ProductEditPage() {
                       >
                         <img src={img.image_card_url || img.image_thumb_url || img.image_url} alt={`product-${img.id}`} className="w-full h-40 object-cover rounded-xl" />
                         <div className="flex flex-wrap gap-2">
-                          <Button type="button" size="sm" variant={img.is_primary ? 'default' : 'outline'} onClick={() => handleSetPrimary(img.id)}>
-                            {img.is_primary ? 'Primary' : 'Set Primary'}
+                          <Button type="button" size="sm" variant={img.is_primary ? 'default' : 'outline'} onClick={() => handleSetUtama(img.id)}>
+                            {img.is_primary ? 'Utama' : 'Set Utama'}
                           </Button>
                           <Button type="button" size="sm" variant="outline" disabled={idx === 0} onClick={() => {
                             const next = images.slice();
@@ -490,7 +492,7 @@ export default function ProductEditPage() {
                             [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
                             handleReorder(next);
                           }}>↓</Button>
-                          <Button type="button" size="sm" variant="outline" className="text-red-600" onClick={() => handleDeleteImage(img.id)}>Delete</Button>
+                          <Button type="button" size="sm" variant="outline" className="text-red-600" onClick={() => handleHapusImage(img.id)}>Hapus</Button>
                         </div>
                       </div>
                     ))}

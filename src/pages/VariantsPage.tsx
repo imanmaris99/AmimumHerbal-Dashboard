@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { validateImageFile } from '@/lib/imageValidation';
 
 interface ProductItem {
@@ -121,7 +122,7 @@ export default function VariantsPage() {
           });
           toast.success('Variant dan gambar berhasil dibuat');
         } catch (error: any) {
-          toast.error(String(error?.response?.data?.detail?.message || 'Variant berhasil dibuat, namun upload gambar gagal'));
+          toast.error(getAdminSafeErrorMessage(error, 'Varian berhasil dibuat, tetapi gambar belum berhasil di-upload. Coba upload ulang dari halaman edit varian.'));
         } finally {
           setIsUploadingImage(false);
           setUploadProgress(0);
@@ -140,9 +141,7 @@ export default function VariantsPage() {
       }
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('variantsPage.messages.createError');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('variantsPage.messages.createError')));
     },
   });
 
@@ -209,12 +208,35 @@ export default function VariantsPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const name = form.name.trim();
+    const variant = form.variant.trim();
+    const expiration = form.expiration.trim();
+    const minAmount = Number(form.min_amount || 0);
+    const stock = Number(form.stock || 0);
+    const price = Number(form.price || 0);
+
     if (!form.product_id) {
       toast.error(t('variantsPage.messages.selectProduct'));
       return;
     }
+    if (!name || !variant || !expiration) {
+      toast.error('Nama kemasan, varian, dan kedaluwarsa wajib diisi.');
+      return;
+    }
+    if (!Number.isFinite(minAmount) || minAmount < 1) {
+      toast.error('Minimal pembelian varian wajib minimal 1.');
+      return;
+    }
+    if (!Number.isFinite(stock) || stock < 0) {
+      toast.error('Stok varian tidak boleh negatif.');
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error('Harga varian wajib lebih dari Rp0 agar produk siap dijual.');
+      return;
+    }
 
-    createVariantMutation.mutate(form);
+    createVariantMutation.mutate({ ...form, name, variant, expiration, min_amount: minAmount, stock, price });
   };
 
   const startEditing = (variant: VariantItem) => {
@@ -421,7 +443,7 @@ export default function VariantsPage() {
               </TableHeader>
               <TableBody>
                 {variantsLoading || productsLoading ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Loading variant data...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Memuat data varian...</TableCell></TableRow>
                 ) : filteredVariants.length === 0 ? (
                   <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Tidak ada variant yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                 ) : (
@@ -446,14 +468,14 @@ export default function VariantsPage() {
                           </div>
                         ) : (
                           <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400 text-center px-1">
-                            No img
+                            Belum ada
                           </div>
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-gray-600">{variant.resolvedProductName}</TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                          {variant.stock || 0} stock
+                          {variant.stock || 0} stok
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -472,11 +494,11 @@ export default function VariantsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${Number(variant.discount || 0) > 0 ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-600'}`}>
-                          {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'no discount'}
+                          {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'tanpa diskon'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-gray-600">{variant.expiration || '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{variant.img ? 'Available' : 'No image'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{variant.img ? 'Ada gambar' : 'Belum ada gambar'}</TableCell>
                       <TableCell>
                         <div className="flex justify-end min-w-[140px]">
                           <Button

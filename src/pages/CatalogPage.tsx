@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 
 interface ProductionItem {
   id: number;
@@ -196,7 +197,7 @@ export default function CatalogPage() {
           }
           toast.success('Produk dan galeri gambar berhasil dibuat');
         } catch (error: any) {
-          toast.error(String(error?.response?.data?.detail?.message || 'Produk berhasil dibuat, tapi upload beberapa gambar gagal'));
+          toast.error(getAdminSafeErrorMessage(error, 'Produk berhasil dibuat, tetapi beberapa gambar belum berhasil di-upload. Coba upload ulang dari halaman edit produk.'));
         } finally {
           setIsUploadingImages(false);
           setUploadProgress({});
@@ -209,9 +210,7 @@ export default function CatalogPage() {
       queryClient.invalidateQueries({ queryKey: ['catalog-products'] });
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('catalogPage.errors.createFailed');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('catalogPage.errors.createFailed')));
     },
   });
 
@@ -323,12 +322,31 @@ export default function CatalogPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const name = form.name.trim();
+    const info = form.info.trim();
+    const description = form.description.trim();
+    const instruction = form.instruction.trim();
+    const price = Number(form.price || 0);
+    const weight = Number(form.weight || 0);
+
     if (!form.product_by_id) {
       toast.error(t('catalogPage.errors.selectProduction'));
       return;
     }
+    if (!name || !info || !description || !instruction) {
+      toast.error('Nama, info singkat, deskripsi, dan instruksi produk wajib diisi.');
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error('Harga dasar produk wajib lebih dari Rp0 agar katalog tidak tampil membingungkan.');
+      return;
+    }
+    if (!Number.isFinite(weight) || weight <= 0) {
+      toast.error('Berat produk wajib lebih dari 0 gram untuk menjaga kesiapan ongkir.');
+      return;
+    }
 
-    createProductMutation.mutate(form);
+    createProductMutation.mutate({ ...form, name, info, description, instruction, price, weight });
   };
 
   const handlePendingFiles = (files: FileList | null) => {
@@ -416,7 +434,7 @@ export default function CatalogPage() {
                   <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImages}>Pilih File / Kamera</Button>
                     <input ref={fileInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => handlePendingFiles(e.target.files)} />
-                    {isUploadingImages && <span className="text-sm text-gray-600">Uploading images...</span>}
+                    {isUploadingImages && <span className="text-sm text-gray-600">Mengunggah gambar...</span>}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
 
@@ -440,7 +458,7 @@ export default function CatalogPage() {
                 <p className="text-xs text-gray-500 leading-relaxed lg:max-w-xl">Setelah product dibuat, tahap berikutnya secara database adalah melengkapi <strong>pack_types</strong> sebagai variant/kemasan yang terhubung ke <strong>products.id</strong>. Di sana harga jual per variant bisa dibuat lebih presisi.</p>
                 <Button type="submit" disabled={createProductMutation.isPending} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                   <PlusCircle className="w-4 h-4 mr-2" />
-                  {createProductMutation.isPending ? 'Submitting...' : 'Submit Product Baru'}
+                  {createProductMutation.isPending ? 'Menyimpan...' : 'Simpan Produk Baru'}
                 </Button>
               </div>
             </form>
@@ -515,13 +533,13 @@ export default function CatalogPage() {
                 </TableHeader>
                 <TableBody>
                   {productsLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Loading catalog data...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Memuat data katalog...</TableCell></TableRow>
                   ) : productsError ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-gray-500 py-8 space-y-3">
                         <p>Gagal memuat data katalog. Cek koneksi backend lalu coba lagi.</p>
                         <p className="text-xs text-gray-400">
-                          {String((productsErrorDetail as Error)?.message || 'Unknown error')}
+                          {getAdminSafeErrorMessage(productsErrorDetail, 'Data produk belum bisa dimuat saat ini.')}
                         </p>
                         <div>
                           <Button
@@ -534,7 +552,7 @@ export default function CatalogPage() {
                               void refetchProducts();
                             }}
                           >
-                            Retry load catalog
+                            Muat ulang katalog
                           </Button>
                         </div>
                       </TableCell>
@@ -552,13 +570,13 @@ export default function CatalogPage() {
                         </TableCell>
                         <TableCell>
                           <img
-                            src={product.thumbnail_url || 'https://placehold.co/72x72?text=No+Image'}
+                            src={product.thumbnail_url || 'https://placehold.co/72x72?text=Belum+Ada+Gambar'}
                             alt={product.name}
                             className="w-14 h-14 rounded-xl object-cover border border-gray-100"
                             loading="lazy"
                             onError={(e) => {
                               const target = e.currentTarget;
-                              if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/72x72?text=No+Image';
+                              if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/72x72?text=Belum+Ada+Gambar';
                             }}
                           />
                         </TableCell>
@@ -594,7 +612,7 @@ export default function CatalogPage() {
               {selectedProduct && (
                 <div className="mt-4 mx-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
                   <div className="flex items-start gap-4">
-                    <img src={selectedProduct.thumbnail_url || 'https://placehold.co/96x96?text=No+Image'} alt={selectedProduct.name} className="w-20 h-20 rounded-xl object-cover border border-emerald-100 bg-white" />
+                    <img src={selectedProduct.thumbnail_url || 'https://placehold.co/96x96?text=Belum+Ada+Gambar'} alt={selectedProduct.name} className="w-20 h-20 rounded-xl object-cover border border-emerald-100 bg-white" />
                     <div className="space-y-1 text-sm text-emerald-900">
                       <p className="font-bold text-base">{selectedProduct.name}</p>
                       <p>ID: {selectedProduct.id}</p>

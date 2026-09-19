@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Factory, PlusCircle, Search, Tags, LayoutGrid, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { validateImageFile } from '@/lib/imageValidation';
 
 interface ProductionItem {
@@ -100,9 +101,9 @@ export default function ProductionPage() {
               setBrandUploadProgress(progress);
             },
           });
-          toast.success('Production dan logo berhasil dibuat');
+          toast.success('Brand/production dan logo berhasil dibuat');
         } catch (error: any) {
-          toast.error(String(error?.response?.data?.detail?.message || 'Production dibuat, tapi upload logo gagal'));
+          toast.error(getAdminSafeErrorMessage(error, 'Brand/production berhasil dibuat, tetapi logo belum berhasil di-upload. Coba upload ulang dari halaman edit.'));
         } finally {
           setUploadingBrandImage(false);
           setBrandUploadProgress(0);
@@ -119,9 +120,7 @@ export default function ProductionPage() {
       queryClient.invalidateQueries({ queryKey: ['catalog-productions'] });
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.detail;
-      const message = detail?.message || detail || t('productionPage.errors.createFailed');
-      toast.error(String(message));
+      toast.error(getAdminSafeErrorMessage(error, t('productionPage.errors.createFailed')));
     },
   });
 
@@ -143,12 +142,19 @@ export default function ProductionPage() {
   const submitProduction = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const name = createForm.name.trim();
+    const description = createForm.description.trim();
+
     if (!createForm.herbal_category_id) {
       toast.error(t('productionPage.errors.selectCategory'));
       return;
     }
+    if (!name || !description) {
+      toast.error('Nama dan deskripsi brand/production wajib diisi.');
+      return;
+    }
 
-    createProductionMutation.mutate(createForm);
+    createProductionMutation.mutate({ ...createForm, name, description });
   };
 
   return (
@@ -179,11 +185,11 @@ export default function ProductionPage() {
           <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
             <form onSubmit={submitProduction} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="production-name">Production name</Label>
+                <Label htmlFor="production-name">Nama brand/production</Label>
                 <Input id="production-name" value={createForm.name} onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Contoh: Toko Herbal AmImUm Factory" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="production-category">Product category</Label>
+                <Label htmlFor="production-category">Kategori produk</Label>
                 <select id="production-category" value={createForm.herbal_category_id || ''} onChange={(e) => setCreateForm((prev) => ({ ...prev, herbal_category_id: Number(e.target.value) }))} className="h-11 rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-700 outline-none w-full" required>
                   <option value="">Pilih product category</option>
                   {categories.map((category) => (
@@ -192,7 +198,7 @@ export default function ProductionPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="production-description">Description</Label>
+                <Label htmlFor="production-description">Deskripsi</Label>
                 <textarea id="production-description" value={createForm.description} onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Deskripsi singkat brand/production" className="min-h-[120px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full" required />
               </div>
 
@@ -211,7 +217,7 @@ export default function ProductionPage() {
                       setBrandImageFile(file);
                       setBrandImagePreview(URL.createObjectURL(file));
                     }} />
-                    {uploadingBrandImage && <span className="text-sm text-gray-600">Uploading image... {brandUploadProgress}%</span>}
+                    {uploadingBrandImage && <span className="text-sm text-gray-600">Mengunggah gambar... {brandUploadProgress}%</span>}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan di-upload otomatis setelah production berhasil dibuat.</p>
 
@@ -228,7 +234,7 @@ export default function ProductionPage() {
 
               <Button type="submit" disabled={createProductionMutation.isPending || uploadingBrandImage} className="rounded-xl bg-emerald-500 hover:bg-emerald-600 w-full sm:w-auto">
                 <PlusCircle className="w-4 h-4 mr-2" />
-                {createProductionMutation.isPending ? 'Submitting...' : 'Submit Production'}
+                {createProductionMutation.isPending ? 'Menyimpan...' : 'Simpan Brand/Production'}
               </Button>
             </form>
           </CardContent>
@@ -278,13 +284,13 @@ export default function ProductionPage() {
                 <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Production</TableHead>
                 <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Preview</TableHead>
                 <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Category</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Description</TableHead>
+                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Deskripsi</TableHead>
                 <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {productionsLoading || categoriesLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Loading production data...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Memuat data brand/production...</TableCell></TableRow>
               ) : filteredProductions.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
               ) : (
@@ -309,7 +315,7 @@ export default function ProductionPage() {
                         </div>
                       ) : (
                         <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400 text-center px-1">
-                          No img
+                          Belum ada
                         </div>
                       )}
                     </TableCell>
