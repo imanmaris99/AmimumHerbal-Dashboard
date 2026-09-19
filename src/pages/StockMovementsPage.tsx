@@ -56,7 +56,7 @@ export default function StockMovementsPage() {
           (item.product && item.product.trim()) ||
           (item.product_id ? productLookup.get(String(item.product_id)) : undefined) ||
           '-';
-        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Variant #${item.id}`;
+        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Varian #${item.id}`;
 
         return {
           id: `snapshot-${item.id}`,
@@ -80,14 +80,14 @@ export default function StockMovementsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Pergerakan Stok</h1>
-        <p className="text-sm text-gray-600 mt-1">Halaman ini fokus untuk histori/audit stok. Aksi ubah stok dilakukan di Variants agar fungsi tidak ganda.</p>
+        <p className="text-sm text-gray-600 mt-1">Halaman ini fokus untuk histori/audit stok. Aksi ubah stok dilakukan di Varian agar fungsi tidak ganda.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4" /> Timeline Movement</CardTitle>
+          <CardTitle className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4" /> Timeline Pergerakan</CardTitle>
           <CardDescription>
-            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'REAL API' : 'FALLBACK SNAPSHOT'}</strong>
+            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'API AKTIF' : 'SNAPSHOT CADANGAN'}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -95,8 +96,7 @@ export default function SettingsPage() {
       profileQuery.refetch();
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal memperbarui profil.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal memperbarui profil internal. Periksa input lalu coba lagi.'));
     },
   });
 
@@ -119,8 +119,7 @@ export default function SettingsPage() {
       profileQuery.refetch();
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal upload foto profil.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal upload foto profil. Gunakan file gambar yang valid lalu coba lagi.'));
     },
   });
 
@@ -134,8 +133,7 @@ export default function SettingsPage() {
       toast.success('Password internal berhasil diganti.');
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal mengganti password.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal mengganti password. Periksa password lama dan format password baru.'));
     },
   });
 
@@ -146,21 +144,21 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Internal Profile Settings</h1>
-        <p className="text-gray-500 mt-1">Area profile pribadi internal untuk owner dan admin, agar pengelolaan akun tidak perlu keluar dari dashboard.</p>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Pengaturan Profil Internal</h1>
+        <p className="text-gray-500 mt-1">Area profil pribadi internal untuk owner dan admin, agar pengelolaan akun tidak perlu keluar dari dashboard.</p>
       </div>
 
       {profileQuery.isLoading ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Memuat data profile internal...
+            Memuat data profil internal...
           </CardContent>
         </Card>
       ) : profileQuery.isError ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat profile internal. Silakan refresh atau login ulang.
+            Gagal memuat profil internal. Silakan refresh atau login ulang.
           </CardContent>
         </Card>
       ) : (
@@ -169,7 +167,7 @@ export default function SettingsPage() {
             <Card className="border-none shadow-sm rounded-3xl overflow-hidden 2xl:col-span-1">
               <CardContent className="p-5 sm:p-8 space-y-6">
                 <div className="flex items-start justify-between gap-4">
-                  <Badge className="bg-emerald-50 text-emerald-600 border-none">Admin + Owner</Badge>
+                  <Badge className="bg-emerald-50 text-emerald-600 border-none">Admin & Owner</Badge>
                   <div className="rounded-2xl bg-slate-100 p-3 text-slate-600">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
@@ -204,7 +202,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span>Status</span>
-                    <strong className="text-slate-900">{profileQuery.data?.is_active ? 'Active' : 'Inactive'}</strong>
+                    <strong className="text-slate-900">{profileQuery.data?.is_active ? 'Aktif' : 'Nonaktif'}</strong>
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span>Bergabung</span>
@@ -213,7 +211,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="photo-upload">Foto profile</Label>
+                  <Label htmlFor="photo-upload">Foto profil</Label>
                   <Input id="photo-upload" type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} />
                   <Button
                     type="button"

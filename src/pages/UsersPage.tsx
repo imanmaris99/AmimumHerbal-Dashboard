@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
+import { getAdminSafeErrorMessage, getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
 
 type DashboardUserRole = 'owner' | 'admin' | 'customer';
 
@@ -95,8 +95,7 @@ export default function UsersPage() {
       // handled per-call so dialog can close only after confirmed success
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || 'Failed to update user status.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal memperbarui status user. Muat ulang data lalu coba lagi.'));
     },
   });
 
@@ -130,7 +129,7 @@ export default function UsersPage() {
       },
       {
         onSuccess: (response) => {
-          toast.success(response.message || 'User status updated successfully.');
+          toast.success(response.message || 'Status user berhasil diperbarui.');
           queryClient.invalidateQueries({ queryKey: ['admin-users'] });
           setStatusTarget(null);
         },
@@ -149,28 +148,28 @@ export default function UsersPage() {
 
   const summaryCards = [
     {
-      label: 'Visible Users',
+      label: 'User Terlihat',
       value: filteredUsers.length,
       helper: 'User yang tampil di layar sekarang',
       icon: Users,
       tone: 'bg-emerald-50 text-emerald-600',
     },
     {
-      label: 'Owners',
+      label: 'Owner',
       value: ownerCount,
       helper: 'Akses tertinggi internal',
       icon: Shield,
       tone: 'bg-emerald-50 text-emerald-600',
     },
     {
-      label: 'Admins',
+      label: 'Admin',
       value: adminCount,
       helper: 'Operasional internal harian',
       icon: UserCheck,
       tone: 'bg-blue-50 text-blue-600',
     },
     {
-      label: 'Inactive Accounts',
+      label: 'Akun Nonaktif',
       value: inactiveCount,
       helper: 'Perlu perhatian owner',
       icon: UserX,
@@ -202,7 +201,7 @@ export default function UsersPage() {
               </div>
               <p className="text-sm font-medium text-gray-500 mt-4">{card.label}</p>
               <p className="text-2xl font-bold text-gray-900 mt-1 break-words">{card.value}</p>
-              <p className="text-[11px] text-gray-400 mt-2">{card.label === 'Admins' ? `${customerCount} customer akun terpantau` : card.helper}</p>
+              <p className="text-[11px] text-gray-400 mt-2">{card.label === 'Admin' ? `${customerCount} customer akun terpantau` : card.helper}</p>
             </CardContent>
           </Card>
         ))}
@@ -253,7 +252,7 @@ export default function UsersPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-400 py-8">
-                    Loading users...
+                    Memuat data user...
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length === 0 ? (
@@ -300,7 +299,7 @@ export default function UsersPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className={`rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${u.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>
-                          {u.is_active ? 'Active' : 'Inactive'}
+                          {u.is_active ? 'Aktif' : 'Nonaktif'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs font-medium text-gray-500">
@@ -371,7 +370,7 @@ export default function UsersPage() {
           </DialogHeader>
           <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
             <p><strong>Email:</strong> {statusTarget?.email || '-'}</p>
-            <p className="mt-1"><strong>Status saat ini:</strong> {statusTarget?.is_active ? 'Active' : 'Inactive'}</p>
+            <p className="mt-1"><strong>Status saat ini:</strong> {statusTarget?.is_active ? 'Aktif' : 'Nonaktif'}</p>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="ghost" onClick={() => setStatusTarget(null)} disabled={toggleUserStatusMutation.isPending}>
@@ -415,7 +414,7 @@ export default function UsersPage() {
                 </div>
                 <div>
                   <p className="text-gray-500 mb-1">Status</p>
-                  <Badge variant="secondary" className={`uppercase font-bold text-[10px] border-none ${detailTarget.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>{detailTarget.is_active ? 'Active' : 'Inactive'}</Badge>
+                  <Badge variant="secondary" className={`uppercase font-bold text-[10px] border-none ${detailTarget.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>{detailTarget.is_active ? 'Aktif' : 'Nonaktif'}</Badge>
                 </div>
                 <div>
                   <p className="text-gray-500 mb-1">Firstname</p>

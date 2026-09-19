@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { BasicStatusResponse, ResetPasswordPayload } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,8 +42,7 @@ export default function ResetPasswordPage() {
       toast.success(response.data.message || 'Password berhasil direset. Silakan login kembali.');
       navigate('/login');
     } catch (error: any) {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal mereset password.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal mereset password. Periksa email, kode, dan password baru lalu coba lagi.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +144,7 @@ export default function ResetPasswordPage() {
                     Menyimpan password baru...
                   </>
                 ) : (
-                  'Reset password'
+                  'Reset Password'
                 )}
               </Button>
             </form>
@@ -166,9 +166,9 @@ export default function ResetPasswordPage() {
             </div>
 
             <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">
-              &copy; 2026 Dashboard Toko Herbal Amimum. All rights reserved.
+              &copy; 2026 Dashboard Toko Herbal Amimum. Semua hak dilindungi.
             </p>
-            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Sistem Internal Amimum</p>
           </CardContent>
         </Card>
       </motion.div>

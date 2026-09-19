@@ -64,7 +64,7 @@ export default function InventoryMonitorPage() {
           (item.product && item.product.trim()) ||
           (item.product_id ? productLookup.get(String(item.product_id)) : undefined) ||
           '-';
-        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Variant #${item.id}`;
+        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Varian #${item.id}`;
 
         let stockStatus: 'safe' | 'low' | 'out' = 'safe';
         if (stock <= 0) stockStatus = 'out';
@@ -128,7 +128,7 @@ export default function InventoryMonitorPage() {
         <h1 className="text-2xl font-bold text-gray-900">Stok & Pergerakan</h1>
         <p className="text-sm text-gray-600 mt-1">
           Halaman terpadu ala marketplace untuk memantau stok dan histori pergerakan dalam satu alur yang jelas.
-          Perubahan stok tetap dilakukan di halaman Variants agar konsisten.
+          Perubahan stok tetap dilakukan di halaman Varian agar konsisten.
         </p>
       </div>
 

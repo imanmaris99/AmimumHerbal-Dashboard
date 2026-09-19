@@ -60,18 +60,19 @@ export default function LoginPage() {
       let message = 'Login gagal. Silakan periksa kembali email dan password Anda.';
 
       if (axios.isAxiosError(err)) {
-        const backendMessage = err.response?.data?.detail?.message;
-
-        if (backendMessage) {
-          message = backendMessage;
-        } else if (!err.response) {
+        const status = err.response?.status;
+        if (!err.response) {
           if (err.code === 'ECONNABORTED') {
             message = 'Koneksi ke server timeout. Coba ulang beberapa saat lagi.';
           } else {
-            message = 'Tidak bisa terhubung ke server API. Cek koneksi internet, CORS, atau status backend.';
+            message = 'Belum bisa terhubung ke layanan dashboard. Cek koneksi lalu coba lagi.';
           }
+        } else if (status === 401 || status === 403) {
+          message = 'Email, password, atau akses dashboard belum valid.';
+        } else if (status && status >= 500) {
+          message = 'Layanan dashboard sedang bermasalah. Coba lagi beberapa saat lagi.';
         }
-      } else if (err instanceof Error && err.message) {
+      } else if (err instanceof Error && err.message === 'Akun ini tidak memiliki akses ke dashboard internal.') {
         message = err.message;
       }
 
@@ -180,7 +181,7 @@ export default function LoginPage() {
             </form>
 
             <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">{t('login.footerNote')}</p>
-            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Sistem Internal Amimum</p>
           </CardContent>
         </Card>
       </motion.div>

@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { BasicStatusResponse, ForgotPasswordPayload } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,8 +31,7 @@ export default function ForgotPasswordPage() {
       setSubmittedEmail(email);
       toast.success(response.data.message || 'Instruksi reset password berhasil dikirim.');
     } catch (error: any) {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal mengirim instruksi reset password.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal mengirim instruksi reset password. Coba lagi beberapa saat lagi.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -118,9 +118,9 @@ export default function ForgotPasswordPage() {
             </div>
 
             <p className="mt-6 text-center text-[11px] leading-relaxed text-gray-400">
-              &copy; 2026 Dashboard Toko Herbal Amimum. All rights reserved.
+              &copy; 2026 Dashboard Toko Herbal Amimum. Semua hak dilindungi.
             </p>
-            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
+            <p className="mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Sistem Internal Amimum</p>
           </CardContent>
         </Card>
       </motion.div>

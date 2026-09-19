@@ -81,7 +81,7 @@ export default function WelcomePage() {
 
           <div className="mt-4 text-center space-y-1">
             <p className="text-[11px] text-gray-400">© 2026 Dashboard Toko Herbal Amimum</p>
-            <p className="text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Amimum Internal System</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-emerald-400/90">Sistem Internal Amimum</p>
           </div>
         </div>
       </div>

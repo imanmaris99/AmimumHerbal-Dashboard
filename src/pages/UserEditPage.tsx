@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
+import { getAdminSafeErrorMessage, getStatusStyle, userRoleStyles, userStatusStyles } from '@/lib/dashboard';
 
 type DashboardUserRole = 'owner' | 'admin' | 'customer';
 
@@ -83,14 +83,13 @@ export default function UserEditPage() {
       return response.data;
     },
     onSuccess: (response) => {
-      toast.success(response?.message || 'User profile updated successfully.');
+      toast.success(response?.message || 'Profil user berhasil diperbarui.');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-user-detail', userId] });
       navigate('/users');
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || 'Failed to update user profile.';
-      toast.error(message);
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal memperbarui profil user. Periksa input lalu coba lagi.'));
     },
   });
 
@@ -111,7 +110,7 @@ export default function UserEditPage() {
     const fullname = form.fullname.trim() || `${firstname} ${lastname}`.trim();
 
     if (!firstname || !lastname || !phone || !address) {
-      toast.error('Firstname, lastname, phone, dan address wajib diisi.');
+      toast.error('Nama depan, nama belakang, nomor telepon, dan alamat wajib diisi.');
       return;
     }
 
@@ -133,13 +132,13 @@ export default function UserEditPage() {
           <div className="flex items-center gap-3 mb-2">
             <Button type="button" variant="outline" className="rounded-xl border-gray-200" onClick={() => navigate('/users')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Users
+              Kembali ke User
             </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit User Profile</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit Profil User</h1>
           <p className="text-gray-500 mt-1">Halaman edit khusus owner agar CTA edit langsung menuju form penuh yang lebih fokus dan rapi.</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Owner-only edit page</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Halaman edit khusus owner</Badge>
       </div>
 
       {userDetailQuery.isLoading ? (
@@ -164,7 +163,7 @@ export default function UserEditPage() {
                   <SummaryIcon className="w-5 h-5" />
                 </div>
                 <Badge variant="secondary" className={`rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${userDetailQuery.data.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>
-                  {userDetailQuery.data.is_active ? 'Active' : 'Inactive'}
+                  {userDetailQuery.data.is_active ? 'Aktif' : 'Nonaktif'}
                 </Badge>
               </div>
 
@@ -180,7 +179,7 @@ export default function UserEditPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Status</span>
-                  <strong className="text-slate-900">{userDetailQuery.data.is_active ? 'Active' : 'Inactive'}</strong>
+                  <strong className="text-slate-900">{userDetailQuery.data.is_active ? 'Aktif' : 'Nonaktif'}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Updated</span>

@@ -4,6 +4,7 @@ import { Search, ShoppingCart, Trash2, ReceiptText, Printer, History } from 'luc
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { posCheckout, type PaymentMethod } from '@/lib/posInventory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -425,14 +426,9 @@ export default function CashierPage() {
     onError: (error: any) => {
       const isTimeout = error?.code === 'ECONNABORTED' || String(error?.message || '').toLowerCase().includes('timeout');
       const message = isTimeout
-        ? 'Checkout timeout >10 detik. Silakan coba lagi (server sedang lambat) atau cek koneksi backend.'
-        : (
-          error?.response?.data?.detail?.message ||
-          error?.response?.data?.detail ||
-          error?.message ||
-          'Checkout gagal. Mohon cek endpoint backend POS/Orders.'
-        );
-      toast.error(String(message));
+        ? 'Checkout kasir timeout. Coba ulang setelah koneksi server stabil.'
+        : getAdminSafeErrorMessage(error, 'Checkout kasir gagal. Periksa stok, item, dan koneksi lalu coba lagi.');
+      toast.error(message);
       setCheckoutStartedAt(null);
     },
     onSettled: () => {
@@ -461,7 +457,7 @@ export default function CashierPage() {
           productObj?.name ||
           '-';
 
-        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Variant #${item.id}`;
+        const variantName = [item.name, item.variant].filter(Boolean).join(' - ') || `Varian #${item.id}`;
 
         return {
           id: item.id,
@@ -509,7 +505,7 @@ export default function CashierPage() {
 
   const addToCart = (item: (typeof cashierVariants)[number]) => {
     if (item.stock <= 0) {
-      toast.error('Stok variant ini kosong.');
+      toast.error('Stok varian ini kosong.');
       return;
     }
 
@@ -906,7 +902,7 @@ export default function CashierPage() {
       try { server.disconnect(); } catch {}
       toast.success(`Nota Bluetooth terkirim (${printPaper}mm) ke ${device.name || 'printer'} .`);
     } catch (error: any) {
-      toast.error(error?.message || 'Gagal cetak Bluetooth. Pastikan printer menyala dan sudah pairing.');
+      toast.error('Gagal cetak Bluetooth. Pastikan printer menyala, sudah pairing, lalu coba lagi.');
     } finally {
       setIsBtPrinting(false);
     }
@@ -1068,7 +1064,7 @@ export default function CashierPage() {
       <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Pilih Variant</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Search className="w-4 h-4" /> Pilih Varian</CardTitle>
             <CardDescription>Data diambil dari endpoint existing: /product/all dan /type/all</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -1090,7 +1086,7 @@ export default function CashierPage() {
             </div>
 
             {variantsLoading ? (
-              <p className="text-sm text-gray-500">Memuat variant...</p>
+              <p className="text-sm text-gray-500">Memuat varian...</p>
             ) : variantsError ? (
               <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
             ) : (
