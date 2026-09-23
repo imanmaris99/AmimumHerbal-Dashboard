@@ -697,7 +697,7 @@ export default function CashierPage() {
         <div class="sum-row total"><span>TOTAL</span><span>${formatRupiah(receipt.total)}</span></div>
       </div>
       ${receipt.notes ? `<div class="muted" style="margin-top:6px">Catatan: ${receipt.notes}</div>` : ''}
-      <div class="footer">TERIMAKASIH ATAS PEMBELIAN ANDA<br/>Shopee: shopee.co.id/tokoherbalamimum</div>
+      <div class="footer">TERIMAKASIH ATAS PEMBELIAN ANDA<br/>Shopee: shopee.co.id/tokoherbalamimum<br/>Tokopedia: tokopedia.com/herbalamimum</div>
     </div><script>window.print();</script></body></html>`;
   };
 
@@ -801,6 +801,8 @@ export default function CashierPage() {
       line,
       center('Shopee: tokoherbalamimum'),
       center('shopee.co.id/tokoherbalamimum'),
+      center('Tokopedia: herbalamimum'),
+      center('tokopedia.com/herbalamimum'),
       center('Terima kasih'),
       '\n',
     ].join('\n');
@@ -1391,6 +1393,7 @@ export default function CashierPage() {
             <div className="text-xs text-gray-500 space-y-1">
               <p>Terima kasih telah bertransaksi di Toko Herbal AmImUm.</p>
               <p>Shopee: https://shopee.co.id/tokoherbalamimum</p>
+              <p>Tokopedia: https://www.tokopedia.com/herbalamimum</p>
               <p>Nota ini sah tanpa tanda tangan. Simpan nota untuk kebutuhan komplain/retur sesuai kebijakan toko.</p>
             </div>
           </CardContent>
