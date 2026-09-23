@@ -39,6 +39,34 @@ interface AdminPaymentDetailResponse {
   data: AdminPaymentDetailData;
 }
 
+interface AdminOrderDetailResponse {
+  status_code: number;
+  message: string;
+  data: {
+    id: string;
+    status: string;
+    total_price?: number | null;
+    notes?: string | null;
+    customer_name?: string | null;
+    created_at: string;
+  };
+}
+
+const stripSyntheticPaymentPrefix = (value?: string) =>
+  String(value || '').replace(/^(POS|LOCAL)-/i, '');
+
+const extractPaymentFromNotes = (notes?: string | null) => {
+  const match = String(notes || '').match(/\[PAYMENT:\s*([^\]]+)\]/i);
+  return match?.[1]?.trim().toLowerCase() || 'cash';
+};
+
+const extractBuyerFromNotes = (notes?: string | null) => {
+  const raw = String(notes || '');
+  const match = raw.match(/POS\s*Buyer\s*:\s*([^|\[\n\r]+)/i)
+    || raw.match(/\[?POS_BUYER\]?\s*:\s*([^|\[\n\r]+)/i);
+  return match?.[1]?.trim() || '';
+};
+
 export default function PaymentDetailPage() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
@@ -53,6 +81,27 @@ export default function PaymentDetailPage() {
   const paymentDetailQuery = useQuery({
     queryKey: ['admin-payment-detail', paymentId],
     queryFn: async () => {
+      if (String(paymentId || '').toUpperCase().startsWith('POS-')) {
+        const orderId = stripSyntheticPaymentPrefix(paymentId);
+        const response = await api.get<AdminOrderDetailResponse>(`/admin/orders/${orderId}`);
+        const order = response.data.data;
+
+        return {
+          id: `POS-${order.id}`,
+          order_id: order.id,
+          transaction_id: order.id,
+          payment_type: extractPaymentFromNotes(order.notes),
+          gross_amount: Number(order.total_price || 0),
+          transaction_status: String(order.status || '').toLowerCase() === 'pending' ? 'pending' : 'settlement',
+          fraud_status: null,
+          customer_name: extractBuyerFromNotes(order.notes) || order.customer_name || 'Pelanggan POS',
+          customer_email: '-',
+          order_status: order.status || 'paid',
+          created_at: order.created_at,
+          updated_at: order.created_at,
+        } satisfies AdminPaymentDetailData;
+      }
+
       const response = await api.get<AdminPaymentDetailResponse>(`/admin/payments/${paymentId}`);
       return response.data.data;
     },
