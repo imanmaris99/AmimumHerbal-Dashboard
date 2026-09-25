@@ -445,7 +445,7 @@ export default function VariantsPage() {
                 {variantsLoading || productsLoading ? (
                   <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Memuat data varian...</TableCell></TableRow>
                 ) : filteredVariants.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Tidak ada variant yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Tidak ada varian yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
                 ) : (
                   filteredVariants.map((variant, index) => (
                     <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">

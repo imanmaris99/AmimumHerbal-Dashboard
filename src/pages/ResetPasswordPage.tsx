@@ -144,7 +144,7 @@ export default function ResetPasswordPage() {
                     Menyimpan password baru...
                   </>
                 ) : (
-                  'Reset Password'
+                  'Reset Password Baru'
                 )}
               </Button>
             </form>

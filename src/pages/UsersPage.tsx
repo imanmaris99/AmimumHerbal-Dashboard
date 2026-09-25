@@ -181,11 +181,11 @@ export default function UsersPage() {
     <div className="space-y-8 pb-10">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">User Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Manajemen User</h1>
           <p className="text-gray-500 mt-1 mr-2">Area monitoring user untuk admin dan owner. Action sensitif seperti edit user lain dan ubah status customer tetap dibatasi khusus owner.</p>
         </div>
         <Button disabled className="bg-emerald-500 hover:bg-emerald-600 rounded-xl h-11 px-4 sm:px-6 shadow-lg shadow-emerald-100 transition-all active:scale-95 disabled:opacity-60 w-full sm:w-auto">
-          {user?.role === 'owner' ? 'Owner controls active' : 'Admin monitoring mode'}
+          {user?.role === 'owner' ? 'Kontrol owner aktif' : 'Mode monitoring admin'}
         </Button>
       </div>
 
@@ -232,7 +232,7 @@ export default function UsersPage() {
             <div className="flex gap-2 w-full md:w-auto">
               <Button variant="outline" disabled className="rounded-xl border-gray-100 flex-1 md:flex-none">
                 <Filter className="w-4 h-4 mr-2" />
-                {user?.role === 'owner' ? 'Owner policy applied' : 'Admin read policy applied'}
+                {user?.role === 'owner' ? 'Kebijakan owner aktif' : 'Kebijakan baca admin aktif'}
               </Button>
             </div>
           </div>
@@ -241,11 +241,11 @@ export default function UsersPage() {
           <Table className="min-w-[760px]">
             <TableHeader className="bg-gray-50/50">
               <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="w-[320px] font-bold text-gray-400 text-[10px] uppercase">User Profile</TableHead>
+                <TableHead className="w-[320px] font-bold text-gray-400 text-[10px] uppercase">Profil User</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Role</TableHead>
                 <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Status</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Updated</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Actions</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Diperbarui</TableHead>
+                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -312,7 +312,7 @@ export default function UsersPage() {
                               <MoreVertical className="w-4 h-4 text-gray-400" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl shadow-gray-200/50">
-                              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">User Actions</div>
+                              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">User Aksi</div>
                               <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => setDetailTarget(u)}>
                                 <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
                                 Lihat Detail User
@@ -321,12 +321,12 @@ export default function UsersPage() {
                               {canEditUser ? (
                                 <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
                                   <PencilLine className="w-4 h-4 mr-2" />
-                                  Edit User Profile
+                                  Edit Profil User
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem className="cursor-default text-gray-400">
                                   <PencilLine className="w-4 h-4 mr-2" />
-                                  Edit (Owner Only)
+                                  Edit (khusus owner)
                                 </DropdownMenuItem>
                               )}
                               {canToggleStatus ? (
@@ -339,7 +339,7 @@ export default function UsersPage() {
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem className="cursor-default text-gray-400">
-                                  Status Protected
+                                  Status terlindungi
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
@@ -417,15 +417,15 @@ export default function UsersPage() {
                   <Badge variant="secondary" className={`uppercase font-bold text-[10px] border-none ${detailTarget.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>{detailTarget.is_active ? 'Aktif' : 'Nonaktif'}</Badge>
                 </div>
                 <div>
-                  <p className="text-gray-500 mb-1">Firstname</p>
+                  <p className="text-gray-500 mb-1">Nama depan</p>
                   <p className="font-medium text-gray-900">{detailTarget.firstname || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 mb-1">Lastname</p>
+                  <p className="text-gray-500 mb-1">Nama belakang</p>
                   <p className="font-medium text-gray-900">{detailTarget.lastname || '-'}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-gray-500 mb-1">Phone</p>
+                  <p className="text-gray-500 mb-1">No. HP</p>
                   <p className="font-medium text-gray-900">{detailTarget.phone || '-'}</p>
                 </div>
                 <div className="col-span-2">

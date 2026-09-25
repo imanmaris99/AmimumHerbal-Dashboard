@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type ProductItem = { id: string; name: string };
-type VariantItem = {
+type VarianItem = {
   id?: number;
   product_id?: string;
   product?: string;
@@ -18,7 +18,7 @@ type VariantItem = {
 };
 
 interface ProductResponse { data: ProductItem[] }
-interface VariantResponse { data: VariantItem[] }
+interface VarianResponse { data: VarianItem[] }
 
 export default function StockMovementsPage() {
   const { data: productsResponse } = useQuery({
@@ -28,7 +28,7 @@ export default function StockMovementsPage() {
 
   const { data: variantsResponse, isLoading: variantsLoading } = useQuery({
     queryKey: ['movements-variants'],
-    queryFn: async () => (await api.get<VariantResponse>('/type/all')).data,
+    queryFn: async () => (await api.get<VarianResponse>('/type/all')).data,
   });
 
   const movementQuery = useQuery({
@@ -50,7 +50,7 @@ export default function StockMovementsPage() {
 
   const fallbackRows = useMemo(() => {
     return (variantsResponse?.data ?? [])
-      .filter((item): item is VariantItem & { id: number } => typeof item.id === 'number')
+      .filter((item): item is VarianItem & { id: number } => typeof item.id === 'number')
       .map((item) => {
         const productName =
           (item.product && item.product.trim()) ||
@@ -66,7 +66,7 @@ export default function StockMovementsPage() {
           movement_type: 'snapshot',
           delta: 0,
           stock_after: Number(item.stock ?? 0),
-          reason: 'Baseline snapshot dari /type/all',
+          reason: 'Snapshot awal dari /type/all',
           created_at: item.updated_at || new Date().toISOString(),
         };
       })
@@ -99,10 +99,10 @@ export default function StockMovementsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Waktu</TableHead>
-                    <TableHead>Variant</TableHead>
+                    <TableHead>Varian</TableHead>
                     <TableHead>Tipe</TableHead>
                     <TableHead>Delta</TableHead>
-                    <TableHead>Stock After</TableHead>
+                    <TableHead>Stok Akhir</TableHead>
                     <TableHead>Catatan</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -119,7 +119,7 @@ export default function StockMovementsPage() {
                   ))}
                   {rows.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-sm text-gray-500">Belum ada data movement.</TableCell>
+                      <TableCell colSpan={6} className="text-sm text-gray-500">Belum ada data pergerakan stok.</TableCell>
                     </TableRow>
                   )}
                 </TableBody>

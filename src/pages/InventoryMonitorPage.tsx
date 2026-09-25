@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 type ProductItem = { id: string; name: string };
-type VariantItem = {
+type VarianItem = {
   id?: number;
   product_id?: string;
   product?: string;
@@ -20,7 +20,7 @@ type VariantItem = {
 };
 
 interface ProductResponse { data: ProductItem[] }
-interface VariantResponse { data: VariantItem[] }
+interface VarianResponse { data: VarianItem[] }
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -35,7 +35,7 @@ export default function InventoryMonitorPage() {
 
   const { data: variantsResponse, isLoading, isError } = useQuery({
     queryKey: ['inventory-variants'],
-    queryFn: async () => (await api.get<VariantResponse>('/type/all')).data,
+    queryFn: async () => (await api.get<VarianResponse>('/type/all')).data,
   });
 
   const movementQuery = useQuery({
@@ -57,7 +57,7 @@ export default function InventoryMonitorPage() {
 
   const rows = useMemo(() => {
     return (variantsResponse?.data ?? [])
-      .filter((item): item is VariantItem & { id: number } => typeof item.id === 'number')
+      .filter((item): item is VarianItem & { id: number } => typeof item.id === 'number')
       .map((item) => {
         const stock = Number(item.stock ?? 0);
         const productName =
@@ -116,7 +116,7 @@ export default function InventoryMonitorPage() {
         movement_type: 'snapshot',
         delta: 0,
         stock_after: item.stock,
-        reason: 'Fallback snapshot dari data variant',
+        reason: 'Snapshot cadangan dari data varian',
       }))
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 30);
@@ -145,7 +145,7 @@ export default function InventoryMonitorPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari product/variant/id..." className="lg:max-w-md" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari produk/varian/id..." className="lg:max-w-md" />
             <div className="flex items-center gap-2 flex-wrap">
               <button onClick={() => setStatusFilter('all')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'all' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200'}`}>Semua</button>
               <button onClick={() => setStatusFilter('safe')} className={`text-xs px-3 py-1.5 rounded-lg border ${statusFilter === 'safe' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>Aman</button>
@@ -167,18 +167,18 @@ export default function InventoryMonitorPage() {
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt={item.variantName} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">No Img</div>
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500">Belum ada gambar</div>
                       )}
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-gray-900 truncate">{item.productName}</p>
                       <p className="text-xs text-gray-500 truncate">{item.variantName}</p>
-                      <p className="text-xs text-gray-500 mt-1">Variant ID: {item.id}</p>
+                      <p className="text-xs text-gray-500 mt-1">ID varian: {item.id}</p>
                     </div>
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-sm text-gray-600">Stock: <span className="font-semibold text-gray-900">{item.stock}</span></p>
+                    <p className="text-sm text-gray-600">Stok: <span className="font-semibold text-gray-900">{item.stock}</span></p>
                     {item.stockStatus === 'safe' && <span className="text-xs px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">Aman</span>}
                     {item.stockStatus === 'low' && <span className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700">Menipis</span>}
                     {item.stockStatus === 'out' && <span className="text-xs px-2 py-1 rounded-lg bg-rose-50 text-rose-700">Habis</span>}
@@ -199,7 +199,7 @@ export default function InventoryMonitorPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><ArrowLeftRight className="w-4 h-4" /> Histori Pergerakan Stok</CardTitle>
           <CardDescription>
-            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'REAL API' : 'FALLBACK SNAPSHOT'}</strong>
+            Mode data: <strong>{movementQuery.data?.mode === 'real' ? 'API AKTIF' : 'SNAPSHOT CADANGAN'}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,10 +208,10 @@ export default function InventoryMonitorPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Waktu</TableHead>
-                  <TableHead>Variant</TableHead>
+                  <TableHead>Varian</TableHead>
                   <TableHead>Tipe</TableHead>
                   <TableHead>Delta</TableHead>
-                  <TableHead>Stock After</TableHead>
+                  <TableHead>Stok Akhir</TableHead>
                   <TableHead>Catatan</TableHead>
                 </TableRow>
               </TableHeader>
@@ -228,7 +228,7 @@ export default function InventoryMonitorPage() {
                 ))}
                 {movementRows.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-sm text-gray-500">Belum ada data movement.</TableCell>
+                    <TableCell colSpan={6} className="text-sm text-gray-500">Belum ada data pergerakan stok.</TableCell>
                   </TableRow>
                 )}
               </TableBody>

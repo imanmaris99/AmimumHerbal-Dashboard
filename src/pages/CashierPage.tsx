@@ -128,6 +128,8 @@ const RECEIPT_DELETED_IDS_KEY = 'amimum.pos.receipts.deleted.v1';
 const BT_PRINTER_DEVICE_ID_KEY = 'amimum.pos.btPrinterDeviceId.v1';
 
 const formatRupiah = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
+const PRODUCT_PLACEHOLDER_IMAGE = 'data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"%3E%3Crect width="96" height="96" rx="18" fill="%23f1f5f9"/%3E%3Ctext x="48" y="46" text-anchor="middle" font-family="Arial" font-size="10" fill="%2364758b"%3EBelum%3C/text%3E%3Ctext x="48" y="60" text-anchor="middle" font-family="Arial" font-size="10" fill="%2364758b"%3Eada gambar%3C/text%3E%3C/svg%3E';
+
 
 const normalizePaymentMethod = (value?: string | null, notes?: string | null): PaymentMethod => {
   const n = String(notes || '').toLowerCase();
@@ -168,6 +170,7 @@ export default function CashierPage() {
   const [showReceiptHistory, setShowReceiptHistory] = useState(false);
   const [checkoutStartedAt, setCheckoutStartedAt] = useState<number | null>(null);
   const [checkoutElapsedSec, setCheckoutElapsedSec] = useState(0);
+  const [pendingReceiptDelete, setPendingReceiptDelete] = useState<{ type: 'single' | 'all'; transactionId?: string } | null>(null);
   const receiptDetailRef = useRef<HTMLDivElement | null>(null);
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
@@ -1025,9 +1028,6 @@ export default function CashierPage() {
   };
 
   const clearReceiptHistory = () => {
-    const ok = window.confirm('Hapus semua riwayat nota kasir dari dashboard ini? Tindakan ini tidak bisa dibatalkan.');
-    if (!ok) return;
-
     const allIds = receiptHistory.map((r) => r.transactionId);
     const nextDeleted = Array.from(new Set([...deletedReceiptIds, ...allIds]));
 
@@ -1038,12 +1038,10 @@ export default function CashierPage() {
     localStorage.setItem(RECEIPT_DELETED_IDS_KEY, JSON.stringify(nextDeleted));
     localStorage.removeItem(RECEIPT_STORAGE_KEY);
     toast.success('Riwayat nota kasir berhasil dihapus.');
+    setPendingReceiptDelete(null);
   };
 
   const deleteSingleReceipt = (transactionId: string) => {
-    const ok = window.confirm(`Hapus riwayat nota ${transactionId} dari dashboard ini?`);
-    if (!ok) return;
-
     const nextDeleted = Array.from(new Set([...deletedReceiptIds, transactionId]));
     const nextHistory = receiptHistory.filter((r) => r.transactionId !== transactionId);
 
@@ -1054,6 +1052,18 @@ export default function CashierPage() {
 
     if (selectedReceiptId === transactionId) setSelectedReceiptId('');
     toast.success(`Riwayat ${transactionId} dihapus.`);
+    setPendingReceiptDelete(null);
+  };
+
+  const confirmReceiptDelete = () => {
+    if (!pendingReceiptDelete) return;
+    if (pendingReceiptDelete.type === 'all') {
+      clearReceiptHistory();
+      return;
+    }
+    if (pendingReceiptDelete.transactionId) {
+      deleteSingleReceipt(pendingReceiptDelete.transactionId);
+    }
   };
 
   return (
@@ -1090,7 +1100,7 @@ export default function CashierPage() {
             {variantsLoading ? (
               <p className="text-sm text-gray-500">Memuat varian...</p>
             ) : variantsError ? (
-              <p className="text-sm text-red-600">Gagal memuat data variant dari API.</p>
+              <p className="text-sm text-red-600">Gagal memuat data varian dari API.</p>
             ) : (
               <div className="max-h-[560px] overflow-auto rounded-xl border p-3 bg-gray-50/60">
                 <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
@@ -1101,13 +1111,13 @@ export default function CashierPage() {
                     return (
                       <div key={item.id} className={`rounded-2xl border bg-white p-3 flex flex-col lg:flex-row lg:items-center gap-3 transition-all ${selectedInCart ? 'border-emerald-300 ring-2 ring-emerald-100' : 'hover:border-emerald-200'}`}>
                         <img
-                          src={item.img || 'https://placehold.co/56x56?text=No+Image'}
+                          src={item.img || PRODUCT_PLACEHOLDER_IMAGE}
                           alt={item.variantName}
                           className="w-full h-24 lg:w-24 lg:h-24 rounded-xl object-contain bg-gray-50 border border-gray-100 p-1"
                           loading="lazy"
                           onError={(e) => {
                             const target = e.currentTarget;
-                            if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/56x56?text=No+Image';
+                            if (target.src !== PRODUCT_PLACEHOLDER_IMAGE) target.src = PRODUCT_PLACEHOLDER_IMAGE;
                           }}
                         />
                         <div className="min-w-0 flex-1 lg:pr-2">
@@ -1140,7 +1150,7 @@ export default function CashierPage() {
                     );
                   })}
                 </div>
-                {filtered.length === 0 && <p className="text-sm text-gray-500 mt-2">Tidak ada variant sesuai pencarian.</p>}
+                {filtered.length === 0 && <p className="text-sm text-gray-500 mt-2">Tidak ada varian sesuai pencarian.</p>}
               </div>
             )}
           </CardContent>
@@ -1256,7 +1266,7 @@ export default function CashierPage() {
               <Input placeholder="Cari no transaksi/kasir/metode" value={receiptQuery} onChange={(e) => setReceiptQuery(e.target.value)} />
               <Input type="date" value={receiptDate} onChange={(e) => setReceiptDate(e.target.value)} />
               <Button variant="outline" onClick={() => { setReceiptQuery(''); setReceiptDate(new Date().toISOString().slice(0, 10)); }}>Reset Filter</Button>
-              <Button variant="destructive" onClick={clearReceiptHistory} className="flex items-center gap-2">
+              <Button variant="destructive" onClick={() => setPendingReceiptDelete({ type: 'all' })} className="flex items-center gap-2">
                 <History className="w-4 h-4" /> Hapus Riwayat
               </Button>
             </div>
@@ -1274,7 +1284,7 @@ export default function CashierPage() {
                         <div className="flex justify-end gap-2">
                           <Button size="sm" variant="outline" onClick={() => setSelectedReceiptId(r.transactionId)}>Detail</Button>
                           <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${r.transactionId}`)}>Audit</Button>
-                          <Button size="sm" variant="destructive" onClick={() => deleteSingleReceipt(r.transactionId)}>
+                          <Button size="sm" variant="destructive" onClick={() => setPendingReceiptDelete({ type: 'single', transactionId: r.transactionId })}>
                             Hapus
                           </Button>
                         </div>
@@ -1398,6 +1408,28 @@ export default function CashierPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
+      )}
+
+
+      {pendingReceiptDelete && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
+              {pendingReceiptDelete.type === 'all' ? 'Hapus semua riwayat nota?' : 'Hapus riwayat nota ini?'}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-slate-300">
+              {pendingReceiptDelete.type === 'all'
+                ? 'Riwayat nota lokal di dashboard ini akan dibersihkan. Data order backend tidak ikut dihapus.'
+                : `Nota ${pendingReceiptDelete.transactionId} akan disembunyikan dari riwayat lokal dashboard. Data order backend tetap aman.`}
+            </p>
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" className="rounded-xl" onClick={() => setPendingReceiptDelete(null)}>Batal</Button>
+              <Button type="button" className="rounded-xl bg-red-600 hover:bg-red-700" onClick={confirmReceiptDelete}>
+                {pendingReceiptDelete.type === 'all' ? 'Hapus Semua' : 'Hapus Nota'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -258,7 +258,7 @@ export default function VarianEditPage() {
       ) : variantDetailQuery.isError || !variantDetailQuery.data ? (
         <Card className="border border-red-100 bg-red-50 shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat data variant. Silakan kembali ke halaman variants dan coba lagi.
+            Gagal memuat data varian. Silakan kembali ke halaman variants dan coba lagi.
           </CardContent>
         </Card>
       ) : (

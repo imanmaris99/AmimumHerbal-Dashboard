@@ -56,7 +56,7 @@ export default function SettingsPage() {
     });
 
     updateUser({
-      name: fullname || user?.name || 'Internal User',
+      name: fullname || user?.name || 'User Internal',
       email: profileQuery.data.email,
       role: profileQuery.data.role,
       isActive: profileQuery.data.is_active,
@@ -80,13 +80,21 @@ export default function SettingsPage() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (payload: AdminProfileEditPayload) => {
-      const response = await api.put('/admin/edit-info', payload);
+      const cleanPayload = {
+        ...payload,
+        fullname: payload.fullname.trim(),
+        firstname: payload.firstname.trim(),
+        lastname: payload.lastname.trim(),
+        phone: payload.phone.trim(),
+        address: payload.address.trim(),
+      };
+      const response = await api.put('/admin/edit-info', cleanPayload);
       return response.data;
     },
     onSuccess: () => {
       const displayName = [profileForm.firstname, profileForm.lastname].filter(Boolean).join(' ').trim();
       updateUser({
-        name: displayName || user?.name || 'Internal User',
+        name: displayName || user?.name || 'User Internal',
         firstname: profileForm.firstname,
         lastname: profileForm.lastname,
         phone: profileForm.phone,
@@ -125,7 +133,14 @@ export default function SettingsPage() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (payload: ChangePasswordPayload) => {
-      const response = await api.put('/admin/change-password', payload);
+      const cleanPayload = {
+        old_password: payload.old_password.trim(),
+        new_password: payload.new_password.trim(),
+      };
+      if (cleanPayload.new_password.length < 8) {
+        throw new Error('PASSWORD_TOO_SHORT');
+      }
+      const response = await api.put('/admin/change-password', cleanPayload);
       return response.data;
     },
     onSuccess: () => {
@@ -133,6 +148,10 @@ export default function SettingsPage() {
       toast.success('Password internal berhasil diganti.');
     },
     onError: (error: any) => {
+      if (error instanceof Error && error.message === 'PASSWORD_TOO_SHORT') {
+        toast.error('Password baru minimal 8 karakter.');
+        return;
+      }
       toast.error(getAdminSafeErrorMessage(error, 'Gagal mengganti password. Periksa password lama dan format password baru.'));
     },
   });
@@ -197,7 +216,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                   <div className="flex items-center justify-between gap-3">
-                    <span>Role</span>
+                    <span>Peran</span>
                     <strong className="text-slate-900 uppercase">{profileQuery.data?.role || '-'}</strong>
                   </div>
                   <div className="flex items-center justify-between gap-3">
@@ -220,7 +239,7 @@ export default function SettingsPage() {
                     className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600"
                   >
                     {updatePhotoMutation.isPending ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Uploading...</>
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Mengunggah...</>
                     ) : (
                       <><Upload className="w-4 h-4 mr-2" />Upload Foto Baru</>
                     )}
@@ -247,28 +266,28 @@ export default function SettingsPage() {
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <Label htmlFor="firstname">Firstname</Label>
+                        <Label htmlFor="firstname">Nama depan</Label>
                         <Input id="firstname" value={profileForm.firstname} onChange={(e) => setProfileForm((prev) => ({ ...prev, firstname: e.target.value, fullname: `${e.target.value} ${prev.lastname}`.trim() }))} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastname">Lastname</Label>
+                        <Label htmlFor="lastname">Nama belakang</Label>
                         <Input id="lastname" value={profileForm.lastname} onChange={(e) => setProfileForm((prev) => ({ ...prev, lastname: e.target.value, fullname: `${prev.firstname} ${e.target.value}`.trim() }))} required />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
-                        <Label htmlFor="fullname">Fullname</Label>
+                        <Label htmlFor="fullname">Nama lengkap</Label>
                         <Input id="fullname" value={profileForm.fullname} onChange={(e) => setProfileForm((prev) => ({ ...prev, fullname: e.target.value }))} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">No. HP</Label>
                         <Input id="phone" value={profileForm.phone} onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))} placeholder="+628..." required />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address">Address</Label>
+                      <Label htmlFor="address">Alamat</Label>
                       <textarea
                         id="address"
                         value={profileForm.address}

@@ -79,7 +79,15 @@ export default function UserEditPage() {
 
   const updateUserMutation = useMutation({
     mutationFn: async (payload: AdminProfileEditPayload) => {
-      const response = await api.put(`/admin/users/${userId}`, payload);
+      const cleanPayload = {
+        ...payload,
+        fullname: payload.fullname.trim(),
+        firstname: payload.firstname.trim(),
+        lastname: payload.lastname.trim(),
+        phone: payload.phone.trim(),
+        address: payload.address.trim(),
+      };
+      const response = await api.put(`/admin/users/${userId}`, cleanPayload);
       return response.data;
     },
     onSuccess: (response) => {
@@ -174,7 +182,7 @@ export default function UserEditPage() {
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
-                  <span>Role</span>
+                  <span>Peran</span>
                   <strong className="text-slate-900 uppercase">{userDetailQuery.data.role}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -182,7 +190,7 @@ export default function UserEditPage() {
                   <strong className="text-slate-900">{userDetailQuery.data.is_active ? 'Aktif' : 'Nonaktif'}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Updated</span>
+                  <span>Diperbarui</span>
                   <strong className="text-slate-900 text-right">{new Date(userDetailQuery.data.updated_at).toLocaleString('id-ID')}</strong>
                 </div>
               </div>
@@ -204,22 +212,22 @@ export default function UserEditPage() {
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-user-firstname-page">Firstname</Label>
+                    <Label htmlFor="edit-user-firstname-page">Nama depan</Label>
                     <Input id="edit-user-firstname-page" value={form.firstname} onChange={(e) => setForm((prev) => ({ ...prev, firstname: e.target.value, fullname: `${e.target.value} ${prev.lastname}`.trim() }))} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-user-lastname-page">Lastname</Label>
+                    <Label htmlFor="edit-user-lastname-page">Nama belakang</Label>
                     <Input id="edit-user-lastname-page" value={form.lastname} onChange={(e) => setForm((prev) => ({ ...prev, lastname: e.target.value, fullname: `${prev.firstname} ${e.target.value}`.trim() }))} required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-user-fullname-page">Fullname</Label>
+                    <Label htmlFor="edit-user-fullname-page">Nama lengkap</Label>
                     <Input id="edit-user-fullname-page" value={form.fullname} onChange={(e) => setForm((prev) => ({ ...prev, fullname: e.target.value }))} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-user-phone-page">Phone</Label>
+                    <Label htmlFor="edit-user-phone-page">No. HP</Label>
                     <Input id="edit-user-phone-page" value={form.phone} onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))} required />
                   </div>
                 </div>
@@ -230,7 +238,7 @@ export default function UserEditPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-user-address-page">Address</Label>
+                  <Label htmlFor="edit-user-address-page">Alamat</Label>
                   <textarea
                     id="edit-user-address-page"
                     value={form.address}
@@ -249,9 +257,9 @@ export default function UserEditPage() {
                     </Button>
                     <Button type="submit" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto" disabled={updateUserMutation.isPending}>
                       {updateUserMutation.isPending ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>
                       ) : (
-                        <><Save className="w-4 h-4 mr-2" />Save Changes</>
+                        <><Save className="w-4 h-4 mr-2" />Simpan Perubahan</>
                       )}
                     </Button>
                   </div>
