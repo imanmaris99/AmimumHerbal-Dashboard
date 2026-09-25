@@ -120,7 +120,7 @@ export default function VariantsPage() {
               setUploadProgress(progress);
             },
           });
-          toast.success('Variant dan gambar berhasil dibuat');
+          toast.success('Varian dan gambar berhasil dibuat');
         } catch (error: any) {
           toast.error(getAdminSafeErrorMessage(error, 'Varian berhasil dibuat, tetapi gambar belum berhasil di-upload. Coba upload ulang dari halaman edit varian.'));
         } finally {
@@ -377,9 +377,9 @@ export default function VariantsPage() {
                     }
                     setPendingImage(file);
                   }} />
-                  {isUploadingImage && <span className="text-sm text-gray-600">Uploading image... {uploadProgress}%</span>}
+                  {isUploadingImage && <span className="text-sm text-gray-600">Mengunggah gambar... {uploadProgress}%</span>}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah variant berhasil dibuat.</p>
+                <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah varian berhasil dibuat.</p>
                 {pendingImage && (
                   <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
                     <span className="truncate">{pendingImage.name}</span>

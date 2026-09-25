@@ -90,6 +90,7 @@ export default function ProductEditPage() {
   const [draggingOver, setDraggingOver] = useState(false);
   const [reorderBusy, setReorderBusy] = useState(false);
   const [dragImageId, setDragImageId] = useState<number | null>(null);
+  const [pendingDeleteImageId, setPendingDeleteImageId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (user?.role !== 'owner' && user?.role !== 'admin') {
@@ -233,13 +234,14 @@ export default function ProductEditPage() {
 
   const handleHapusImage = async (imageId: number) => {
     if (!productId) return;
-    if (!window.confirm('Hapus gambar ini?')) return;
     try {
       await api.delete(`/product/${productId}/images/${imageId}`);
-      toast.success('Gambar dihapus');
+      toast.success('Gambar produk berhasil dihapus');
       await refreshDetail();
     } catch (error: any) {
       toast.error(getAdminSafeErrorMessage(error, 'Gagal menghapus gambar produk.'));
+    } finally {
+      setPendingDeleteImageId(null);
     }
   };
 
@@ -462,7 +464,7 @@ export default function ProductEditPage() {
                     {Object.keys(uploadErrors).length > 0 && (
                       <div className="mt-3 text-xs text-red-600 space-y-1">
                         {Object.entries(uploadErrors).map(([name, err]) => <div key={name}>{name}: {err}</div>)}
-                        <Button type="button" size="sm" variant="outline" onClick={retryFailedUploads}>Retry gagal</Button>
+                        <Button type="button" size="sm" variant="outline" onClick={retryFailedUploads}>Ulangi upload gagal</Button>
                       </div>
                     )}
                   </div>
@@ -492,7 +494,7 @@ export default function ProductEditPage() {
                             [next[idx + 1], next[idx]] = [next[idx], next[idx + 1]];
                             handleReorder(next);
                           }}>↓</Button>
-                          <Button type="button" size="sm" variant="outline" className="text-red-600" onClick={() => handleHapusImage(img.id)}>Hapus</Button>
+                          <Button type="button" size="sm" variant="outline" className="text-red-600" onClick={() => setPendingDeleteImageId(img.id)}>Hapus</Button>
                         </div>
                       </div>
                     ))}
@@ -554,9 +556,9 @@ export default function ProductEditPage() {
                     </Button>
                     <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateProductMutation.isPending}>
                       {updateProductMutation.isPending ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</>
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>
                       ) : (
-                        <><Save className="w-4 h-4 mr-2" />Update Product</>
+                        <><Save className="w-4 h-4 mr-2" />Simpan Produk</>
                       )}
                     </Button>
                   </div>
@@ -564,6 +566,20 @@ export default function ProductEditPage() {
               </form>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+
+      {pendingDeleteImageId !== null && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 px-4" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900">Hapus gambar produk?</h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">Gambar akan dihapus dari galeri produk. Data produk tetap tersimpan dan bisa di-upload ulang dari halaman ini.</p>
+            <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" className="rounded-xl" onClick={() => setPendingDeleteImageId(null)}>Batal</Button>
+              <Button type="button" className="rounded-xl bg-red-600 hover:bg-red-700" onClick={() => handleHapusImage(pendingDeleteImageId)}>Hapus Gambar</Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

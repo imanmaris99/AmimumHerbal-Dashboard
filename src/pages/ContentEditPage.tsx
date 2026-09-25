@@ -5,7 +5,7 @@ import { ArrowLeft, FileText, Loader2, PencilLine, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
-import { extractApiErrorMessage } from '@/lib/error';
+import { getAdminSafeErrorMessage } from '@/lib/dashboard';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,7 +54,7 @@ export default function ContentEditPage() {
       const articles = response.data.data ?? [];
       const target = articles.find((article) => String(article.id) === articleId);
       if (!target) {
-        throw new Error('Article tidak ditemukan.');
+        throw new Error('Artikel tidak ditemukan.');
       }
       return target;
     },
@@ -81,11 +81,11 @@ export default function ContentEditPage() {
       navigate('/content');
     },
     onError: (error: any) => {
-      toast.error(extractApiErrorMessage(error, 'Gagal memperbarui artikel.'));
+      toast.error(getAdminSafeErrorMessage(error, 'Gagal memperbarui artikel.'));
     },
   });
 
-  const summaryDescription = useMemo(() => articleDetailQuery.data?.description_list?.[0] || '-', [articleDetailQuery.data]);
+  const summaryDeskripsi = useMemo(() => articleDetailQuery.data?.description_list?.[0] || '-', [articleDetailQuery.data]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -94,7 +94,7 @@ export default function ContentEditPage() {
     const description = form.description?.trim() || '';
 
     if (!title || !description) {
-      toast.error('Judul article dan description wajib diisi.');
+      toast.error('Judul dan deskripsi artikel wajib diisi.');
       return;
     }
 
@@ -111,26 +111,26 @@ export default function ContentEditPage() {
           <div className="flex items-center gap-3 mb-2">
             <Button type="button" variant="outline" className="rounded-xl border-gray-200" onClick={() => navigate('/content')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Kembali ke Content
+              Kembali ke Konten
             </Button>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit Article</h1>
-          <p className="text-gray-500 mt-1">CTA edit sekarang langsung menuju halaman edit article khusus agar flow content lebih fokus dan tidak tercampur dengan create form.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Edit Artikel</h1>
+          <p className="text-gray-500 mt-1">CTA edit langsung menuju halaman edit artikel khusus agar flow konten lebih fokus dan tidak tercampur dengan form buat artikel.</p>
         </div>
-        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Admin + Owner edit page</Badge>
+        <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-2 rounded-xl w-fit">Halaman edit Admin + Owner</Badge>
       </div>
 
       {articleDetailQuery.isLoading ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-3 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Memuat detail article...
+            Memuat detail artikel...
           </CardContent>
         </Card>
       ) : articleDetailQuery.isError || !articleDetailQuery.data ? (
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden border border-red-100 bg-red-50">
           <CardContent className="p-8 text-sm text-red-700">
-            Gagal memuat data article. Silakan kembali ke halaman content dan coba lagi.
+            Gagal memuat data artikel. Silakan kembali ke halaman konten dan coba lagi.
           </CardContent>
         </Card>
       ) : (
@@ -141,27 +141,27 @@ export default function ContentEditPage() {
                 <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600">
                   <FileText className="w-5 h-5" />
                 </div>
-                <Badge className="bg-slate-100 text-slate-700 border-none">Article layer</Badge>
+                <Badge className="bg-slate-100 text-slate-700 border-none">Layer artikel</Badge>
               </div>
 
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{articleDetailQuery.data.title}</h2>
-                <p className="text-sm text-gray-500 mt-1">Article ID: {articleDetailQuery.data.id} • Display ID: {articleDetailQuery.data.display_id || '-'}</p>
+                <p className="text-sm text-gray-500 mt-1">ID artikel: {articleDetailQuery.data.id} • Display ID: {articleDetailQuery.data.display_id || '-'}</p>
               </div>
 
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-start justify-between gap-3">
                   <span>Ringkasan</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDescription}</strong>
+                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDeskripsi}</strong>
                 </div>
                 <div className="flex items-start justify-between gap-3">
-                  <span>Image source</span>
+                  <span>Sumber gambar</span>
                   <strong className="text-slate-900 text-right break-all max-w-[220px]">{articleDetailQuery.data.img || '-'}</strong>
                 </div>
               </div>
 
               <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-sm text-emerald-800">
-                Halaman ini fokus untuk edit article. Flow category product tetap berada di modul catalog dan production, tidak dicampur ke article layer.
+                Halaman ini fokus untuk edit artikel. Flow kategori produk tetap berada di modul catalog dan production, tidak dicampur ke layer artikel.
               </div>
             </CardContent>
           </Card>
@@ -169,46 +169,46 @@ export default function ContentEditPage() {
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
             <CardHeader className="px-6 sm:px-8 pt-8 pb-4">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Form edit article</h2>
+                <h2 className="text-lg font-bold text-gray-900">Form edit artikel</h2>
                 <p className="text-sm text-gray-500 mt-1">Terhubung ke endpoint <strong>PUT /articles/update/{'{article_id}'}</strong>.</p>
               </div>
             </CardHeader>
             <CardContent className="px-6 sm:px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-article-title-page">Article title</Label>
+                  <Label htmlFor="edit-article-title-page">Judul artikel</Label>
                   <Input
                     id="edit-article-title-page"
                     value={form.title || ''}
                     onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="Judul article yang diperbarui"
+                    placeholder="Judul artikel yang diperbarui"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-article-description-page">Description</Label>
+                  <Label htmlFor="edit-article-description-page">Deskripsi</Label>
                   <textarea
                     id="edit-article-description-page"
                     value={form.description || ''}
                     onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Deskripsi article yang diperbarui"
+                    placeholder="Deskripsi artikel yang diperbarui"
                     className="min-h-[180px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full"
                     required
                   />
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar article.</p>
+                  <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar artikel.</p>
                   <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
                     <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/content')}>
                       Batal
                     </Button>
                     <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateArticleMutation.isPending}>
                       {updateArticleMutation.isPending ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</>
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>
                       ) : (
-                        <><Save className="w-4 h-4 mr-2" />Update Article</>
+                        <><Save className="w-4 h-4 mr-2" />Simpan Artikel</>
                       )}
                     </Button>
                   </div>

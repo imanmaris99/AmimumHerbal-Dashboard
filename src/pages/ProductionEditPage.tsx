@@ -257,9 +257,9 @@ export default function ProductionEditPage() {
                         setLogoFile(file);
                         setLogoPreview(URL.createObjectURL(file));
                       }} />
-                      {logoUploading && <span className="text-sm text-gray-600">Uploading image... {logoUploadProgress}%</span>}
+                      {logoUploading && <span className="text-sm text-gray-600">Mengunggah gambar... {logoUploadProgress}%</span>}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan diupdate bersamaan proses update production.</p>
+                    <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan diperbarui bersamaan proses update production.</p>
 
                     {logoFile && (
                       <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">
@@ -282,9 +282,9 @@ export default function ProductionEditPage() {
                     </Button>
                     <Button type="submit" className="rounded-xl bg-slate-900 hover:bg-slate-800 w-full sm:w-auto" disabled={updateProductionMutation.isPending}>
                       {updateProductionMutation.isPending ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Updating...</>
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Menyimpan...</>
                       ) : (
-                        <><Save className="w-4 h-4 mr-2" />Update Production</>
+                        <><Save className="w-4 h-4 mr-2" />Simpan Production</>
                       )}
                     </Button>
                   </div>
