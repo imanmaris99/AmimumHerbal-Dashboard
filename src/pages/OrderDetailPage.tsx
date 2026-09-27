@@ -124,6 +124,21 @@ const normalizePhoneForWhatsApp = (phone?: string | null) => {
 
 const compactOrderId = (id?: string | null) => String(id || '').slice(0, 8).toUpperCase();
 
+const formatCurrency = (value?: number | null) => `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
+
+const getPaymentLabel = (method?: string) => {
+  const normalized = String(method || '').toLowerCase();
+  if (normalized === 'cod') return 'COD / bayar saat barang diterima';
+  if (normalized === 'qris') return 'QRIS manual';
+  if (normalized === 'transfer') return 'Transfer manual';
+  if (normalized === 'cash') return 'Cash / bayar di toko';
+  if (normalized === 'bank_transfer') return 'Transfer bank online';
+  if (normalized === 'credit_card') return 'Kartu kredit/debit online';
+  return 'akan kami cek';
+};
+
+const joinNonEmptyLines = (lines: Array<string | false | null | undefined>) => lines.filter(Boolean).join('\n');
+
 interface ChatTemplate {
   id: string;
   title: string;
@@ -186,11 +201,28 @@ export default function OrderDetailPage() {
   const customerPhone = order?.my_shipping?.my_address?.phone || '';
   const customerWhatsApp = normalizePhoneForWhatsApp(customerPhone);
   const paymentMethod = extractPaymentMethodFromNotes(order?.notes);
-  const totalText = `Rp ${Number(order?.total_price || 0).toLocaleString('id-ID')}`;
+  const paymentLabel = getPaymentLabel(paymentMethod);
+  const totalText = formatCurrency(order?.total_price || 0);
+  const shippingCostText = order?.shipping_cost == null ? 'Belum tersedia' : formatCurrency(order.shipping_cost);
+  const orderStatusText = getStatusLabel(orderStatusLabels, order?.status || '-');
+  const deliveryTypeText = getStatusLabel(deliveryTypeLabels, order?.delivery_type || '-');
   const courierName = order?.my_shipping?.my_courier?.courier_name || '-';
+  const courierService = order?.my_shipping?.my_courier?.service_type || '-';
+  const courierEstimate = order?.my_shipping?.my_courier?.estimated_delivery || '-';
+  const shippingAddress = order?.my_shipping?.my_address;
+  const addressText = joinNonEmptyLines([
+    shippingAddress?.name ? `Penerima: ${shippingAddress.name}` : null,
+    shippingAddress?.phone ? `HP: ${shippingAddress.phone}` : null,
+    shippingAddress?.address ? `Alamat: ${shippingAddress.address}` : null,
+  ]);
   const trackingCodeForTemplate = trackingCode.trim() || order?.my_shipping?.code_tracking || '';
   const itemSummary = groupedOrderItems
-    .map((item) => `- ${item.product_name || 'Produk'}${item.variant_product ? ` (${item.variant_product})` : ''} x${item.quantity || 0}`)
+    .map((item) => {
+      const variant = item.variant_product ? ` (${item.variant_product})` : '';
+      const qty = item.quantity || 0;
+      const subtotal = formatCurrency(item.total_price || 0);
+      return `- ${item.product_name || 'Produk'}${variant} x${qty} = ${subtotal}`;
+    })
     .join('\n');
 
   const chatTemplates = React.useMemo<ChatTemplate[]>(() => {
@@ -206,13 +238,26 @@ export default function OrderDetailPage() {
     const greetingName = customerName && customerName !== '-' ? customerName : 'kak';
     const itemsText = itemSummary || '- Produk sesuai pesanan';
     const templates: ChatTemplate[] = [];
+    const orderSummary = joinNonEmptyLines([
+      `No. Order: ${orderRef}`,
+      `Status: ${orderStatusText}`,
+      `Jenis order: ${deliveryTypeText}`,
+      `Metode bayar: ${paymentLabel}`,
+      `Total: ${totalText}`,
+      deliveryType === 'delivery' ? `Ongkir: ${shippingCostText}` : null,
+      deliveryType === 'delivery' ? `Kurir: ${courierName} ${courierService !== '-' ? `(${courierService})` : ''}` : null,
+      deliveryType === 'delivery' && courierEstimate !== '-' ? `Estimasi: ${courierEstimate}` : null,
+    ]);
+    const shippingBlock = deliveryType === 'delivery' && addressText
+      ? `\n\nData pengiriman:\n${addressText}`
+      : '';
 
     templates.push({
       id: 'order-received',
       title: 'Order masuk',
       description: 'Kirim saat pesanan baru diterima admin.',
       recommended: ['pending', 'processing', 'capture', 'settlement', 'paid'].includes(status),
-      text: `Assalamu’alaikum ${greetingName}, pesanan kakak di Toko Herbal Amimum sudah kami terima.\n\nNo. Order: ${orderRef}\nProduk:\n${itemsText}\nTotal: ${totalText}\nMetode bayar: ${paymentMethod ? paymentMethod.toUpperCase() : 'akan kami cek'}\n\nPesanan akan kami cek dan proses ya kak. Terima kasih.`,
+      text: `Assalamu’alaikum ${greetingName}, pesanan kakak di Toko Herbal Amimum sudah kami terima.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nPesanan akan kami cek sesuai data di atas ya kak. Jika ada data yang perlu diperbaiki, boleh langsung kabari kami. Terima kasih.`,
     });
 
     if (isManualQris || isTransfer) {
@@ -221,14 +266,14 @@ export default function OrderDetailPage() {
         title: isManualQris ? 'Follow-up QRIS manual' : 'Follow-up transfer manual',
         description: 'Kirim jika customer belum mengirim bukti pembayaran.',
         recommended: ['pending', 'processing'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, untuk pesanan kakak di Toko Herbal Amimum dengan total ${totalText}, pembayaran bisa dilakukan melalui ${isManualQris ? 'QRIS resmi toko' : 'rekening resmi toko'}.\n\nSetelah pembayaran, mohon kirim bukti pembayaran di sini ya kak agar pesanan segera kami proses.`,
+        text: `Assalamu’alaikum ${greetingName}, untuk pesanan kakak di Toko Herbal Amimum:\n\n${orderSummary}\n\nPembayaran bisa dilakukan melalui ${isManualQris ? 'QRIS resmi toko' : 'rekening resmi toko'}. Setelah pembayaran, mohon kirim bukti pembayaran di sini ya kak agar pesanan segera kami proses.`,
       });
 
       templates.push({
         id: 'payment-confirmed',
         title: 'Pembayaran diterima',
         description: 'Kirim setelah pembayaran manual sudah dicek masuk.',
-        text: `Alhamdulillah ${greetingName}, pembayaran pesanan kakak sudah kami terima.\n\nNo. Order: ${orderRef}\nTotal: ${totalText}\n\nPesanan akan kami siapkan dan packing. Nanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
+        text: `Alhamdulillah ${greetingName}, pembayaran pesanan kakak sudah kami terima.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nPesanan akan kami siapkan dan packing. Nanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
       });
     }
 
@@ -238,7 +283,7 @@ export default function OrderDetailPage() {
         title: 'Konfirmasi COD',
         description: 'Kirim untuk mengingatkan pembayaran saat paket diterima.',
         recommended: ['pending', 'processing'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, pesanan kakak akan kami proses dengan metode COD.\n\nNo. Order: ${orderRef}\nTotal COD: ${totalText}\n\nMohon siapkan pembayaran saat paket diterima ya kak.`,
+        text: `Assalamu’alaikum ${greetingName}, pesanan kakak akan kami proses dengan metode COD.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nMohon siapkan pembayaran sebesar ${totalText} saat paket diterima ya kak.`,
       });
     }
 
@@ -248,7 +293,7 @@ export default function OrderDetailPage() {
         title: 'Pickup / bayar di toko',
         description: 'Kirim jika pesanan pickup siap diambil.',
         recommended: deliveryType === 'pickup' && ['processing', 'paid', 'settlement', 'capture'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, pesanan kakak di Toko Herbal Amimum sudah siap diambil.\n\nNo. Order: ${orderRef}\nTotal: ${totalText}\n\nSilakan konfirmasi jadwal pengambilan terlebih dulu ya kak.`,
+        text: `Assalamu’alaikum ${greetingName}, pesanan kakak di Toko Herbal Amimum sudah siap diambil.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nSilakan konfirmasi jadwal pengambilan terlebih dulu ya kak.`,
       });
     }
 
@@ -257,7 +302,7 @@ export default function OrderDetailPage() {
       title: 'Sedang dipacking',
       description: 'Kirim saat stok aman dan barang mulai disiapkan.',
       recommended: status === 'processing',
-      text: `Assalamu’alaikum ${greetingName}, pesanan kakak sedang kami siapkan dan packing.\n\nNo. Order: ${orderRef}\nProduk:\n${itemsText}\n\nNanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
+      text: `Assalamu’alaikum ${greetingName}, pesanan kakak sedang kami siapkan dan packing.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nNanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
     });
 
     if (deliveryType === 'delivery' && trackingCodeForTemplate) {
@@ -266,7 +311,7 @@ export default function OrderDetailPage() {
         title: 'Kirim resi',
         description: 'Muncul otomatis saat No. Resi/Kode Tracking sudah ada.',
         recommended: ['shipped', 'completed'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, pesanan kakak sudah kami kirim.\n\nKurir: ${courierName}\nNo. Resi: ${trackingCodeForTemplate}\n\nSilakan dicek berkala ya kak. Terima kasih sudah berbelanja di Toko Herbal Amimum.`,
+        text: `Assalamu’alaikum ${greetingName}, pesanan kakak sudah kami kirim.\n\nNo. Order: ${orderRef}\nKurir: ${courierName}${courierService !== '-' ? ` (${courierService})` : ''}\nNo. Resi: ${trackingCodeForTemplate}\nTotal: ${totalText}\n\nProduk:\n${itemsText}${shippingBlock}\n\nSilakan dicek berkala ya kak. Terima kasih sudah berbelanja di Toko Herbal Amimum.`,
       });
     }
 
@@ -275,7 +320,7 @@ export default function OrderDetailPage() {
       title: 'Pesanan dibatalkan',
       description: 'Gunakan hanya jika customer batal/order tidak dilanjutkan.',
       recommended: ['cancelled', 'failed'].includes(status),
-      text: `Baik ${greetingName}, pesanan kakak kami bantu batalkan ya.\n\nNo. Order: ${orderRef}\n\nTerima kasih sudah mengabari. Semoga lain waktu bisa berbelanja lagi di Toko Herbal Amimum.`,
+      text: `Baik ${greetingName}, pesanan kakak kami bantu batalkan ya.\n\n${orderSummary}\n\nTerima kasih sudah mengabari. Semoga lain waktu bisa berbelanja lagi di Toko Herbal Amimum.`,
     });
 
     return templates.sort((a, b) => Number(Boolean(b.recommended)) - Number(Boolean(a.recommended)));
