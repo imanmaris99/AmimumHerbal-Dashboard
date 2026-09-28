@@ -124,13 +124,21 @@ const normalizePhoneForWhatsApp = (phone?: string | null) => {
 
 const compactOrderId = (id?: string | null) => String(id || '').slice(0, 8).toUpperCase();
 
+const STORE_BANK_ACCOUNT = {
+  bank: 'BRI',
+  number: '657401009669505',
+  accountName: 'IMAN MARIS',
+};
+
+const STORE_BANK_ACCOUNT_TEXT = `${STORE_BANK_ACCOUNT.bank} ${STORE_BANK_ACCOUNT.number} a.n. ${STORE_BANK_ACCOUNT.accountName}`;
+
 const formatCurrency = (value?: number | null) => `Rp ${Number(value || 0).toLocaleString('id-ID')}`;
 
 const getPaymentLabel = (method?: string) => {
   const normalized = String(method || '').toLowerCase();
   if (normalized === 'cod') return 'COD / bayar saat barang diterima';
-  if (normalized === 'qris') return 'QRIS manual';
-  if (normalized === 'transfer') return 'Transfer manual';
+  if (normalized === 'qris' || normalized === 'qris_manual') return 'QRIS manual';
+  if (normalized === 'transfer' || normalized === 'transfer_manual' || normalized === 'bank_transfer') return 'Transfer BRI manual';
   if (normalized === 'cash') return 'Cash / bayar di toko';
   if (normalized === 'bank_transfer') return 'Transfer bank online';
   if (normalized === 'credit_card') return 'Kartu kredit/debit online';
@@ -232,8 +240,8 @@ export default function OrderDetailPage() {
     const deliveryType = String(order.delivery_type || '').toLowerCase();
     const isCod = paymentMethod === 'cod';
     const isCash = paymentMethod === 'cash';
-    const isManualQris = paymentMethod === 'qris';
-    const isTransfer = paymentMethod === 'transfer';
+    const isManualQris = paymentMethod === 'qris' || paymentMethod === 'qris_manual';
+    const isTransfer = paymentMethod === 'transfer' || paymentMethod === 'transfer_manual' || paymentMethod === 'bank_transfer';
     const orderRef = compactOrderId(order.id);
     const greetingName = customerName && customerName !== '-' ? customerName : 'kak';
     const itemsText = itemSummary || '- Produk sesuai pesanan';
@@ -266,7 +274,7 @@ export default function OrderDetailPage() {
         title: isManualQris ? 'Follow-up QRIS manual' : 'Follow-up transfer manual',
         description: 'Kirim jika customer belum mengirim bukti pembayaran.',
         recommended: ['pending', 'processing'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, untuk pesanan kakak di Toko Herbal Amimum:\n\n${orderSummary}\n\nPembayaran bisa dilakukan melalui ${isManualQris ? 'QRIS resmi toko' : 'rekening resmi toko'}. Setelah pembayaran, mohon kirim bukti pembayaran di sini ya kak agar pesanan segera kami proses.`,
+        text: `Assalamu’alaikum ${greetingName}, untuk pesanan kakak di Toko Herbal Amimum:\n\n${orderSummary}\n\n${isTransfer ? `Silakan transfer ke rekening resmi toko:\nBank: ${STORE_BANK_ACCOUNT.bank}\nNo. Rekening: ${STORE_BANK_ACCOUNT.number}\nAtas Nama: ${STORE_BANK_ACCOUNT.accountName}` : 'Pembayaran bisa dilakukan melalui QRIS resmi toko.'}\n\nSetelah pembayaran, mohon kirim bukti pembayaran di sini ya kak agar pesanan segera kami proses.`,
       });
 
       templates.push({
