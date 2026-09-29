@@ -114,6 +114,19 @@ const extractPaymentMethodFromNotes = (notes?: string | null) => {
   return match?.[1]?.trim().toLowerCase() || '';
 };
 
+const extractShippingFeePaymentModeFromNotes = (notes?: string | null) => {
+  const raw = String(notes || '');
+  const match = raw.match(/\[SHIPPING_FEE_PAYMENT:\s*([^\]]+)\]/i);
+  return match?.[1]?.trim().toLowerCase() || '';
+};
+
+const extractShippingDueOnDeliveryFromNotes = (notes?: string | null) => {
+  const raw = String(notes || '');
+  const match = raw.match(/\[SHIPPING_DUE_ON_DELIVERY:\s*([^\]]+)\]/i);
+  const value = Number(match?.[1]);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+};
+
 const normalizePhoneForWhatsApp = (phone?: string | null) => {
   const digits = String(phone || '').replace(/\D/g, '');
   if (!digits) return '';
@@ -210,8 +223,17 @@ export default function OrderDetailPage() {
   const customerWhatsApp = normalizePhoneForWhatsApp(customerPhone);
   const paymentMethod = extractPaymentMethodFromNotes(order?.notes);
   const paymentLabel = getPaymentLabel(paymentMethod);
+  const shippingFeePaymentMode = extractShippingFeePaymentModeFromNotes(order?.notes);
+  const shippingDueOnDelivery = shippingFeePaymentMode === 'cod_shipping'
+    ? extractShippingDueOnDeliveryFromNotes(order?.notes) || order?.shipping_cost || 0
+    : 0;
   const totalText = formatCurrency(order?.total_price || 0);
   const shippingCostText = order?.shipping_cost == null ? 'Belum tersedia' : formatCurrency(order.shipping_cost);
+  const shippingPaymentText = shippingDueOnDelivery > 0
+    ? `Ongkir bayar saat paket tiba: ${formatCurrency(shippingDueOnDelivery)}`
+    : shippingFeePaymentMode === 'prepaid'
+      ? 'Ongkir digabung ke total pembayaran'
+      : '';
   const orderStatusText = getStatusLabel(orderStatusLabels, order?.status || '-');
   const deliveryTypeText = getStatusLabel(deliveryTypeLabels, order?.delivery_type || '-');
   const courierName = order?.my_shipping?.my_courier?.courier_name || '-';
@@ -253,6 +275,7 @@ export default function OrderDetailPage() {
       `Metode bayar: ${paymentLabel}`,
       `Total: ${totalText}`,
       deliveryType === 'delivery' ? `Ongkir: ${shippingCostText}` : null,
+      deliveryType === 'delivery' && shippingPaymentText ? shippingPaymentText : null,
       deliveryType === 'delivery' ? `Kurir: ${courierName} ${courierService !== '-' ? `(${courierService})` : ''}` : null,
       deliveryType === 'delivery' && courierEstimate !== '-' ? `Estimasi: ${courierEstimate}` : null,
     ]);
