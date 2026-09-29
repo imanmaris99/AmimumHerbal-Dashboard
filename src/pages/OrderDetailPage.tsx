@@ -234,6 +234,19 @@ export default function OrderDetailPage() {
     : shippingFeePaymentMode === 'prepaid'
       ? 'Ongkir digabung ke total pembayaran'
       : '';
+  const shippingDropInstruction = order?.delivery_type === 'delivery'
+    ? shippingDueOnDelivery > 0
+      ? {
+          title: 'DROP JASA KIRIM: ONGKIR BAYAR DI TUJUAN',
+          message: `Saat input/drop ke jasa kirim, pilih layanan yang menagihkan ongkir ke penerima/tujuan jika tersedia. Produk dibayar lewat metode toko; jangan masukkan ongkir ${formatCurrency(shippingDueOnDelivery)} ke tagihan produk.`,
+          className: 'border-orange-200 bg-orange-50 text-orange-900',
+        }
+      : {
+          title: 'DROP JASA KIRIM: ONGKIR SUDAH DIGABUNG',
+          message: `Ongkir ${shippingCostText} sudah termasuk total pembayaran order. Saat drop ke jasa kirim, jangan pilih skema ongkir tagih penerima/COD ongkir.`,
+          className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+        }
+    : null;
   const orderStatusText = getStatusLabel(orderStatusLabels, order?.status || '-');
   const deliveryTypeText = getStatusLabel(deliveryTypeLabels, order?.delivery_type || '-');
   const courierName = order?.my_shipping?.my_courier?.courier_name || '-';
@@ -491,6 +504,24 @@ export default function OrderDetailPage() {
                   </strong>
                 </div>
               </div>
+
+              {shippingDropInstruction ? (
+                <div className={`rounded-2xl border p-4 text-sm ${shippingDropInstruction.className}`}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-white/80 p-2 shadow-sm">
+                      <Truck className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-extrabold uppercase tracking-wider">
+                        {shippingDropInstruction.title}
+                      </p>
+                      <p className="leading-relaxed">
+                        {shippingDropInstruction.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2"><Package2 className="w-4 h-4" />{t('orderDetailPage.totalItems')}</span>
