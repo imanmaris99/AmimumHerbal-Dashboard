@@ -136,7 +136,7 @@ const formatCurrency = (value?: number | null) => `Rp ${Number(value || 0).toLoc
 
 const getPaymentLabel = (method?: string) => {
   const normalized = String(method || '').toLowerCase();
-  if (normalized === 'cod') return 'COD / bayar saat barang diterima';
+  if (normalized === 'cod') return 'COD ongkir/jasa kirim saja';
   if (normalized === 'qris' || normalized === 'qris_manual') return 'QRIS manual';
   if (normalized === 'transfer' || normalized === 'transfer_manual' || normalized === 'bank_transfer') return 'Transfer BRI manual';
   if (normalized === 'cash') return 'Cash / bayar di toko';
@@ -288,10 +288,10 @@ export default function OrderDetailPage() {
     if (isCod) {
       templates.push({
         id: 'cod-confirmation',
-        title: 'Konfirmasi COD',
-        description: 'Kirim untuk mengingatkan pembayaran saat paket diterima.',
-        recommended: ['pending', 'processing'].includes(status),
-        text: `Assalamu’alaikum ${greetingName}, pesanan kakak akan kami proses dengan metode COD.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nMohon siapkan pembayaran sebesar ${totalText} saat paket diterima ya kak.`,
+        title: 'Konfirmasi COD jasa kirim',
+        description: 'Gunakan hanya untuk order lama/khusus ketika COD berlaku untuk ongkir/jasa kirim, bukan total produk.',
+        recommended: false,
+        text: `Assalamu’alaikum ${greetingName}, untuk pesanan kakak di Toko Herbal Amimum kami konfirmasi bahwa COD hanya berlaku untuk biaya jasa kirim/ongkir jika didukung kurir, bukan untuk pembayaran total produk.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nPembayaran produk tetap dilakukan melalui metode resmi toko yang tersedia. Jika ada yang perlu disesuaikan, boleh langsung kabari kami ya kak.`,
       });
     }
 
