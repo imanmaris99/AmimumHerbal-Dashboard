@@ -264,6 +264,18 @@ export default function OrderDetailPage() {
         className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
       }
     : null;
+  const deliveryManualStatusInstruction = order?.delivery_type === 'delivery'
+    ? {
+        title: 'PANDUAN STATUS MANUAL JASA KIRIM',
+        items: [
+          'Menunggu bayar / Pembayaran berhasil biasanya mengikuti sistem pembayaran otomatis. Jangan diubah manual kecuali sedang koreksi setelah audit pembayaran.',
+          'Pilih Diproses saat produk sudah mulai disiapkan/packing oleh toko.',
+          'Pilih Dikirim hanya setelah paket benar-benar diserahkan ke jasa kirim dan No. Resi/Kode Tracking sudah diisi.',
+          'Pilih Selesai jika paket sudah sampai/diterima atau sudah dikonfirmasi selesai.',
+          'Pilih Dibatalkan/Gagal hanya untuk pesanan batal, pembayaran gagal, atau kasus operasional yang memang tidak dilanjutkan.',
+        ],
+      }
+    : null;
   const orderStatusText = getOrderStatusLabel(order?.status || '-', order?.delivery_type);
   const deliveryTypeText = getStatusLabel(deliveryTypeLabels, order?.delivery_type || '-');
   const courierName = order?.my_shipping?.my_courier?.courier_name || '-';
@@ -566,6 +578,25 @@ export default function OrderDetailPage() {
                   <h3 className="text-sm font-bold text-emerald-900 uppercase tracking-wider">{t('orderDetailPage.updateTitle')}</h3>
                   <p className="text-sm text-emerald-700 mt-1">{t('orderDetailPage.updateDescription')}</p>
                 </div>
+                {deliveryManualStatusInstruction ? (
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
+                    <div className="flex items-start gap-3">
+                      <div className="rounded-xl bg-white/80 p-2 shadow-sm">
+                        <Truck className="h-4 w-4" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-extrabold uppercase tracking-wider">
+                          {deliveryManualStatusInstruction.title}
+                        </p>
+                        <ul className="list-disc space-y-1 pl-4 leading-relaxed">
+                          {deliveryManualStatusInstruction.items.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
                 <div className="space-y-2">
                   <Label htmlFor="order-status-next">{t('orderDetailPage.newStatus')}</Label>
                   <select
