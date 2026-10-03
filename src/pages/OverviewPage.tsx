@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AreaChart,
   Area,
@@ -18,6 +18,11 @@ import {
   Clock,
   ArrowUpRight,
   MoreVertical,
+  MessageCircle,
+  PackageCheck,
+  Truck,
+  Store,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -27,6 +32,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import api from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardSummaryResponse {
   status_code: number;
@@ -61,6 +67,7 @@ interface OrdersResponse {
     customer_name: string | null;
     total_price: number;
     status: string;
+    delivery_type?: string | null;
     notes?: string | null;
     created_at: string;
   }>;
@@ -69,8 +76,82 @@ interface OrdersResponse {
 const COLORS = ['#F97316', '#FDBA74', '#FFEDD5', '#FED7AA', '#FB923C'];
 const POS_RECEIPT_STORAGE_KEY = 'amimum.pos.receipts.v1';
 
+interface AdminTaskItem {
+  id: string;
+  title: string;
+  description: string;
+  action: string;
+  orderPath: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badgeClass: string;
+}
+
+const compactOrderId = (id?: string | null) => String(id || '').slice(0, 8).toUpperCase();
+
+const buildAdminTask = (order: OrdersResponse['data'][number]): AdminTaskItem | null => {
+  const status = String(order.status || '').toLowerCase();
+  const deliveryType = String(order.delivery_type || '').toLowerCase();
+  const orderRef = compactOrderId(order.id);
+  const orderPath = `/orders/${order.id}`;
+
+  if (deliveryType === 'pickup') {
+    if (['paid', 'capture', 'settlement'].includes(status)) {
+      return {
+        id: `pickup-paid-${order.id}`,
+        title: `Pickup ${orderRef}: siapkan pesanan`,
+        description: 'Pembayaran sudah masuk. Siapkan barang di toko, lalu update status menjadi “Siap diambil”.',
+        action: 'Buka order & siapkan pickup',
+        orderPath,
+        icon: Store,
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      };
+    }
+
+    if (status === 'processing') {
+      return {
+        id: `pickup-ready-${order.id}`,
+        title: `Pickup ${orderRef}: hubungi pembeli`,
+        description: 'Pesanan siap diambil. Gunakan template WhatsApp manual jika perlu, lalu update ke “Sudah diambil” setelah diterima.',
+        action: 'Buka order & kirim WA manual',
+        orderPath,
+        icon: MessageCircle,
+        badgeClass: 'bg-blue-50 text-blue-700 border-blue-100',
+      };
+    }
+  }
+
+  if (deliveryType === 'delivery') {
+    if (['paid', 'capture', 'settlement'].includes(status)) {
+      return {
+        id: `delivery-paid-${order.id}`,
+        title: `Kirim ${orderRef}: mulai packing`,
+        description: 'Pembayaran sudah masuk. Siapkan/packing produk dan update status menjadi “Diproses” saat mulai dikerjakan.',
+        action: 'Buka order & proses packing',
+        orderPath,
+        icon: PackageCheck,
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      };
+    }
+
+    if (status === 'processing') {
+      return {
+        id: `delivery-processing-${order.id}`,
+        title: `Kirim ${orderRef}: isi resi`,
+        description: 'Jika paket sudah diserahkan ke jasa kirim, isi No. Resi/Kode Tracking lalu update status menjadi “Dikirim”.',
+        action: 'Buka order & isi resi',
+        orderPath,
+        icon: Truck,
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-100',
+      };
+    }
+  }
+
+  return null;
+};
+
 export default function OverviewPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [posReceiptMap, setPosReceiptMap] = useState<Map<string, string>>(new Map());
   const [posReceipts, setPosReceipts] = useState<Array<{ transactionId?: string; buyerName?: string; total?: number; createdAt?: string }>>([]);
@@ -112,6 +193,10 @@ export default function OverviewPage() {
 
   const summary = summaryResponse?.data;
   const recentOrders = ordersResponse?.data ?? [];
+  const adminTasks = useMemo(() => recentOrders
+    .map(buildAdminTask)
+    .filter((task): task is AdminTaskItem => Boolean(task))
+    .slice(0, 4), [recentOrders]);
   const computedGrossFromOrders = recentOrders
     .filter((order) => String(order.status || '').toLowerCase() === 'completed' || String(order.status || '').toLowerCase() === 'paid')
     .reduce((sum, order) => sum + Number(order.total_price || 0), 0);
@@ -282,6 +367,60 @@ export default function OverviewPage() {
               </Card>
             ))}
       </div>
+
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-8 py-7">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight">
+              <ClipboardCheck className="h-5 w-5 text-emerald-600" />
+              Tugas Admin Hari Ini
+            </CardTitle>
+            <CardDescription>Pengingat operasional agar email otomatis tetap jalan dan admin tahu kapan perlu update status/WA manual.</CardDescription>
+          </div>
+          <Badge className="w-fit border-none bg-emerald-50 px-3 py-1.5 text-emerald-700 hover:bg-emerald-50">
+            {adminTasks.length} prioritas
+          </Badge>
+        </CardHeader>
+        <CardContent className="px-6 sm:px-8 pb-7">
+          {ordersLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-28 rounded-2xl bg-gray-50 animate-pulse" />
+              ))}
+            </div>
+          ) : adminTasks.length === 0 ? (
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm text-emerald-800">
+              Belum ada tugas status prioritas. Tetap pantau order baru, stok, dan pembayaran masuk.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+              {adminTasks.map((task) => {
+                const TaskIcon = task.icon;
+                return (
+                  <button
+                    key={task.id}
+                    type="button"
+                    onClick={() => navigate(task.orderPath)}
+                    className="group flex h-full flex-col justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-left transition hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-emerald-50/60 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-emerald-700/50"
+                  >
+                    <div>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border ${task.badgeClass}`}>
+                          <TaskIcon className="h-4 w-4" />
+                        </span>
+                        <ArrowUpRight className="h-4 w-4 text-gray-300 transition group-hover:text-emerald-600" />
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-50">{task.title}</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-300">{task.description}</p>
+                    </div>
+                    <p className="mt-3 text-xs font-bold text-emerald-700">{task.action}</p>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 md:gap-6 xl:gap-8">
         <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-800/80 dark:border dark:border-slate-700">
