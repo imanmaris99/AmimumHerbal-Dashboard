@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText, Moon, Sun } from 'lucide-react';
+import { Bell, Menu, ShieldCheck, Info, TimerReset, Languages, Check, BookOpenText, Moon, Sun, MessageCircle, PackageCheck, Truck, Store, ShoppingBag } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import {
   Avatar,
@@ -30,6 +30,81 @@ import { ProfileDialog } from './ProfileDialog';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getPageHandbook } from '@/lib/pageHandbook';
 import { getStoredThemeMode, setThemeMode, type ThemeMode } from '@/lib/theme';
+
+interface TopbarOrderInfo {
+  id: string;
+  created_at: string;
+  status?: string | null;
+  delivery_type?: string | null;
+}
+
+interface AdminNotificationItem {
+  id: string;
+  title: string;
+  desc: string;
+  actionPath?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  tone?: 'default' | 'warning' | 'success' | 'info';
+}
+
+const compactOrderId = (id?: string | null) => String(id || '').slice(0, 8).toUpperCase();
+
+const buildOrderActionReminder = (order: TopbarOrderInfo): AdminNotificationItem | null => {
+  const status = String(order.status || '').toLowerCase();
+  const deliveryType = String(order.delivery_type || '').toLowerCase();
+  const orderRef = compactOrderId(order.id);
+  const actionPath = `/orders/${order.id}`;
+
+  if (deliveryType === 'pickup') {
+    if (['paid', 'capture', 'settlement'].includes(status)) {
+      return {
+        id: `pickup-paid-${order.id}`,
+        title: `Pickup ${orderRef}: siapkan pesanan`,
+        desc: 'Pembeli sudah bayar. Siapkan barang, lalu update status ke “Siap diambil” dan gunakan template WA manual jika perlu.',
+        actionPath,
+        icon: Store,
+        tone: 'success',
+      };
+    }
+
+    if (status === 'processing') {
+      return {
+        id: `pickup-ready-${order.id}`,
+        title: `Pickup ${orderRef}: hubungi pembeli`,
+        desc: 'Pesanan siap diambil. Admin bisa kirim WA manual ke pembeli, lalu update ke “Sudah diambil” setelah barang diterima.',
+        actionPath,
+        icon: MessageCircle,
+        tone: 'info',
+      };
+    }
+  }
+
+  if (deliveryType === 'delivery') {
+    if (['paid', 'capture', 'settlement'].includes(status)) {
+      return {
+        id: `delivery-paid-${order.id}`,
+        title: `Kirim ${orderRef}: mulai packing`,
+        desc: 'Pembayaran sudah masuk. Siapkan/packing produk, lalu update status ke “Diproses” jika mulai dikerjakan.',
+        actionPath,
+        icon: PackageCheck,
+        tone: 'success',
+      };
+    }
+
+    if (status === 'processing') {
+      return {
+        id: `delivery-processing-${order.id}`,
+        title: `Kirim ${orderRef}: perlu resi`,
+        desc: 'Jika paket sudah diserahkan ke jasa kirim, isi No. Resi/Kode Tracking lalu update status ke “Dikirim”.',
+        actionPath,
+        icon: Truck,
+        tone: 'warning',
+      };
+    }
+  }
+
+  return null;
+};
 
 export function Topbar() {
   const { user, lastActivityAt, updateUser } = useAuthStore();
@@ -67,8 +142,8 @@ export function Topbar() {
   const { data: recentOrdersResponse } = useQuery({
     queryKey: ['topbar-recent-orders'],
     queryFn: async () => {
-      const response = await api.get<{ data: Array<{ id: string; created_at: string }> }>('/admin/orders', {
-        params: { limit: 20, skip: 0 },
+      const response = await api.get<{ data: TopbarOrderInfo[] }>('/admin/orders', {
+        params: { limit: 30, skip: 0 },
       });
       return response.data;
     },
@@ -113,21 +188,33 @@ export function Topbar() {
     return orderRows.filter((o) => new Date(o.created_at).getTime() > new Date(lastSeenOrderAt).getTime()).length;
   }, [recentOrdersResponse?.data, lastSeenOrderAt]);
 
+  const orderActionReminders = useMemo(() => {
+    const orderRows = recentOrdersResponse?.data || [];
+    return orderRows
+      .map(buildOrderActionReminder)
+      .filter((item): item is AdminNotificationItem => Boolean(item))
+      .slice(0, 8);
+  }, [recentOrdersResponse?.data]);
+
+  const activeAdminNotifCount = newTransactionsCount + orderActionReminders.length;
+
   const notifications = useMemo(() => {
     const rows = variantResponse?.data || [];
     const emptyCount = rows.filter((x) => Number(x.stock ?? 0) <= 0).length;
     const lowCount = rows.filter((x) => Number(x.stock ?? 0) > 0 && Number(x.stock ?? 0) <= 10).length;
 
-    const list = [
+    const list: AdminNotificationItem[] = [
       {
         id: 'session-timeout',
         title: 'Sesi internal aktif',
         desc: 'Sesi akan berakhir otomatis jika tidak ada aktivitas selama 4 jam.',
+        icon: TimerReset,
       },
       {
         id: 'security-scope',
         title: 'Akses dibatasi role',
         desc: 'Menu sensitif hanya tampil untuk owner sesuai matrix akses.',
+        icon: ShieldCheck,
       },
       {
         id: 'new-transactions',
@@ -135,21 +222,31 @@ export function Topbar() {
         desc: newTransactionsCount > 0
           ? 'Ada transaksi baru masuk. Segera cek halaman pesanan untuk tindak lanjut.'
           : 'Belum ada transaksi baru sejak pengecekan terakhir.',
+        actionPath: '/orders',
+        icon: ShoppingBag,
+        tone: newTransactionsCount > 0 ? 'warning' : 'default',
       },
+      ...orderActionReminders,
       {
         id: 'stock-low',
         title: `Stok menipis: ${lowCount} varian`,
         desc: 'Segera cek varian dengan stok rendah agar operasional kasir tetap lancar.',
+        actionPath: '/variants?stock=low',
+        icon: PackageCheck,
+        tone: lowCount > 0 ? 'warning' : 'default',
       },
       {
         id: 'stock-empty',
         title: `Stok habis: ${emptyCount} varian`,
         desc: 'Beberapa varian sudah habis dan perlu restock prioritas.',
+        actionPath: '/variants?stock=empty',
+        icon: PackageCheck,
+        tone: emptyCount > 0 ? 'warning' : 'default',
       },
     ];
 
     return list;
-  }, [variantResponse?.data, newTransactionsCount]);
+  }, [variantResponse?.data, newTransactionsCount, orderActionReminders]);
 
   const profileDisplayName = [profileData?.firstname, profileData?.lastname].filter(Boolean).join(' ').trim();
   const displayName = profileDisplayName || user?.name || profileData?.email || user?.email || 'Internal User';
@@ -315,9 +412,9 @@ export function Topbar() {
               aria-label="Notifikasi"
             >
               <Bell className="w-5 h-5" />
-              {newTransactionsCount > 0 ? (
+              {activeAdminNotifCount > 0 ? (
                 <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-rose-500 text-white text-[10px] leading-4 rounded-full border border-white text-center font-semibold">
-                  {newTransactionsCount > 9 ? '9+' : newTransactionsCount}
+                  {activeAdminNotifCount > 9 ? '9+' : activeAdminNotifCount}
                 </span>
               ) : !notifRead ? (
                 <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white" />
@@ -331,21 +428,39 @@ export function Topbar() {
             </div>
             <div className="max-h-72 overflow-auto">
               {notifications.map((notif) => {
-                const isStockNotif = notif.id === 'stock-low' || notif.id === 'stock-empty';
-                const isOrderNotif = notif.id === 'new-transactions';
+                const isActionable = Boolean(notif.actionPath);
+                const NotificationIcon = notif.icon;
+                const iconToneClass = notif.tone === 'warning'
+                  ? 'bg-amber-50 text-amber-700'
+                  : notif.tone === 'success'
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : notif.tone === 'info'
+                      ? 'bg-blue-50 text-blue-700'
+                      : 'bg-slate-50 text-slate-500';
+
                 return (
                   <button
                     key={notif.id}
                     type="button"
                     onClick={() => {
-                      if (notif.id === 'new-transactions') navigate('/orders');
-                      if (notif.id === 'stock-low') navigate('/variants?stock=low');
-                      if (notif.id === 'stock-empty') navigate('/variants?stock=empty');
+                      if (notif.actionPath) navigate(notif.actionPath);
                     }}
-                    className={`w-full text-left px-3 py-2 border-b border-gray-50 last:border-b-0 ${(isStockNotif || isOrderNotif) ? 'hover:bg-emerald-50/60 cursor-pointer' : 'cursor-default'}`}
+                    className={`w-full text-left px-3 py-2.5 border-b border-gray-50 last:border-b-0 ${isActionable ? 'hover:bg-emerald-50/60 cursor-pointer' : 'cursor-default'}`}
                   >
-                    <p className="text-sm font-medium text-gray-900">{notif.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
+                    <div className="flex items-start gap-2.5">
+                      {NotificationIcon ? (
+                        <span className={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-xl ${iconToneClass}`}>
+                          <NotificationIcon className="h-3.5 w-3.5" />
+                        </span>
+                      ) : null}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-900">{notif.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{notif.desc}</p>
+                        {isActionable ? (
+                          <p className="mt-1 text-[11px] font-semibold text-emerald-700">Klik untuk buka detail/tindak lanjut</p>
+                        ) : null}
+                      </div>
+                    </div>
                   </button>
                 );
               })}
