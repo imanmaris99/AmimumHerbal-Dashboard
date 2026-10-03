@@ -12,6 +12,7 @@ import { Search, Filter, ShoppingBag, PackageCheck, Clock3, Wallet, Truck, Store
 import api from '@/lib/api';
 import {
   deliveryTypeLabels,
+  getOrderStatusLabel,
   getStatusLabel,
   getStatusStyle,
   orderStatusLabels,
@@ -281,7 +282,7 @@ export default function OrdersPage() {
                       <TableCell>{resolveOrderCustomerName(order)}</TableCell>
                       <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{getStatusLabel(deliveryTypeLabels, order.delivery_type)}</span></TableCell>
                       <TableCell className="font-bold">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
-                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{getStatusLabel(orderStatusLabels, order.status)}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{getOrderStatusLabel(order.status, order.delivery_type)}</Badge></TableCell>
                       <TableCell className="text-xs">{new Date(order.created_at).toLocaleString(locale)}</TableCell>
                       <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />{t('ordersPage.table.detail')}</Button></TableCell>
                     </TableRow>

@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ClipboardList, Copy, Loader2, MapPinned, MessageCircle, Package2, Save, Truck } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Copy, Loader2, MapPinned, MessageCircle, Package2, Save, Store, Truck } from 'lucide-react';
 
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -13,12 +13,14 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  deliveryOrderStatusOptions,
   deliveryTypeLabels,
   getAdminSafeErrorMessage,
+  getOrderStatusLabel,
   getStatusLabel,
   getStatusStyle,
-  orderStatusLabels,
   orderStatusStyles,
+  pickupOrderStatusOptions,
   sanitizeOrderNotes,
 } from '@/lib/dashboard';
 import { toast } from 'sonner';
@@ -89,7 +91,6 @@ interface UpdateOrderStatusResponse {
   };
 }
 
-const orderStatusOptions = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'settlement', 'refund'];
 
 const extractBuyerFromNotes = (notes?: string | null) => {
   const raw = String(notes || '');
@@ -192,6 +193,15 @@ export default function OrderDetailPage() {
   });
 
   const order = orderDetailQuery.data;
+  const isPickupOrder = String(order?.delivery_type || '').toLowerCase() === 'pickup';
+  const contextualOrderStatusOptions = React.useMemo(() => {
+    const baseOptions = isPickupOrder ? pickupOrderStatusOptions : deliveryOrderStatusOptions;
+    const currentStatus = String(order?.status || '').toLowerCase();
+
+    return currentStatus && !baseOptions.includes(currentStatus)
+      ? [currentStatus, ...baseOptions]
+      : baseOptions;
+  }, [isPickupOrder, order?.status]);
 
   React.useEffect(() => {
     setTrackingCode(order?.my_shipping?.code_tracking || '');
@@ -247,7 +257,14 @@ export default function OrderDetailPage() {
           className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
         }
     : null;
-  const orderStatusText = getStatusLabel(orderStatusLabels, order?.status || '-');
+  const pickupOperationInstruction = isPickupOrder
+    ? {
+        title: 'PICKUP / AMBIL LANGSUNG DI TOKO',
+        message: 'Pesanan ini dipilih untuk ambil langsung. Jangan isi nomor resi atau proses drop kurir. Update statusnya sesuai alur pickup: Dibayar → Siap diambil → Sudah diambil.',
+        className: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+      }
+    : null;
+  const orderStatusText = getOrderStatusLabel(order?.status || '-', order?.delivery_type);
   const deliveryTypeText = getStatusLabel(deliveryTypeLabels, order?.delivery_type || '-');
   const courierName = order?.my_shipping?.my_courier?.courier_name || '-';
   const courierService = order?.my_shipping?.my_courier?.service_type || '-';
@@ -446,7 +463,7 @@ export default function OrderDetailPage() {
         </div>
         {order ? (
           <Badge className={`border-none px-3 py-2 rounded-xl ${getStatusStyle(orderStatusStyles, order.status)}`}>
-            {getStatusLabel(orderStatusLabels, order.status)}
+            {getOrderStatusLabel(order.status, order.delivery_type)}
           </Badge>
         ) : null}
       </div>
@@ -483,7 +500,7 @@ export default function OrderDetailPage() {
               <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.status')}</span>
-                  <strong className="text-slate-900 capitalize">{getStatusLabel(orderStatusLabels, order.status)}</strong>
+                  <strong className="text-slate-900 capitalize">{getOrderStatusLabel(order.status, order.delivery_type)}</strong>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>{t('orderDetailPage.deliveryType')}</span>
@@ -521,6 +538,22 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                 </div>
+              ) : pickupOperationInstruction ? (
+                <div className={`rounded-2xl border p-4 text-sm ${pickupOperationInstruction.className}`}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-xl bg-white/80 p-2 shadow-sm">
+                      <Store className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-extrabold uppercase tracking-wider">
+                        {pickupOperationInstruction.title}
+                      </p>
+                      <p className="leading-relaxed">
+                        {pickupOperationInstruction.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               ) : null}
 
               <div className="rounded-2xl bg-slate-900 text-white p-4 text-sm flex items-center justify-between gap-3">
@@ -542,9 +575,9 @@ export default function OrderDetailPage() {
                     className="h-11 rounded-xl border border-emerald-200 bg-white px-3 text-sm text-gray-700 outline-none w-full"
                   >
                     <option value="">{t('orderDetailPage.selectStatus')}</option>
-                    {orderStatusOptions.map((status) => (
+                    {contextualOrderStatusOptions.map((status) => (
                       <option key={status} value={status}>
-                        {getStatusLabel(orderStatusLabels, status)}
+                        {getOrderStatusLabel(status, order.delivery_type)}
                       </option>
                     ))}
                   </select>
@@ -671,7 +704,16 @@ export default function OrderDetailPage() {
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 pb-8">
-                {order.my_shipping ? (
+                {isPickupOrder ? (
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-6 text-sm text-emerald-800">
+                    <div className="flex items-center gap-2 font-bold text-emerald-950">
+                      <Store className="w-4 h-4" /> Ambil langsung di toko
+                    </div>
+                    <p className="mt-2 leading-relaxed">
+                      Order ini tidak memakai alamat kurir, jasa kirim, atau nomor resi. Gunakan status pickup: Dibayar → Siap diambil → Sudah diambil.
+                    </p>
+                  </div>
+                ) : order.my_shipping ? (
                   <div className="space-y-4">
                     <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700 space-y-2">
                       <div className="flex items-center gap-2 text-slate-900 font-semibold"><MapPinned className="w-4 h-4" />{t('orderDetailPage.address')}</div>

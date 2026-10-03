@@ -24,6 +24,30 @@ export const orderStatusLabels: Record<string, string> = {
   refund: 'Refund',
 };
 
+export const pickupOrderStatusLabels: Record<string, string> = {
+  pending: 'Menunggu bayar',
+  paid: 'Dibayar',
+  capture: 'Dibayar',
+  settlement: 'Dibayar',
+  processing: 'Siap diambil',
+  shipped: 'Siap diambil',
+  completed: 'Sudah diambil',
+  cancelled: 'Dibatalkan',
+  failed: 'Gagal',
+  refund: 'Refund',
+};
+
+export const deliveryOrderStatusOptions = ['pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled', 'failed', 'capture', 'settlement', 'refund'];
+export const pickupOrderStatusOptions = ['pending', 'paid', 'processing', 'completed', 'cancelled', 'failed', 'capture', 'settlement', 'refund'];
+
+export function getOrderStatusLabel(status?: string | null, deliveryType?: string | null, fallback = 'Belum tersedia') {
+  const labelMap = String(deliveryType || '').toLowerCase() === 'pickup'
+    ? pickupOrderStatusLabels
+    : orderStatusLabels;
+
+  return getStatusLabel(labelMap, status, fallback);
+}
+
 export const paymentStatusStyles: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-600',
   settlement: 'bg-emerald-50 text-emerald-600',
