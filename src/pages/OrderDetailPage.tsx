@@ -346,7 +346,9 @@ export default function OrderDetailPage() {
         id: 'payment-confirmed',
         title: 'Pembayaran diterima',
         description: 'Kirim setelah pembayaran manual sudah dicek masuk.',
-        text: `Alhamdulillah ${greetingName}, pembayaran pesanan kakak sudah kami terima.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nPesanan akan kami siapkan dan packing. Nanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
+        text: deliveryType === 'pickup'
+          ? `Alhamdulillah ${greetingName}, pembayaran pesanan kakak sudah kami terima.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nPesanan akan kami siapkan untuk ambil langsung di toko. Nanti kalau sudah siap diambil, kami kabari ya kak.`
+          : `Alhamdulillah ${greetingName}, pembayaran pesanan kakak sudah kami terima.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nPesanan akan kami siapkan dan packing. Nanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
       });
     }
 
@@ -375,7 +377,9 @@ export default function OrderDetailPage() {
       title: 'Sedang dipacking',
       description: 'Kirim saat stok aman dan barang mulai disiapkan.',
       recommended: status === 'processing',
-      text: `Assalamu’alaikum ${greetingName}, pesanan kakak sedang kami siapkan dan packing.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nNanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
+      text: deliveryType === 'pickup'
+        ? `Assalamu’alaikum ${greetingName}, pesanan kakak sedang kami siapkan untuk ambil langsung di toko.\n\n${orderSummary}\n\nProduk:\n${itemsText}\n\nTidak ada nomor resi karena pesanan tidak dikirim melalui kurir. Nanti kalau sudah siap diambil, kami kabari ya kak.`
+        : `Assalamu’alaikum ${greetingName}, pesanan kakak sedang kami siapkan dan packing.\n\n${orderSummary}\n\nProduk:\n${itemsText}${shippingBlock}\n\nNanti kalau sudah dikirim, kami informasikan nomor resinya ya kak.`,
     });
 
     if (deliveryType === 'delivery' && trackingCodeForTemplate) {
