@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Factory, PlusCircle, Search, Tags, LayoutGrid, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -276,35 +275,26 @@ export default function ProductionPage() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
-          <div className="overflow-x-auto">
-          <Table className="min-w-[860px]">
-            <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
-              <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Production</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Preview</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Category</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Deskripsi</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {productionsLoading || categoriesLoading ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Memuat data brand/production...</TableCell></TableRow>
-              ) : filteredProductions.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-gray-400 py-8">Tidak ada production yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
-              ) : (
-                filteredProductions.map((production) => (
-                  <TableRow key={production.id} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
-                    <TableCell>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{production.name}</p>
-                        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">ID: {production.id}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
+        <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
+          {productionsLoading || categoriesLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              Memuat data brand/production...
+            </div>
+          ) : filteredProductions.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              Tidak ada production yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredProductions.map((production) => (
+                <article
+                  key={production.id}
+                  className="rounded-3xl bg-white px-4 py-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 transition-colors hover:bg-gray-50/70 sm:px-5"
+                >
+                  <div className="grid grid-cols-[4rem_1fr] gap-4 lg:grid-cols-[4.5rem_minmax(180px,0.8fr)_minmax(160px,0.65fr)_minmax(260px,1.4fr)_auto] lg:items-center">
+                    <div className="row-span-2 lg:row-span-1">
                       {production.photo_url ? (
-                        <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-gray-100 bg-white p-1 flex items-center justify-center overflow-hidden">
+                        <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-white p-1 md:h-16 md:w-16">
                           <img
                             src={production.photo_url}
                             alt={production.name}
@@ -314,27 +304,52 @@ export default function ProductionPage() {
                           />
                         </div>
                       ) : (
-                        <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400 text-center px-1">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-1 text-center text-[10px] font-medium text-gray-400 md:h-16 md:w-16">
                           Belum ada
                         </div>
                       )}
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{production.category || '-'}</TableCell>
-                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{production.description_list?.[0] || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/productions/edit/${production.id}`)}>
-                        <PencilLine className="w-4 h-4 mr-2" />
-                        Edit
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Production</p>
+                      <h3 className="mt-1 break-words text-sm font-bold leading-5 text-gray-900 dark:text-slate-100 sm:text-base">
+                        {production.name}
+                      </h3>
+                      <p className="mt-1 text-[10px] font-medium text-gray-400 dark:text-slate-400">ID: {production.id}</p>
+                    </div>
+
+                    <div className="col-start-2 min-w-0 lg:col-start-auto">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Kategori</p>
+                      <p className="mt-1 break-words text-sm font-semibold text-emerald-700 dark:text-emerald-300">
+                        {production.category || '-'}
+                      </p>
+                    </div>
+
+                    <div className="col-span-2 min-w-0 lg:col-span-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Deskripsi</p>
+                      <p className="mt-1 line-clamp-3 break-words text-sm leading-6 text-gray-600 dark:text-slate-300">
+                        {production.description_list?.[0] || '-'}
+                      </p>
+                    </div>
+
+                    <div className="col-span-2 flex justify-end lg:col-span-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-xl sm:w-auto"
+                        onClick={() => navigate(`/productions/edit/${production.id}`)}
+                      >
+                        <PencilLine className="mr-2 h-4 w-4" />
+                        Edit Brand Ini
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          </div>
-          <div className="px-4 pt-4 text-xs text-gray-500">
-            Category list diambil dari <code>tag_categories</code> dan dipakai untuk relasi product/production layer.
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+          <div className="pt-4 text-xs leading-5 text-gray-500">
+            Category list diambil dari <code>tag_categories</code> dan dipakai untuk relasi product/production layer. Tampilan ini tidak memakai horizontal scroll agar nama brand tetap terlihat saat admin menekan edit.
           </div>
         </CardContent>
       </Card>
