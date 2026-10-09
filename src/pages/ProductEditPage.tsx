@@ -353,26 +353,26 @@ export default function ProductEditPage() {
                 <p className="text-sm text-gray-500 break-all mt-1">ID: {productDetailQuery.data.id}</p>
               </div>
 
-              <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-3">
-                  <span>Status</span>
-                  <strong className="text-slate-900">{productDetailQuery.data.is_active ? 'Active' : 'Inactive'}</strong>
+              <div className="grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Status tampil</p>
+                  <strong className="mt-1 block text-slate-900">{productDetailQuery.data.is_active ? 'Aktif' : 'Nonaktif'}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>Brand/production</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{productDetailQuery.data.company || '-'}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Brand / production</p>
+                  <strong className="mt-1 block break-words text-slate-900">{productDetailQuery.data.company || '-'}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>Range harga variant</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{variantPriceSummary}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Range harga varian</p>
+                  <strong className="mt-1 block break-words text-slate-900">{variantPriceSummary}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>Ringkasan deskripsi</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDescription}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Ringkasan deskripsi</p>
+                  <strong className="mt-1 block break-words text-slate-900">{summaryDescription}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>Ringkasan instruksi</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryInstruction}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Ringkasan instruksi</p>
+                  <strong className="mt-1 block break-words text-slate-900">{summaryInstruction}</strong>
                 </div>
               </div>
 
@@ -396,28 +396,30 @@ export default function ProductEditPage() {
                 {variantCount > 0 ? (
                   <div className="space-y-2">
                     {(productDetailQuery.data?.variants_list || []).map((variant) => (
-                      <div key={variant.id} className="rounded-xl bg-white border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-3">
-                        <div className="min-w-0 space-y-1">
-                          <p className="text-xs font-semibold text-slate-900 truncate">{variant.variant || `Varian #${variant.id}`}</p>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-600">
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Variant: {variant.variant || '-'}</span>
-                            <span>ID: {variant.id}</span>
-                            <span>Stok: {variant.stock ?? 0}</span>
-                            {Number(variant.discount || 0) > 0 && typeof variant.discounted_price === 'number' ? (
-                              <span>
-                                Harga: <span className="line-through text-slate-400">Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>{' '}
-                                <span className="font-semibold text-emerald-700">Rp {Number(variant.discounted_price).toLocaleString('id-ID')}</span>{' '}
-                                <span className="inline-flex items-center rounded-md bg-emerald-100 px-1.5 py-0.5 text-emerald-700">-{Number(variant.discount || 0)}%</span>
-                              </span>
-                            ) : (
-                              <span>Harga: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
-                            )}
+                      <div key={variant.id} className="rounded-2xl border border-slate-200 bg-white px-3 py-3">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0 space-y-1">
+                            <p className="break-words text-xs font-semibold text-slate-900">{variant.variant || `Varian #${variant.id}`}</p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-600">
+                              <span className="inline-flex items-center rounded-md bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">Varian: {variant.variant || '-'}</span>
+                              <span>ID: {variant.id}</span>
+                              <span>Stok: {variant.stock ?? 0}</span>
+                              {Number(variant.discount || 0) > 0 && typeof variant.discounted_price === 'number' ? (
+                                <span>
+                                  Harga: <span className="line-through text-slate-400">Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>{' '}
+                                  <span className="font-semibold text-emerald-700">Rp {Number(variant.discounted_price).toLocaleString('id-ID')}</span>{' '}
+                                  <span className="inline-flex items-center rounded-md bg-emerald-100 px-1.5 py-0.5 text-emerald-700">-{Number(variant.discount || 0)}%</span>
+                                </span>
+                              ) : (
+                                <span>Harga: Rp {Number(variant.price || 0).toLocaleString('id-ID')}</span>
+                              )}
+                            </div>
                           </div>
+                          <Button type="button" size="sm" variant="outline" className="w-full rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100 sm:w-auto" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
+                            <PencilLine className="w-4 h-4 mr-2" />
+                            Edit Varian Ini
+                          </Button>
                         </div>
-                        <Button type="button" size="sm" variant="outline" className="rounded-lg border-slate-300 text-slate-700 hover:bg-slate-100" onClick={() => navigate(`/variants/edit/${variant.id}?productId=${productDetailQuery.data?.id}`)}>
-                          <PencilLine className="w-4 h-4 mr-2" />
-                          Edit Variant
-                        </Button>
                       </div>
                     ))}
                   </div>
@@ -503,18 +505,18 @@ export default function ProductEditPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-product-name-page">Nama product</Label>
-                    <Input id="edit-product-name-page" value={form.name || ''} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Nama product" required />
+                    <Label htmlFor="edit-product-name-page">Nama produk</Label>
+                    <Input id="edit-product-name-page" value={form.name || ''} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Nama produk" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="edit-product-info-page">Info singkat</Label>
-                    <Input id="edit-product-info-page" value={form.info || ''} onChange={(e) => setForm((prev) => ({ ...prev, info: e.target.value }))} placeholder="Info singkat product" required />
+                    <Input id="edit-product-info-page" value={form.info || ''} onChange={(e) => setForm((prev) => ({ ...prev, info: e.target.value }))} placeholder="Info singkat produk" required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-product-price-page">Harga dasar product</Label>
+                    <Label htmlFor="edit-product-price-page">Harga dasar produk</Label>
                     <Input id="edit-product-price-page" type="number" min="0" value={form.price || ''} onChange={(e) => setForm((prev) => ({ ...prev, price: Number(e.target.value) }))} required />
                     <p className="text-xs text-gray-500">Harga ini menjaga layer dasar product. Harga jual utama per pack/variant tetap dikelola di halaman Variants.</p>
                   </div>
@@ -531,7 +533,7 @@ export default function ProductEditPage() {
                     value={form.description || ''}
                     onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                     className="min-h-[140px] rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 outline-none w-full"
-                    placeholder="Deskripsi product"
+                    placeholder="Deskripsi produk"
                     required
                   />
                 </div>
@@ -549,7 +551,7 @@ export default function ProductEditPage() {
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-xs text-gray-500">Setelah simpan berhasil, halaman akan kembali ke daftar catalog. Untuk mengubah harga jual per variant, lanjutkan dari modul Variants.</p>
+                  <p className="text-xs text-gray-500">Setelah simpan berhasil, halaman kembali ke daftar katalog. Harga jual utama tetap dikelola per varian/kemasan di modul Variants.</p>
                   <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
                     <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/catalog')}>
                       Batal

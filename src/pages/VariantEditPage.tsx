@@ -296,22 +296,24 @@ export default function VarianEditPage() {
                 )}
               </div>
 
-              <div className="rounded-2xl bg-slate-50 p-4 space-y-3">
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-sm text-gray-500">Product</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{variantDetailQuery.data.product || '-'}</strong>
+              <div className="grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Produk induk</p>
+                  <strong className="mt-1 block break-words text-sm text-gray-900">{variantDetailQuery.data.product || '-'}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-sm text-gray-500">Stok</span>
-                  <strong className="text-sm text-gray-900">{Number(variantDetailQuery.data.stock || 0)}</strong>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-white px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Stok</p>
+                    <strong className="mt-1 block text-sm text-gray-900">{Number(variantDetailQuery.data.stock || 0)}</strong>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Kedaluwarsa</p>
+                    <strong className="mt-1 block break-words text-sm text-gray-900">{variantDetailQuery.data.expiration || '-'}</strong>
+                  </div>
                 </div>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-sm text-gray-500">Harga</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{summaryHarga}</strong>
-                </div>
-                <div className="flex items-start justify-between gap-4">
-                  <span className="text-sm text-gray-500">Expiry</span>
-                  <strong className="text-sm text-gray-900 text-right max-w-[160px]">{variantDetailQuery.data.expiration || '-'}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Harga</p>
+                  <strong className="mt-1 block break-words text-sm text-gray-900">{summaryHarga}</strong>
                 </div>
               </div>
             </CardContent>
@@ -359,7 +361,7 @@ export default function VarianEditPage() {
                   </div>
 
                   <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4 border-t border-gray-100 pt-5">
-                    <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar variants.</p>
+                    <p className="text-xs text-gray-500">Setelah update berhasil, halaman kembali ke daftar varian.</p>
                     <div className="flex flex-col-reverse sm:flex-row gap-3 w-full md:w-auto">
                       <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto text-gray-600" onClick={() => navigate(parentProductId ? `/catalog/edit/${parentProductId}` : '/variants')}>
                         Batal
@@ -381,7 +383,7 @@ export default function VarianEditPage() {
               <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-gray-100">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">Perbarui Gambar Varian</h2>
-                  <p className="text-sm text-gray-500 mt-1">Ganti atau tambahkan gambar varian.</p>
+                  <p className="text-sm text-gray-500 mt-1">Ganti gambar varian dengan file yang lebih jelas jika diperlukan.</p>
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 py-6 space-y-4">
@@ -427,13 +429,13 @@ export default function VarianEditPage() {
               <CardHeader className="px-6 sm:px-8 pt-6 pb-4 border-b border-red-100">
                 <div>
                   <h2 className="text-lg font-semibold text-red-900">Hapus varian</h2>
-                  <p className="text-sm text-red-700 mt-1">Hapus hanya jika varian memang tidak lagi dibutuhkan.</p>
+                  <p className="text-sm text-red-700 mt-1">Hapus hanya jika varian benar-benar tidak lagi dibutuhkan.</p>
                 </div>
               </CardHeader>
               <CardContent className="px-6 sm:px-8 py-7">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <p className="text-sm text-red-700 max-w-2xl">
-                    Backend tetap akan menolak penghapusan jika varian masih dipakai di cart atau riwayat order.
+                    Sistem akan menolak penghapusan jika varian masih dipakai di cart atau riwayat order.
                   </p>
                   <Button type="button" variant="outline" onClick={() => setShowDeleteConfirm(true)} disabled={deleteVariantMutation.isPending} className="rounded-xl text-red-700 border-red-200 hover:bg-red-100 w-full md:w-auto">
                     {deleteVariantMutation.isPending ? (
