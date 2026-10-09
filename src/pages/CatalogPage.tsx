@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -518,96 +517,82 @@ export default function CatalogPage() {
                 </p>
               </div>
             </CardHeader>
-            <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
-              <div className="overflow-x-auto">
-              <Table className="min-w-[640px]">
-                <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
-                  <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Product</TableHead>
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Image</TableHead>
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Production</TableHead>
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Price</TableHead>
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Variants</TableHead>
-                    <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {productsLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Memuat data katalog...</TableCell></TableRow>
-                  ) : productsError ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-gray-500 py-8 space-y-3">
-                        <p>Gagal memuat data katalog. Cek koneksi backend lalu coba lagi.</p>
-                        <p className="text-xs text-gray-400">
-                          {getAdminSafeErrorMessage(productsErrorDetail, 'Data produk belum bisa dimuat saat ini.')}
-                        </p>
-                        <div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            className="rounded-xl"
-                            onClick={() => {
-                              void refetchProductions();
-                              void refetchProducts();
-                            }}
-                          >
-                            Muat ulang katalog
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredProducts.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-gray-400 py-8">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
-                  ) : (
-                    filteredProducts.map((product) => (
-                      <TableRow key={product.id} className={`group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700 cursor-pointer ${selectedProductId === product.id ? 'bg-emerald-50/40 dark:bg-emerald-950/30' : ''}`} onClick={() => setSelectedProductId(product.id)}>
-                        <TableCell>
-                          <div>
-                            <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{product.name}</p>
-                            <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">{product.id}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
+            <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
+              {productsLoading ? (
+                <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Memuat data katalog...</div>
+              ) : productsError ? (
+                <div className="rounded-2xl bg-red-50 px-4 py-8 text-center text-sm text-gray-600 space-y-3">
+                  <p>Gagal memuat data katalog. Cek koneksi backend lalu coba lagi.</p>
+                  <p className="text-xs text-gray-400">
+                    {getAdminSafeErrorMessage(productsErrorDetail, 'Data produk belum bisa dimuat saat ini.')}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    onClick={() => {
+                      void refetchProductions();
+                      void refetchProducts();
+                    }}
+                  >
+                    Muat ulang katalog
+                  </Button>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Tidak ada produk yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      className={`w-full rounded-3xl bg-white p-4 text-left shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 transition hover:bg-gray-50 ${selectedProductId === product.id ? 'ring-emerald-200 bg-emerald-50/40' : ''}`}
+                      onClick={() => setSelectedProductId(product.id)}
+                    >
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex min-w-0 gap-4">
                           <img
                             src={product.thumbnail_url || 'https://placehold.co/72x72?text=Belum+Ada+Gambar'}
                             alt={product.name}
-                            className="w-14 h-14 rounded-xl object-cover border border-gray-100"
+                            className="h-16 w-16 shrink-0 rounded-2xl border border-gray-100 object-cover bg-gray-50"
                             loading="lazy"
                             onError={(e) => {
                               const target = e.currentTarget;
                               if (!target.src.includes('placehold.co')) target.src = 'https://placehold.co/72x72?text=Belum+Ada+Gambar';
                             }}
                           />
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600 dark:text-slate-300">{product.brand_info?.name || '-'}</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-bold text-gray-900 dark:text-slate-100">{product.priceSummary}</p>
-                            <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">
-                              {product.validVariants?.length
-                                ? 'range harga variant'
-                                : 'harga dasar product'}
-                            </p>
+                          <div className="min-w-0 space-y-1">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Produk Katalog</p>
+                            <p className="break-words text-sm font-bold text-gray-900 sm:text-base">{product.name}</p>
+                            <p className="break-all text-[11px] font-medium text-gray-400">ID: {product.id}</p>
+                            <p className="text-xs text-gray-500">Production: <strong className="text-gray-700">{product.brand_info?.name || '-'}</strong></p>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                            {product.validVariants?.length || 0} variants
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button type="button" variant="outline" className="rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
-                            <PencilLine className="w-4 h-4 mr-2" />
-                            Edit
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:min-w-[360px]">
+                          <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Harga</p>
+                            <p className="mt-1 font-bold text-gray-900">{product.priceSummary}</p>
+                            <p className="text-[10px] text-gray-400">{product.validVariants?.length ? 'range variant' : 'harga dasar'}</p>
+                          </div>
+                          <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Varian</p>
+                            <p className="mt-1 font-bold text-gray-900">{product.validVariants?.length || 0}</p>
+                            <p className="text-[10px] text-gray-400">slot aktif</p>
+                          </div>
+                          <div className="col-span-2 flex items-center sm:col-span-1">
+                            <Button type="button" variant="outline" className="w-full rounded-xl" onClick={(e) => { e.stopPropagation(); navigate(`/catalog/edit/${product.id}`); }}>
+                              <PencilLine className="w-4 h-4 mr-2" />
+                              Edit Produk Ini
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {selectedProduct && (
                 <div className="mt-4 mx-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">

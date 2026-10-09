@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -425,98 +424,85 @@ export default function VariantsPage() {
             </p>
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
-          <div className="overflow-x-auto">
-            <Table className="min-w-[980px]">
-              <TableHeader className="bg-gray-50/50">
-                <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Pack</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Preview</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Product</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Stock</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Price</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Discount</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Expiry</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Image</TableHead>
-                  <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {variantsLoading || productsLoading ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Memuat data varian...</TableCell></TableRow>
-                ) : filteredVariants.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center text-gray-400 py-8">Tidak ada varian yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</TableCell></TableRow>
-                ) : (
-                  filteredVariants.map((variant, index) => (
-                    <TableRow key={`${variant.id || 'variant'}-${index}`} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
-                      <TableCell>
-                        <div>
-                          <p className="font-bold text-gray-900 text-sm">{variant.resolvedPackName}</p>
-                          <p className="text-[10px] text-gray-400 font-medium">{variant.variant || '-'}</p>
+        <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
+          {variantsLoading || productsLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Memuat data varian...</div>
+          ) : filteredVariants.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Tidak ada varian yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.</div>
+          ) : (
+            <div className="space-y-3">
+              {filteredVariants.map((variant, index) => (
+                <div key={`${variant.id || 'variant'}-${index}`} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex min-w-0 gap-4">
+                      {variant.img ? (
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-white p-1">
+                          <img
+                            src={variant.img}
+                            alt={variant.resolvedPackName}
+                            className="max-h-full max-w-full object-contain"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                          />
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {variant.img ? (
-                          <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-gray-100 bg-white p-1 flex items-center justify-center overflow-hidden">
-                            <img
-                              src={variant.img}
-                              alt={variant.resolvedPackName}
-                              className="max-h-full max-w-full object-contain"
-                              loading="lazy"
-                              referrerPolicy="no-referrer"
-                            />
-                          </div>
-                        ) : (
-                          <div className="h-12 w-12 md:h-14 md:w-14 rounded-xl border border-dashed border-gray-200 bg-gray-50 flex items-center justify-center text-[10px] font-medium text-gray-400 text-center px-1">
-                            Belum ada
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">{variant.resolvedProductName}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                          {variant.stock || 0} stok
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-bold text-gray-900 text-sm">
-                            {typeof variant.price === 'number'
-                              ? `Rp ${Number(variant.price).toLocaleString('id-ID')}`
-                              : '-'}
-                          </p>
-                          <p className="text-[10px] text-gray-400 font-medium">
-                            {typeof variant.discounted_price === 'number'
-                              ? `setelah diskon: Rp ${Number(variant.discounted_price).toLocaleString('id-ID')}`
-                              : 'harga variant'}
-                          </p>
+                      ) : (
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-1 text-center text-[10px] font-medium text-gray-400">
+                          Belum ada gambar
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${Number(variant.discount || 0) > 0 ? 'bg-violet-50 text-violet-600' : 'bg-slate-100 text-slate-600'}`}>
-                          {Number(variant.discount || 0) > 0 ? `${variant.discount}%` : 'tanpa diskon'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">{variant.expiration || '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{variant.img ? 'Ada gambar' : 'Belum ada gambar'}</TableCell>
-                      <TableCell>
-                        <div className="flex justify-end min-w-[140px]">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-xl"
-                            onClick={() => startEditing(variant)}
-                          >
-                            <PencilLine className="w-4 h-4 mr-2" /> Edit
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                      )}
+
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Varian / Kemasan</p>
+                        <p className="break-words text-sm font-bold text-gray-900 sm:text-base">{variant.resolvedPackName}</p>
+                        <p className="text-xs text-gray-500">Variant: <strong className="text-gray-700">{variant.variant || '-'}</strong></p>
+                        <p className="break-words text-xs text-gray-500">Product: <strong className="text-gray-700">{variant.resolvedProductName}</strong></p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 lg:min-w-[520px]">
+                      <div className="rounded-2xl bg-blue-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-500">Stok</p>
+                        <p className="mt-1 font-bold text-blue-700">{variant.stock || 0}</p>
+                      </div>
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Harga</p>
+                        <p className="mt-1 font-bold text-gray-900">
+                          {typeof variant.price === 'number'
+                            ? `Rp ${Number(variant.price).toLocaleString('id-ID')}`
+                            : '-'}
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {typeof variant.discounted_price === 'number'
+                            ? `diskon: Rp ${Number(variant.discounted_price).toLocaleString('id-ID')}`
+                            : 'harga varian'}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Diskon</p>
+                        <p className="mt-1 font-bold text-gray-900">{Number(variant.discount || 0) > 0 ? `${variant.discount}%` : '0%'}</p>
+                        <p className="text-[10px] text-gray-400">{Number(variant.discount || 0) > 0 ? 'aktif' : 'tanpa diskon'}</p>
+                      </div>
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Kedaluwarsa</p>
+                        <p className="mt-1 break-words font-bold text-gray-900">{variant.expiration || '-'}</p>
+                      </div>
+                      <div className="col-span-2 sm:col-span-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full rounded-xl"
+                          onClick={() => startEditing(variant)}
+                        >
+                          <PencilLine className="w-4 h-4 mr-2" /> Edit Varian Ini
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
