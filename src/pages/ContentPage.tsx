@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText, PlusCircle, Search, LayoutList, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -104,7 +103,7 @@ export default function ContentPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><FileText className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Artikel</p><p className="text-2xl font-bold text-gray-900 mt-1">{articles.length}</p><p className="text-[11px] text-gray-400 mt-2">Artikel yang sudah terdaftar</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><LayoutList className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matrix</span></div><p className="text-sm font-medium text-gray-500 mt-4">Layer Artikel</p><p className="text-2xl font-bold text-gray-900 mt-1">Shared</p><p className="text-[11px] text-gray-400 mt-2">Admin dan owner sama-sama boleh kelola artikel</p></CardContent></Card>
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PencilLine className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ops</span></div><p className="text-sm font-medium text-gray-500 mt-4">Buat + Edit</p><p className="text-2xl font-bold text-gray-900 mt-1">Active</p><p className="text-[11px] text-gray-400 mt-2">POST /articles/create dan PUT /articles/update/:article_id</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PencilLine className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ops</span></div><p className="text-sm font-medium text-gray-500 mt-4">Buat + Edit</p><p className="text-2xl font-bold text-gray-900 mt-1">Aktif</p><p className="text-[11px] text-gray-400 mt-2">POST /articles/create dan PUT /articles/update/:article_id</p></CardContent></Card>
       </div>
 
       <div className="grid grid-cols-1 2xl:grid-cols-[0.9fr_1.1fr] gap-6 xl:gap-8 items-start">
@@ -156,50 +155,47 @@ export default function ContentPage() {
         <CardHeader className="px-5 sm:px-8 pt-6 sm:pt-8 pb-4">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Artikel overview</h2>
-            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Pantau article layer untuk kebutuhan edukasi, informasi publik, dan materi konten storefront.</p>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Pantau layer artikel untuk kebutuhan edukasi, informasi publik, dan materi konten storefront.</p>
           </div>
           <div className="relative mt-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari artikel..." className="pl-10 h-11 bg-gray-50 border-transparent rounded-xl w-full" />
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-6 sm:pb-8">
-          <div className="overflow-x-auto">
-          <Table className="min-w-[720px]">
-            <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60">
-              <TableRow className="hover:bg-transparent border-gray-50 dark:border-slate-700 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Artikel</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase">Ringkasan</TableHead>
-                <TableHead className="font-bold text-gray-400 dark:text-slate-400 text-[10px] uppercase text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {articlesLoading ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Memuat artikel...</TableCell></TableRow>
-              ) : filteredArtikel.length === 0 ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-400 py-8">Tidak ada artikel yang cocok.</TableCell></TableRow>
-              ) : (
-                filteredArtikel.slice(0, 8).map((article, index) => (
-                  <TableRow key={`${article.display_id || index}-${article.title}`} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
-                    <TableCell>
-                      <div>
-                        <p className="font-bold text-gray-900 dark:text-slate-100 text-sm">{article.title}</p>
-                        <p className="text-[10px] text-gray-400 dark:text-slate-400 font-medium">Display ID: {article.display_id || '-'}</p>
+        <CardContent className="px-5 sm:px-8 pb-6 sm:pb-8">
+          {articlesLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Memuat artikel...</div>
+          ) : filteredArtikel.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">Tidak ada artikel yang cocok.</div>
+          ) : (
+            <div className="space-y-3">
+              {filteredArtikel.slice(0, 8).map((article, index) => (
+                <div key={`${article.display_id || index}-${article.title}`} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Artikel Konten</p>
+                      <p className="break-words text-sm font-bold text-gray-900 sm:text-base">{article.title}</p>
+                      <p className="text-[11px] font-medium text-gray-400">ID: {article.id} • Display ID: {article.display_id || '-'}</p>
+                      <p className="line-clamp-3 text-xs leading-relaxed text-gray-500">{article.description_list?.[0] || '-'}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-[minmax(0,1fr)_auto] lg:min-w-[360px]">
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Sumber gambar</p>
+                        <p className="mt-1 break-all font-medium text-gray-700">{article.img || 'Belum ada gambar'}</p>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600 dark:text-slate-300">{article.description_list?.[0] || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/content/edit/${article.id}`)}>
-                        <PencilLine className="w-4 h-4 mr-2" />
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-          </div>
+                      <div className="flex items-center">
+                        <Button type="button" variant="outline" className="w-full rounded-xl" onClick={() => navigate(`/content/edit/${article.id}`)}>
+                          <PencilLine className="w-4 h-4 mr-2" />
+                          Edit Artikel Ini
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

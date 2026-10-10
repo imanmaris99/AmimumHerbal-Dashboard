@@ -149,14 +149,14 @@ export default function ContentEditPage() {
                 <p className="text-sm text-gray-500 mt-1">ID artikel: {articleDetailQuery.data.id} • Display ID: {articleDetailQuery.data.display_id || '-'}</p>
               </div>
 
-              <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                <div className="flex items-start justify-between gap-3">
-                  <span>Ringkasan</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{summaryDeskripsi}</strong>
+              <div className="grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Ringkasan</p>
+                  <strong className="mt-1 block break-words text-slate-900">{summaryDeskripsi}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>Sumber gambar</span>
-                  <strong className="text-slate-900 text-right break-all max-w-[220px]">{articleDetailQuery.data.img || '-'}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Sumber gambar</p>
+                  <strong className="mt-1 block break-all text-slate-900">{articleDetailQuery.data.img || '-'}</strong>
                 </div>
               </div>
 
@@ -199,7 +199,7 @@ export default function ContentEditPage() {
                 </div>
 
                 <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-xs text-gray-500">Setelah update berhasil, halaman akan kembali ke daftar artikel.</p>
+                  <p className="text-xs text-gray-500">Setelah update berhasil, halaman kembali ke daftar artikel.</p>
                   <div className="flex flex-col-reverse sm:flex-row gap-3 w-full sm:w-auto">
                     <Button type="button" variant="ghost" className="rounded-xl w-full sm:w-auto" onClick={() => navigate('/content')}>
                       Batal
