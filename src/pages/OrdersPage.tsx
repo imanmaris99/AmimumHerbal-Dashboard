@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -268,48 +267,84 @@ export default function OrdersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
+        <CardContent className="px-5 sm:px-8 pb-8">
           {activeTab === 'orders' ? (
-            <Table className="min-w-[760px]">
-              <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60"><TableRow className="dark:border-slate-700"><TableHead className="dark:text-slate-400">{t('ordersPage.table.order')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.customer')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.delivery')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.total')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.status')}</TableHead><TableHead className="dark:text-slate-400">{t('ordersPage.table.created')}</TableHead><TableHead className="text-right dark:text-slate-400">{t('ordersPage.table.action')}</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={7} className="text-center py-8">{t('ordersPage.table.loading')}</TableCell></TableRow>
-                  : isError ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-red-500">{t('ordersPage.table.error')}</TableCell></TableRow>
-                  : filteredOrders.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-gray-400">{t('ordersPage.table.empty')}</TableCell></TableRow>
-                  : filteredOrders.map((order) => (
-                    <TableRow key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
-                      <TableCell><p className="font-bold text-sm">{order.id}</p></TableCell>
-                      <TableCell>{resolveOrderCustomerName(order)}</TableCell>
-                      <TableCell><span className="flex items-center gap-2">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="w-3.5 h-3.5" /> : <Truck className="w-3.5 h-3.5" />}{getStatusLabel(deliveryTypeLabels, order.delivery_type)}</span></TableCell>
-                      <TableCell className="font-bold">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
-                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{getOrderStatusLabel(order.status, order.delivery_type)}</Badge></TableCell>
-                      <TableCell className="text-xs">{new Date(order.created_at).toLocaleString(locale)}</TableCell>
-                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />{t('ordersPage.table.detail')}</Button></TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+            isLoading ? (
+              <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('ordersPage.table.loading')}</div>
+            ) : isError ? (
+              <div className="rounded-2xl bg-red-50 px-4 py-8 text-center text-sm text-red-600">{t('ordersPage.table.error')}</div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('ordersPage.table.empty')}</div>
+            ) : (
+              <div className="space-y-3">
+                {filteredOrders.map((order) => (
+                  <div key={order.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 dark:bg-slate-900/70 dark:ring-slate-700">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Order Customer</p>
+                        <p className="break-all text-sm font-bold text-gray-900 dark:text-slate-100 sm:text-base">{order.id}</p>
+                        <p className="break-words text-xs font-medium text-gray-500 dark:text-slate-400">Customer: {resolveOrderCustomerName(order)}</p>
+                        <p className="text-[11px] text-gray-400">Dibuat: {new Date(order.created_at).toLocaleString(locale)}</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 xl:min-w-[520px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Penerimaan</p>
+                          <p className="mt-1 flex items-center gap-2 font-semibold text-gray-700 dark:text-slate-200">{String(order.delivery_type).toLowerCase() === 'pickup' ? <Store className="h-3.5 w-3.5" /> : <Truck className="h-3.5 w-3.5" />}{getStatusLabel(deliveryTypeLabels, order.delivery_type)}</p>
+                        </div>
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Total & Status</p>
+                          <p className="mt-1 font-bold text-gray-900 dark:text-slate-100">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</p>
+                          <Badge variant="secondary" className={`mt-2 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(orderStatusStyles, order.status)}`}>{getOrderStatusLabel(order.status, order.delivery_type)}</Badge>
+                        </div>
+                        <div className="flex items-center sm:col-span-2 xl:col-span-1">
+                          <Button variant="outline" className="w-full rounded-xl" onClick={() => navigate(`/orders/${order.id}`)}><Eye className="w-4 h-4 mr-2" />Detail Order Ini</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
-            <Table className="min-w-[900px]">
-              <TableHeader className="bg-gray-50/50 dark:bg-slate-800/60"><TableRow className="dark:border-slate-700"><TableHead className="dark:text-slate-400">{t('paymentsPage.table.transaction')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.customer')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.paymentType')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.grossAmount')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.status')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.orderStatus')}</TableHead><TableHead className="dark:text-slate-400">{t('paymentsPage.table.updated')}</TableHead><TableHead className="text-right dark:text-slate-400">{t('paymentsPage.table.action')}</TableHead></TableRow></TableHeader>
-              <TableBody>
-                {isLoading ? <TableRow><TableCell colSpan={8} className="text-center py-8">{t('paymentsPage.table.loading')}</TableCell></TableRow>
-                  : isError ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-red-500">{t('paymentsPage.table.error')}</TableCell></TableRow>
-                  : filteredPayments.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-gray-400">{t('paymentsPage.table.empty')}</TableCell></TableRow>
-                  : filteredPayments.map((payment) => (
-                    <TableRow key={payment.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-700/30 border-gray-50 dark:border-slate-700">
-                      <TableCell><p className="font-bold text-sm">{payment.transaction_id}</p><p className="text-[10px] text-gray-400">{t('paymentsPage.table.order')}: {payment.order_id}</p></TableCell>
-                      <TableCell>{payment.customer_name || '-'}</TableCell>
-                      <TableCell className="uppercase">{payment.payment_type || 'N/A'}</TableCell>
-                      <TableCell className="font-bold">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</TableCell>
-                      <TableCell><Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>{getStatusLabel(paymentStatusLabels, payment.transaction_status)}</Badge></TableCell>
-                      <TableCell><Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">{getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}</Badge></TableCell>
-                      <TableCell className="text-xs">{new Date(payment.updated_at).toLocaleString(locale)}</TableCell>
-                      <TableCell className="text-right"><Button variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}><Eye className="w-4 h-4 mr-2" />{t('paymentsPage.table.detail')}</Button></TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+            isLoading ? (
+              <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('paymentsPage.table.loading')}</div>
+            ) : isError ? (
+              <div className="rounded-2xl bg-red-50 px-4 py-8 text-center text-sm text-red-600">{t('paymentsPage.table.error')}</div>
+            ) : filteredPayments.length === 0 ? (
+              <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('paymentsPage.table.empty')}</div>
+            ) : (
+              <div className="space-y-3">
+                {filteredPayments.map((payment) => (
+                  <div key={payment.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 dark:bg-slate-900/70 dark:ring-slate-700">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Transaksi Pembayaran</p>
+                        <p className="break-all text-sm font-bold text-gray-900 dark:text-slate-100 sm:text-base">{payment.transaction_id}</p>
+                        <p className="break-all text-xs text-gray-400">Order: {payment.order_id}</p>
+                        <p className="break-words text-xs font-medium text-gray-500 dark:text-slate-400">Customer: {payment.customer_name || '-'}</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 xl:min-w-[580px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Metode & Total</p>
+                          <p className="mt-1 uppercase font-semibold text-gray-700 dark:text-slate-200">{payment.payment_type || 'N/A'}</p>
+                          <p className="font-bold text-gray-900 dark:text-slate-100">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</p>
+                        </div>
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Status</p>
+                          <Badge variant="secondary" className={`mt-1 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>{getStatusLabel(paymentStatusLabels, payment.transaction_status)}</Badge>
+                          <Badge variant="secondary" className="mt-2 bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">Order: {getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}</Badge>
+                        </div>
+                        <div className="flex items-center sm:col-span-2 xl:col-span-1">
+                          <Button variant="outline" className="w-full rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}><Eye className="w-4 h-4 mr-2" />Detail Pembayaran Ini</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </CardContent>
       </Card>

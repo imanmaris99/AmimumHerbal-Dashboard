@@ -160,26 +160,28 @@ export default function PaymentDetailPage() {
                 <p className="text-sm text-gray-500 mt-1">{t('paymentDetailPage.paymentId')}: {payment.id}</p>
               </div>
 
-              <div className="space-y-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
-                <div className="flex items-center justify-between gap-3">
-                  <span>{t('paymentDetailPage.orderId')}</span>
-                  <strong className="text-slate-900 text-right max-w-[220px] break-all">{payment.order_id}</strong>
+              <div className="grid grid-cols-1 gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('paymentDetailPage.orderId')}</p>
+                  <strong className="mt-1 block break-all text-slate-900">{payment.order_id}</strong>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>{t('paymentDetailPage.customer')}</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">{payment.customer_name || t('paymentDetailPage.unknownCustomer')}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('paymentDetailPage.customer')}</p>
+                  <strong className="mt-1 block break-words text-slate-900">{payment.customer_name || t('paymentDetailPage.unknownCustomer')}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>{t('paymentDetailPage.email')}</span>
-                  <strong className="text-slate-900 text-right max-w-[220px] break-all">{payment.customer_email || '-'}</strong>
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('paymentDetailPage.email')}</p>
+                  <strong className="mt-1 block break-all text-slate-900">{payment.customer_email || '-'}</strong>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>{t('paymentDetailPage.paymentType')}</span>
-                  <strong className="text-slate-900 uppercase">{payment.payment_type || 'N/A'}</strong>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>{t('paymentDetailPage.grossAmount')}</span>
-                  <strong className="text-slate-900">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</strong>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl bg-white px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('paymentDetailPage.paymentType')}</p>
+                    <strong className="mt-1 block break-words text-slate-900 uppercase">{payment.payment_type || 'N/A'}</strong>
+                  </div>
+                  <div className="rounded-2xl bg-white px-3 py-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('paymentDetailPage.grossAmount')}</p>
+                    <strong className="mt-1 block text-slate-900">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</strong>
+                  </div>
                 </div>
               </div>
 

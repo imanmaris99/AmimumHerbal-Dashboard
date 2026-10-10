@@ -530,9 +530,9 @@ export default function OrderDetailPage() {
                   <span>{t('orderDetailPage.shippingCost')}</span>
                   <strong className="text-slate-900">{order.shipping_cost == null ? 'Belum tersedia' : `Rp ${Number(order.shipping_cost).toLocaleString('id-ID')}`}</strong>
                 </div>
-                <div className="flex items-start justify-between gap-3">
-                  <span>{t('orderDetailPage.notes')}</span>
-                  <strong className="text-slate-900 text-right max-w-[220px]">
+                <div className="rounded-2xl bg-white px-3 py-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t('orderDetailPage.notes')}</p>
+                  <strong className="mt-1 block break-words text-slate-900">
                     {sanitizeOrderNotes(order.notes)}
                   </strong>
                 </div>

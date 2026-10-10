@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -294,87 +293,57 @@ export default function PaymentsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
-          <Table className="min-w-[860px] xl:min-w-[1020px]">
-            <TableHeader className="bg-gray-50/50">
-              <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.transaction')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.customer')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.paymentType')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.grossAmount')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.status')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.orderStatus')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">{t('paymentsPage.table.updated')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">{t('paymentsPage.table.action')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-gray-400 py-8">
-                    {t('paymentsPage.table.loading')}
-                  </TableCell>
-                </TableRow>
-              ) : isError ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-red-500 py-8">
-                    {t('paymentsPage.table.error')}
-                  </TableCell>
-                </TableRow>
-              ) : filteredPayments.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-gray-400 py-8">
-                    {t('paymentsPage.table.empty')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredPayments.map((payment) => (
-                  <TableRow key={payment.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
-                    <TableCell>
-                      <div>
-                        <p className="font-bold text-gray-900 text-sm">{payment.transaction_id}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">{t('paymentsPage.table.order')}: {payment.order_id}</p>
+        <CardContent className="px-5 sm:px-8 pb-8">
+          {isLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('paymentsPage.table.loading')}</div>
+          ) : isError ? (
+            <div className="rounded-2xl bg-red-50 px-4 py-8 text-center text-sm text-red-600">{t('paymentsPage.table.error')}</div>
+          ) : filteredPayments.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">{t('paymentsPage.table.empty')}</div>
+          ) : (
+            <div className="space-y-3">
+              {filteredPayments.map((payment) => (
+                <div key={payment.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Transaksi Pembayaran</p>
+                      <p className="break-all text-sm font-bold text-gray-900 sm:text-base">{payment.transaction_id}</p>
+                      <p className="break-all text-[11px] font-medium text-gray-400">Order: {payment.order_id}</p>
+                      <p className="break-words text-xs text-gray-500">{payment.customer_name || t('paymentsPage.table.unknownCustomer')} · {payment.customer_email || '-'}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 xl:min-w-[620px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Metode & Total</p>
+                        <p className="mt-1 uppercase font-semibold text-gray-700">{payment.payment_type || 'N/A'}</p>
+                        <p className="font-bold text-gray-900">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</p>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-gray-800 text-sm">{payment.customer_name || t('paymentsPage.table.unknownCustomer')}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">{payment.customer_email || '-'}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-600 uppercase">{payment.payment_type || 'N/A'}</TableCell>
-                    <TableCell className="font-bold text-gray-900">Rp {Number(payment.gross_amount || 0).toLocaleString('id-ID')}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Status pembayaran</p>
+                        <Badge variant="secondary" className={`mt-1 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(paymentStatusStyles, payment.transaction_status)}`}>
                           {getStatusLabel(paymentStatusLabels, payment.transaction_status)}
                         </Badge>
+                        <Badge variant="secondary" className="mt-2 bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
+                          Order: {getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}
+                        </Badge>
                         {payment.fraud_status ? (
-                          <p className={`text-[10px] uppercase ${String(payment.fraud_status).toLowerCase() === 'accept' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          <p className={`mt-2 text-[10px] uppercase ${String(payment.fraud_status).toLowerCase() === 'accept' ? 'text-emerald-500' : 'text-rose-500'}`}>
                             {t('paymentsPage.table.fraud')}: {payment.fraud_status}
                           </p>
                         ) : null}
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                        {getStatusLabel(orderStatusLabels, payment.order_status, 'Belum tersedia')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-medium text-gray-500">
-                      {new Date(payment.updated_at).toLocaleString(locale)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button type="button" variant="outline" className="rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}>
-                        <Eye className="w-4 h-4 mr-2" />
-                        {t('paymentsPage.table.detail')}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                      <div className="flex items-center sm:col-span-2 xl:col-span-1">
+                        <Button type="button" variant="outline" className="w-full rounded-xl" onClick={() => navigate(`/payments/${payment.id}`)}>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Detail Pembayaran Ini
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
