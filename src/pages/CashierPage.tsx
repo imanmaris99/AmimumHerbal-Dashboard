@@ -1361,34 +1361,38 @@ export default function CashierPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border overflow-hidden">
-              <div className="hidden sm:block overflow-x-auto">
-                <Table><TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qty</TableHead><TableHead>Harga</TableHead><TableHead className="text-right">Subtotal</TableHead></TableRow></TableHeader><TableBody>
-                  {selectedReceiptWithItems.items.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</TableCell></TableRow>
-                  ) : selectedReceiptWithItems.items.map((row) => (
-                    <TableRow key={`r-${selectedReceiptWithItems.transactionId}-${row.variantId}`}>
-                      <TableCell className="max-w-[220px] truncate">{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></TableCell>
-                      <TableCell>{row.qty}</TableCell><TableCell>{formatRupiah(row.unitPrice)}</TableCell><TableCell className="text-right">{formatRupiah(row.unitPrice * row.qty)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody></Table>
-              </div>
-
-              <div className="sm:hidden divide-y">
-                {selectedReceiptWithItems.items.length === 0 ? (
-                  <div className="p-3 text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</div>
-                ) : selectedReceiptWithItems.items.map((row) => (
-                  <div key={`m-${selectedReceiptWithItems.transactionId}-${row.variantId}`} className="p-3 space-y-1">
-                    <p className="font-medium text-gray-900 leading-snug">{row.productName} <span className="text-xs text-gray-500">({row.variantName})</span></p>
-                    <div className="flex items-center justify-between text-xs text-gray-600">
-                      <span>Qty: {row.qty}</span>
-                      <span>Harga: {formatRupiah(row.unitPrice)}</span>
+            <div className="rounded-2xl border border-gray-100 bg-white p-3">
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-gray-400">Detail Item Nota</p>
+              {selectedReceiptWithItems.items.length === 0 ? (
+                <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-500">Detail item belum tersedia pada transaksi ini.</div>
+              ) : (
+                <div className="space-y-2">
+                  {selectedReceiptWithItems.items.map((row) => (
+                    <div key={`receipt-item-${selectedReceiptWithItems.transactionId}-${row.variantId}`} className="rounded-2xl bg-gray-50 p-3">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                          <p className="break-words font-semibold leading-snug text-gray-900">{row.productName}</p>
+                          <p className="mt-1 break-words text-xs text-gray-500">Varian: {row.variantName || '-'}</p>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-right text-xs sm:min-w-[320px]">
+                          <div className="rounded-xl bg-white px-2 py-2">
+                            <p className="text-[10px] uppercase tracking-wide text-gray-400">Qty</p>
+                            <p className="font-bold text-gray-900">{row.qty}</p>
+                          </div>
+                          <div className="rounded-xl bg-white px-2 py-2">
+                            <p className="text-[10px] uppercase tracking-wide text-gray-400">Harga</p>
+                            <p className="font-bold text-gray-900">{formatRupiah(row.unitPrice)}</p>
+                          </div>
+                          <div className="rounded-xl bg-white px-2 py-2">
+                            <p className="text-[10px] uppercase tracking-wide text-gray-400">Subtotal</p>
+                            <p className="font-bold text-gray-900">{formatRupiah(row.unitPrice * row.qty)}</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right text-sm font-semibold text-gray-900">Subtotal: {formatRupiah(row.unitPrice * row.qty)}</div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {selectedReceiptWithItems.notes && <p><strong>Catatan:</strong> {selectedReceiptWithItems.notes}</p>}

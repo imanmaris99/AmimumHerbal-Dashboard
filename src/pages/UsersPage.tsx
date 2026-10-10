@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -237,95 +236,80 @@ export default function UsersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
-          <Table className="min-w-[760px]">
-            <TableHeader className="bg-gray-50/50">
-              <TableRow className="hover:bg-transparent border-gray-50 uppercase tracking-wider">
-                <TableHead className="w-[320px] font-bold text-gray-400 text-[10px] uppercase">Profil User</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Role</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Status</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase">Diperbarui</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-8">
-                    Memuat data user...
-                  </TableCell>
-                </TableRow>
-              ) : filteredUsers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-400 py-8">
-                    Tidak ada user yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredUsers.map((u) => {
-                  const displayName = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || u.email;
-                  const canToggleStatus = user?.role === 'owner' && u.role === 'customer';
-                  const canEditUser = user?.role === 'owner';
+        <CardContent className="px-5 sm:px-8 pb-8">
+          {isLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              Memuat data user...
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              Tidak ada user yang cocok dengan pencarian saat ini. Coba reset search atau gunakan kata kunci lain.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredUsers.map((u) => {
+                const displayName = `${u.firstname ?? ''} ${u.lastname ?? ''}`.trim() || u.email;
+                const canToggleStatus = user?.role === 'owner' && u.role === 'customer';
+                const canEditUser = user?.role === 'owner';
 
-                  return (
-                    <TableRow key={u.id} className="group hover:bg-gray-50/50 transition-colors border-gray-50">
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${u.role === 'owner' ? 'bg-emerald-100 text-emerald-600' : u.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
-                            {displayName.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900 text-sm">{displayName}</p>
-                            <p className="text-xs text-gray-500 font-medium">{u.email}</p>
-                          </div>
+                return (
+                  <div key={u.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100">
+                    <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${u.role === 'owner' ? 'bg-emerald-100 text-emerald-600' : u.role === 'admin' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                          {displayName.charAt(0).toUpperCase()}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                        <div className="min-w-0 space-y-1">
+                          <p className="break-words text-sm font-bold text-gray-900 sm:text-base">{displayName}</p>
+                          <p className="break-all text-xs font-medium text-gray-500">{u.email}</p>
+                          <p className="text-[11px] text-gray-400">Diperbarui: {new Date(u.updated_at).toLocaleString('id-ID')}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2 xl:min-w-[560px] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Role</p>
                           {u.role === 'owner' ? (
-                            <div className="flex items-center gap-1.5 text-emerald-600">
-                              <ShieldCheck className="w-3.5 h-3.5" />
+                            <div className="mt-1 flex items-center gap-1.5 text-emerald-600">
+                              <ShieldCheck className="h-3.5 w-3.5" />
                               <span className="text-xs font-bold uppercase tracking-wide">Owner</span>
                             </div>
                           ) : (
-                            <Badge variant="secondary" className={`border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(userRoleStyles, u.role)}`}>
+                            <Badge variant="secondary" className={`mt-1 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase ${getStatusStyle(userRoleStyles, u.role)}`}>
                               <div className="flex items-center gap-1.5">
-                                <UserIcon className="w-3 h-3" />
+                                <UserIcon className="h-3 w-3" />
                                 <span>{u.role}</span>
                               </div>
                             </Badge>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={`rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${u.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>
-                          {u.is_active ? 'Aktif' : 'Nonaktif'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs font-medium text-gray-500">
-                        {new Date(u.updated_at).toLocaleString('id-ID')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Status akun</p>
+                          <Badge variant="secondary" className={`mt-1 rounded-lg py-0.5 px-2 font-bold text-[10px] uppercase border-none ${u.is_active ? userStatusStyles.active : userStatusStyles.inactive}`}>
+                            {u.is_active ? 'Aktif' : 'Nonaktif'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center sm:col-span-2 xl:col-span-1">
                           <DropdownMenu>
-                            <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg" />}>
-                              <MoreVertical className="w-4 h-4 text-gray-400" />
+                            <DropdownMenuTrigger render={<Button variant="outline" className="w-full rounded-xl" />}>
+                              <MoreVertical className="mr-2 h-4 w-4 text-gray-400" />
+                              Aksi User Ini
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 rounded-xl border-gray-100 shadow-xl shadow-gray-200/50">
-                              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">User Aksi</div>
+                              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Aksi User</div>
                               <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => setDetailTarget(u)}>
-                                <UserIcon className="w-4 h-4 mr-2 text-gray-400" />
+                                <UserIcon className="mr-2 h-4 w-4 text-gray-400" />
                                 Lihat Detail User
                               </DropdownMenuItem>
                               <div className="-mx-1 my-1 h-px bg-gray-50" />
                               {canEditUser ? (
                                 <DropdownMenuItem className="cursor-pointer font-medium text-slate-700 hover:text-slate-900" onClick={() => handleStartEdit(u)}>
-                                  <PencilLine className="w-4 h-4 mr-2" />
+                                  <PencilLine className="mr-2 h-4 w-4" />
                                   Edit Profil User
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem className="cursor-default text-gray-400">
-                                  <PencilLine className="w-4 h-4 mr-2" />
+                                  <PencilLine className="mr-2 h-4 w-4" />
                                   Edit (khusus owner)
                                 </DropdownMenuItem>
                               )}
@@ -343,15 +327,15 @@ export default function UsersPage() {
                                 </DropdownMenuItem>
                               )}
                             </DropdownMenuContent>
-                            </DropdownMenu>
+                          </DropdownMenu>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
