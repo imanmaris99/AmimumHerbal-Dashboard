@@ -28,7 +28,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import api from '@/lib/api';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
@@ -505,54 +504,47 @@ export default function OverviewPage() {
             <CardTitle className="text-lg font-bold tracking-tight">{t('overview.recentOrders')}</CardTitle>
             <CardDescription>{t('overview.recentOrdersDesc')}</CardDescription>
           </div>
-          <Button variant="outline" className="rounded-xl border-gray-100 dark:border-slate-600 font-bold text-xs h-9 w-full sm:w-auto hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+          <Button variant="outline" className="rounded-xl border-gray-100 dark:border-slate-600 font-bold text-xs h-9 w-full sm:w-auto hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors" onClick={() => navigate('/orders')}>
             {t('overview.viewAll')}
           </Button>
         </CardHeader>
-        <CardContent className="px-0 sm:px-4 pb-8 overflow-x-auto">
-          <Table className="min-w-[560px] md:min-w-[640px]">
-            <TableHeader className="bg-gray-50/50">
-              <TableRow className="hover:bg-transparent border-gray-50">
-                <TableHead className="w-[80px] font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.no')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.customer')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.amount')}</TableHead>
-                <TableHead className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">{t('overview.table.status')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {ordersLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-400 py-8">
-                    {t('overview.table.loading')}
-                  </TableCell>
-                </TableRow>
-              ) : recentOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-400 py-8">
-                    {t('overview.table.empty')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentOrders.map((order, index) => (
-                  <TableRow key={order.id} className="group hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors border-gray-50 dark:border-slate-700">
-                    <TableCell className="font-medium text-gray-600">{index + 1}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-bold text-gray-900 text-sm">{resolveCustomerLabel(order.id, order.customer_name, order.notes)}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">{new Date(order.created_at).toLocaleString('id-ID')}</p>
+        <CardContent className="px-5 sm:px-8 pb-8">
+          {ordersLoading ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              {t('overview.table.loading')}
+            </div>
+          ) : recentOrders.length === 0 ? (
+            <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
+              {t('overview.table.empty')}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentOrders.map((order, index) => (
+                <div key={order.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 dark:bg-slate-900/70 dark:ring-slate-700">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gray-400">Order Terbaru #{index + 1}</p>
+                      <p className="break-words text-sm font-bold text-gray-900 dark:text-slate-100 sm:text-base">{resolveCustomerLabel(order.id, order.customer_name, order.notes)}</p>
+                      <p className="break-all text-[11px] font-medium text-gray-400">ID: {order.id}</p>
+                      <p className="text-[11px] text-gray-400">{new Date(order.created_at).toLocaleString('id-ID')}</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 text-xs sm:min-w-[260px] sm:grid-cols-2">
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Total</p>
+                        <p className="mt-1 font-bold text-gray-900 dark:text-slate-100">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</p>
                       </div>
-                    </TableCell>
-                    <TableCell className="font-bold text-gray-900">Rp {Number(order.total_price || 0).toLocaleString('id-ID')}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-green-50 text-green-600 hover:bg-green-100 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
-                        {order.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                      <div className="rounded-2xl bg-gray-50 px-3 py-2 dark:bg-slate-800">
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Status</p>
+                        <Badge variant="secondary" className="mt-1 bg-green-50 text-green-600 hover:bg-green-100 border-none font-bold text-[10px] py-0.5 rounded-lg px-2 uppercase">
+                          {order.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
