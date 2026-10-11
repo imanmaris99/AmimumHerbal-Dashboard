@@ -166,7 +166,7 @@ export default function ProductEditPage() {
 
   const uploadFiles = async (files: FileList | File[]) => {
     if (!productId) return;
-    const list = Array.from(files);
+    const list = Array.from(files).slice(0, 1);
     if (!list.length) return;
 
     const maxMb = 5;
@@ -178,6 +178,10 @@ export default function ProductEditPage() {
 
     const validFiles = list.filter((file) => allowed.includes(file.type) && file.size <= maxMb * 1024 * 1024);
     if (!validFiles.length) return;
+
+    if (Array.from(files).length > 1) {
+      toast.info('Mode edit foto produk hanya mengganti 1 foto utama. File pertama yang dipakai.');
+    }
 
     setUploading(true);
     setUploadErrors({});
@@ -201,7 +205,7 @@ export default function ProductEditPage() {
     }
 
     if (successCount > 0) {
-      toast.success(`${successCount} gambar berhasil di-upload`);
+      toast.success('Foto produk berhasil diganti. Foto lama otomatis dihapus dari storage.');
       await refreshDetail();
     }
     if (successCount < validFiles.length) {
@@ -453,8 +457,10 @@ export default function ProductEditPage() {
                       {uploading && <span className="text-sm text-gray-600">Mengunggah...</span>}
                       {reorderBusy && <span className="text-sm text-gray-600">Menyimpan urutan...</span>}
                     </div>
-                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
-                    <p className="text-xs text-gray-500 mt-2">Drag & drop gambar ke area ini atau klik upload. Format: JPG/PNG/WEBP, max 5MB.</p>
+                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+                    <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
+                      Upload foto baru akan <strong>mengganti foto produk saat ini</strong>. Setelah upload berhasil, foto lama otomatis dihapus dari storage agar database/storage tidak menumpuk.
+                    </div>
 
                     {Object.keys(uploadProgress).length > 0 && (
                       <div className="mt-3 space-y-1 text-xs text-gray-600">
