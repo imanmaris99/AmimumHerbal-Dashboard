@@ -72,6 +72,10 @@ const initialForm: CreateVariantPayload = {
   price: 0,
 };
 
+const PACK_TYPE_NAME_MAX_LENGTH = 50;
+const VARIANT_NAME_MAX_LENGTH = 25;
+const EXPIRATION_MAX_LENGTH = 15;
+
 export default function VariantsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -222,6 +226,18 @@ export default function VariantsPage() {
       toast.error('Nama kemasan, varian, dan kedaluwarsa wajib diisi.');
       return;
     }
+    if (name.length > PACK_TYPE_NAME_MAX_LENGTH) {
+      toast.error(`Nama pack type maksimal ${PACK_TYPE_NAME_MAX_LENGTH} karakter.`);
+      return;
+    }
+    if (variant.length > VARIANT_NAME_MAX_LENGTH) {
+      toast.error(`Varian maksimal ${VARIANT_NAME_MAX_LENGTH} karakter.`);
+      return;
+    }
+    if (expiration.length > EXPIRATION_MAX_LENGTH) {
+      toast.error(`Kedaluwarsa maksimal ${EXPIRATION_MAX_LENGTH} karakter. Untuk non-expired gunakan "Non-exp".`);
+      return;
+    }
     if (!Number.isFinite(minAmount) || minAmount < 1) {
       toast.error('Minimal pembelian varian wajib minimal 1.');
       return;
@@ -334,14 +350,14 @@ export default function VariantsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="name">{t('variantsPage.form.packTypeName')}</Label>
-                <Input id="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Botol / Sachet / Box" required />
+                <Input id="name" value={form.name} onChange={(e) => handleChange('name', e.target.value)} placeholder="Botol / Sachet / Box" maxLength={PACK_TYPE_NAME_MAX_LENGTH} required />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
               <div className="space-y-2">
                 <Label htmlFor="variant">{t('variantsPage.form.variant')}</Label>
-                <Input id="variant" value={form.variant} onChange={(e) => handleChange('variant', e.target.value)} placeholder="Original / Mint / Jahe" required />
+                <Input id="variant" value={form.variant} onChange={(e) => handleChange('variant', e.target.value)} placeholder="Original / Mint / Jahe" maxLength={VARIANT_NAME_MAX_LENGTH} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="min_amount">{t('variantsPage.form.minimumAmount')}</Label>
@@ -359,7 +375,8 @@ export default function VariantsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="expiration">{t('variantsPage.form.expiration')}</Label>
-              <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder={t('variantsPage.form.expirationPlaceholder')} required />
+              <Input id="expiration" value={form.expiration} onChange={(e) => handleChange('expiration', e.target.value)} placeholder="2027-12-31 / Non-exp" maxLength={EXPIRATION_MAX_LENGTH} required />
+              <p className="text-[11px] text-gray-500">Maksimal {EXPIRATION_MAX_LENGTH} karakter. Untuk produk tanpa kedaluwarsa, isi <strong>Non-exp</strong>.</p>
             </div>
 
             <div className="space-y-3">

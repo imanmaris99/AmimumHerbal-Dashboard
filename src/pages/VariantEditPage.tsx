@@ -45,6 +45,10 @@ interface UpdateVarianPayload {
   discount: number;
 }
 
+const PACK_TYPE_NAME_MAX_LENGTH = 50;
+const VARIANT_NAME_MAX_LENGTH = 25;
+const EXPIRATION_MAX_LENGTH = 15;
+
 export default function VarianEditPage() {
   const user = useAuthStore((state) => state.user);
   const { t } = useTranslation();
@@ -191,6 +195,18 @@ export default function VarianEditPage() {
       toast.error('Nama kemasan, varian, dan kedaluwarsa wajib diisi.');
       return;
     }
+    if (name.length > PACK_TYPE_NAME_MAX_LENGTH) {
+      toast.error(`Nama pack type maksimal ${PACK_TYPE_NAME_MAX_LENGTH} karakter.`);
+      return;
+    }
+    if (variant.length > VARIANT_NAME_MAX_LENGTH) {
+      toast.error(`Varian maksimal ${VARIANT_NAME_MAX_LENGTH} karakter.`);
+      return;
+    }
+    if (expiration.length > EXPIRATION_MAX_LENGTH) {
+      toast.error(`Kedaluwarsa maksimal ${EXPIRATION_MAX_LENGTH} karakter. Untuk non-expired gunakan "Non-exp".`);
+      return;
+    }
     if (!Number.isFinite(stock) || stock < 0) {
       toast.error('Stok varian tidak boleh negatif.');
       return;
@@ -332,11 +348,11 @@ export default function VarianEditPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="edit-variant-name-page">Nama Kemasan</Label>
-                      <Input id="edit-variant-name-page" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
+                      <Input id="edit-variant-name-page" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} maxLength={PACK_TYPE_NAME_MAX_LENGTH} required />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="edit-variant-variant-page">Varian</Label>
-                      <Input id="edit-variant-variant-page" value={form.variant} onChange={(e) => setForm((prev) => ({ ...prev, variant: e.target.value }))} required />
+                      <Input id="edit-variant-variant-page" value={form.variant} onChange={(e) => setForm((prev) => ({ ...prev, variant: e.target.value }))} maxLength={VARIANT_NAME_MAX_LENGTH} required />
                     </div>
                   </div>
 
@@ -357,7 +373,8 @@ export default function VarianEditPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="edit-variant-expiration-page">Kedaluwarsa</Label>
-                    <Input id="edit-variant-expiration-page" value={form.expiration} onChange={(e) => setForm((prev) => ({ ...prev, expiration: e.target.value }))} required />
+                    <Input id="edit-variant-expiration-page" value={form.expiration} onChange={(e) => setForm((prev) => ({ ...prev, expiration: e.target.value }))} placeholder="2027-12-31 / Non-exp" maxLength={EXPIRATION_MAX_LENGTH} required />
+                    <p className="text-[11px] text-gray-500">Maksimal {EXPIRATION_MAX_LENGTH} karakter. Untuk produk tanpa kedaluwarsa, isi <strong>Non-exp</strong>.</p>
                   </div>
 
                   <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-4 border-t border-gray-100 pt-5">
