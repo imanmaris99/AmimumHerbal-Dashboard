@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
+import { validateImageFile } from '@/lib/imageValidation';
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -112,11 +113,7 @@ export default function SettingsPage() {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await api.put('/admin/edit-photo', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.put('/admin/edit-photo', formData);
       return response.data;
     },
     onSuccess: (payload) => {
@@ -231,7 +228,19 @@ export default function SettingsPage() {
 
                 <div className="space-y-3">
                   <Label htmlFor="photo-upload">Foto profil</Label>
-                  <Input id="photo-upload" type="file" accept="image/*" onChange={(e) => setPhotoFile(e.target.files?.[0] || null)} />
+                  <Input id="photo-upload" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    if (!file) {
+                      setPhotoFile(null);
+                      return;
+                    }
+                    if (!validateImageFile(file)) {
+                      e.target.value = '';
+                      setPhotoFile(null);
+                      return;
+                    }
+                    setPhotoFile(file);
+                  }} />
                   <Button
                     type="button"
                     onClick={() => photoFile && updatePhotoMutation.mutate(photoFile)}

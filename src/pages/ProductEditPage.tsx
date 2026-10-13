@@ -192,7 +192,6 @@ export default function ProductEditPage() {
         const formData = new FormData();
         formData.append('file', file);
         await api.post(`/product/${productId}/images`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
           onUploadProgress: (e) => {
             const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
             setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));

@@ -90,7 +90,6 @@ export default function ProductionEditPage() {
           const formData = new FormData();
           formData.append('file', logoFile);
           await api.put(`/brand/logo/${productionId}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
             onUploadProgress: (e) => {
               const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
               setLogoUploadProgress(progress);
@@ -247,7 +246,7 @@ export default function ProductionEditPage() {
                   <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
                     <div className="flex flex-wrap gap-2">
                       <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}>Pilih File / Kamera</Button>
-                      <input ref={logoInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                      <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
                         if (!validateImageFile(file)) {

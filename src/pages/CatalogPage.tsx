@@ -11,6 +11,7 @@ import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
+import { validateImageFile } from '@/lib/imageValidation';
 
 interface ProductionItem {
   id: number;
@@ -187,7 +188,7 @@ export default function CatalogPage() {
             const formData = new FormData();
             formData.append('file', file);
             await api.post(`/product/${productId}/images`, formData, {
-              headers: { 'Content-Type': 'multipart/form-data' },
+              timeout: 60000,
               onUploadProgress: (e) => {
                 const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
                 setUploadProgress((prev) => ({ ...prev, [file.name]: progress }));
@@ -350,7 +351,11 @@ export default function CatalogPage() {
 
   const handlePendingFiles = (files: FileList | null) => {
     if (!files) return;
-    setPendingImages((prev) => [...prev, ...Array.from(files)]);
+    const nextFiles = Array.from(files).filter((file) => validateImageFile(file));
+    if (nextFiles.length === 0) return;
+
+    setPendingImages((prev) => [...prev, ...nextFiles]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removePendingFile = (index: number) => {
@@ -432,10 +437,10 @@ export default function CatalogPage() {
                 <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
                   <div className="flex flex-wrap gap-2">
                     <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImages}>Pilih File / Kamera</Button>
-                    <input ref={fileInputRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => handlePendingFiles(e.target.files)} />
+                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple className="hidden" onChange={(e) => handlePendingFiles(e.target.files)} />
                     {isUploadingImages && <span className="text-sm text-gray-600">Mengunggah gambar...</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
+                  <p className="text-xs text-gray-500 mt-2">Format JPG/PNG/WebP maksimal 10MB. Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
 
                   {pendingImages.length > 0 && (
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">

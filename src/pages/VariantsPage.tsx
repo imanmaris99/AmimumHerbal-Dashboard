@@ -117,7 +117,6 @@ export default function VariantsPage() {
           const formData = new FormData();
           formData.append('file', pendingImage);
           await api.put(`/type/image/${newVariantId}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
             onUploadProgress: (e) => {
               const progress = e.total ? Math.round((e.loaded / e.total) * 100) : 0;
               setUploadProgress(progress);
@@ -384,7 +383,7 @@ export default function VariantsPage() {
               <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 p-4">
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage}>Pilih File / Kamera</Button>
-                  <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => {
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     if (!validateImageFile(file)) {
