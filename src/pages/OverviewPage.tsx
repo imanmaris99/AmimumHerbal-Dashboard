@@ -85,6 +85,9 @@ interface AdminTaskItem {
   badgeClass: string;
 }
 
+const ACTIONABLE_ORDER_LIMIT = 30;
+const PAYMENT_CONFIRMED_STATUSES = new Set(['paid', 'capture', 'settlement']);
+
 const compactOrderId = (id?: string | null) => String(id || '').slice(0, 8).toUpperCase();
 
 const buildAdminTask = (order: OrdersResponse['data'][number]): AdminTaskItem | null => {
@@ -94,7 +97,7 @@ const buildAdminTask = (order: OrdersResponse['data'][number]): AdminTaskItem | 
   const orderPath = `/orders/${order.id}`;
 
   if (deliveryType === 'pickup') {
-    if (['paid', 'capture', 'settlement'].includes(status)) {
+    if (PAYMENT_CONFIRMED_STATUSES.has(status)) {
       return {
         id: `pickup-paid-${order.id}`,
         title: `Pickup ${orderRef}: siapkan pesanan`,
@@ -120,7 +123,7 @@ const buildAdminTask = (order: OrdersResponse['data'][number]): AdminTaskItem | 
   }
 
   if (deliveryType === 'delivery') {
-    if (['paid', 'capture', 'settlement'].includes(status)) {
+    if (PAYMENT_CONFIRMED_STATUSES.has(status)) {
       return {
         id: `delivery-paid-${order.id}`,
         title: `Kirim ${orderRef}: mulai packing`,
@@ -184,7 +187,7 @@ export default function OverviewPage() {
     queryKey: ['admin-recent-orders'],
     queryFn: async () => {
       const response = await api.get<OrdersResponse>('/admin/orders', {
-        params: { limit: 5, skip: 0 },
+        params: { limit: ACTIONABLE_ORDER_LIMIT, skip: 0 },
       });
       return response.data;
     },
@@ -196,6 +199,31 @@ export default function OverviewPage() {
     .map(buildAdminTask)
     .filter((task): task is AdminTaskItem => Boolean(task))
     .slice(0, 4), [recentOrders]);
+  const recentOrderCards = useMemo(() => recentOrders.slice(0, 5), [recentOrders]);
+  const actionCenterStats = useMemo(() => {
+    const counters = {
+      paidPickup: 0,
+      readyPickup: 0,
+      paidDelivery: 0,
+      needsTracking: 0,
+    };
+
+    recentOrders.forEach((order) => {
+      const status = String(order.status || '').toLowerCase();
+      const deliveryType = String(order.delivery_type || '').toLowerCase();
+
+      if (deliveryType === 'pickup' && PAYMENT_CONFIRMED_STATUSES.has(status)) counters.paidPickup += 1;
+      if (deliveryType === 'pickup' && status === 'processing') counters.readyPickup += 1;
+      if (deliveryType === 'delivery' && PAYMENT_CONFIRMED_STATUSES.has(status)) counters.paidDelivery += 1;
+      if (deliveryType === 'delivery' && status === 'processing') counters.needsTracking += 1;
+    });
+
+    return counters;
+  }, [recentOrders]);
+  const totalActionCount = actionCenterStats.paidPickup
+    + actionCenterStats.readyPickup
+    + actionCenterStats.paidDelivery
+    + actionCenterStats.needsTracking;
   const computedGrossFromOrders = recentOrders
     .filter((order) => String(order.status || '').toLowerCase() === 'completed' || String(order.status || '').toLowerCase() === 'paid')
     .reduce((sum, order) => sum + Number(order.total_price || 0), 0);
@@ -372,13 +400,18 @@ export default function OverviewPage() {
           <div>
             <CardTitle className="flex items-center gap-2 text-lg font-bold tracking-tight">
               <ClipboardCheck className="h-5 w-5 text-emerald-600" />
-              Tugas Admin Hari Ini
+              Order Action Center
             </CardTitle>
-            <CardDescription>Pengingat operasional agar email otomatis tetap jalan dan admin tahu kapan perlu update status/WA manual.</CardDescription>
+            <CardDescription>Ringkasan pesanan yang perlu tindakan admin dari {ACTIONABLE_ORDER_LIMIT} order terbaru.</CardDescription>
           </div>
-          <Badge className="w-fit border-none bg-emerald-50 px-3 py-1.5 text-emerald-700 hover:bg-emerald-50">
-            {adminTasks.length} prioritas
-          </Badge>
+          <div className="flex flex-col gap-2 sm:items-end">
+            <Badge className="w-fit border-none bg-emerald-50 px-3 py-1.5 text-emerald-700 hover:bg-emerald-50">
+              {totalActionCount} perlu tindakan
+            </Badge>
+            <Button variant="outline" className="h-8 rounded-xl border-gray-100 px-3 text-xs font-bold" onClick={() => navigate('/orders')}>
+              Buka semua order
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="px-6 sm:px-8 pb-7">
           {ordersLoading ? (
@@ -392,30 +425,47 @@ export default function OverviewPage() {
               Belum ada tugas status prioritas. Tetap pantau order baru, stok, dan pembayaran masuk.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-              {adminTasks.map((task) => {
-                const TaskIcon = task.icon;
-                return (
-                  <button
-                    key={task.id}
-                    type="button"
-                    onClick={() => navigate(task.orderPath)}
-                    className="group flex h-full flex-col justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-left transition hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-emerald-50/60 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-emerald-700/50"
-                  >
-                    <div>
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <span className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border ${task.badgeClass}`}>
-                          <TaskIcon className="h-4 w-4" />
-                        </span>
-                        <ArrowUpRight className="h-4 w-4 text-gray-300 transition group-hover:text-emerald-600" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+                {[
+                  { label: 'Pickup dibayar', value: actionCenterStats.paidPickup, helper: 'siapkan barang' },
+                  { label: 'Pickup siap', value: actionCenterStats.readyPickup, helper: 'hubungi pembeli' },
+                  { label: 'Kirim dibayar', value: actionCenterStats.paidDelivery, helper: 'mulai packing' },
+                  { label: 'Butuh resi', value: actionCenterStats.needsTracking, helper: 'isi tracking' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl bg-gray-50 px-3 py-3 ring-1 ring-gray-100 dark:bg-slate-800 dark:ring-slate-700">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">{item.label}</p>
+                    <p className="mt-1 text-xl font-black text-gray-900 dark:text-slate-100">{item.value}</p>
+                    <p className="text-[11px] text-gray-500">{item.helper}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                {adminTasks.map((task) => {
+                  const TaskIcon = task.icon;
+                  return (
+                    <button
+                      key={task.id}
+                      type="button"
+                      onClick={() => navigate(task.orderPath)}
+                      className="group flex h-full flex-col justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-4 text-left transition hover:-translate-y-0.5 hover:border-emerald-100 hover:bg-emerald-50/60 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-emerald-700/50"
+                    >
+                      <div>
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <span className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border ${task.badgeClass}`}>
+                            <TaskIcon className="h-4 w-4" />
+                          </span>
+                          <ArrowUpRight className="h-4 w-4 text-gray-300 transition group-hover:text-emerald-600" />
+                        </div>
+                        <p className="text-sm font-bold text-gray-900 dark:text-gray-50">{task.title}</p>
+                        <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-300">{task.description}</p>
                       </div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-gray-50">{task.title}</p>
-                      <p className="mt-1.5 text-xs leading-relaxed text-gray-500 dark:text-gray-300">{task.description}</p>
-                    </div>
-                    <p className="mt-3 text-xs font-bold text-emerald-700">{task.action}</p>
-                  </button>
-                );
-              })}
+                      <p className="mt-3 text-xs font-bold text-emerald-700">{task.action}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </CardContent>
@@ -513,13 +563,13 @@ export default function OverviewPage() {
             <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
               {t('overview.table.loading')}
             </div>
-          ) : recentOrders.length === 0 ? (
+          ) : recentOrderCards.length === 0 ? (
             <div className="rounded-2xl bg-gray-50 px-4 py-8 text-center text-sm text-gray-400">
               {t('overview.table.empty')}
             </div>
           ) : (
             <div className="space-y-3">
-              {recentOrders.map((order, index) => (
+              {recentOrderCards.map((order, index) => (
                 <div key={order.id} className="rounded-3xl bg-white p-4 shadow-[0_8px_22px_rgba(15,23,42,0.06)] ring-1 ring-gray-100 dark:bg-slate-900/70 dark:ring-slate-700">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 space-y-1">
