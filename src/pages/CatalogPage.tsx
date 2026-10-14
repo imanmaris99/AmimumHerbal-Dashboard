@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Box, PlusCircle, Search, Layers3, PackagePlus, Boxes, PencilLine } from 'lucide-react';
+import { AlertTriangle, Box, ImageOff, PlusCircle, Search, Layers3, Boxes, PencilLine } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
@@ -66,6 +66,11 @@ interface VariantIndexItem {
 
 interface VariantIndexResponse {
   data: VariantIndexItem[];
+}
+
+interface ProductReadinessIssue {
+  type: 'image' | 'variant' | 'price' | 'brand';
+  label: string;
 }
 
 interface CreateProductPayload {
@@ -270,16 +275,25 @@ export default function CatalogPage() {
       const primaryImageUrl = resolveImageUrl(product.primary_image_url);
       const galleryImages = (product.gallery_images || []).map((img) => ({ ...img, url: resolveImageUrl(img.url) }));
       const variantImageUrl = resolveImageUrl((product.all_variants || []).find((v) => v?.img)?.img || '');
+      const thumbnailUrl = primaryImageUrl || galleryImages?.[0]?.url || variantImageUrl || null;
+      const readinessIssues: ProductReadinessIssue[] = [];
+
+      if (!thumbnailUrl) readinessIssues.push({ type: 'image', label: 'Belum ada foto utama' });
+      if (normalizedVariants.length === 0) readinessIssues.push({ type: 'variant', label: 'Belum ada varian' });
+      if (Number(product.price || 0) <= 0 && minVariantPrice <= 0) readinessIssues.push({ type: 'price', label: 'Harga belum valid' });
+      if (!product.brand_info?.name) readinessIssues.push({ type: 'brand', label: 'Brand belum terbaca' });
 
       return {
         ...product,
         primary_image_url: primaryImageUrl,
         gallery_images: galleryImages,
-        thumbnail_url: primaryImageUrl || galleryImages?.[0]?.url || variantImageUrl || null,
+        thumbnail_url: thumbnailUrl,
         validVariants: normalizedVariants,
         minVariantPrice,
         maxVariantPrice,
         priceSummary,
+        readinessIssues,
+        isMarketplaceReady: readinessIssues.length === 0,
       };
     });
   }, [products, variantIndexResponse?.data]);
@@ -305,6 +319,9 @@ export default function CatalogPage() {
   }, [normalizedProducts, search, variantFocus]);
 
   const totalVariants = filteredProducts.reduce((sum, product) => sum + (product.validVariants?.length || 0), 0);
+  const productsWithoutImage = normalizedProducts.filter((product) => !product.thumbnail_url).length;
+  const productsWithoutVariant = normalizedProducts.filter((product) => (product.validVariants?.length || 0) === 0).length;
+  const productsNeedingReview = normalizedProducts.filter((product) => product.readinessIssues.length > 0).length;
 
   const selectedProduct = useMemo(() => {
     if (!selectedProductId) return null;
@@ -376,8 +393,42 @@ export default function CatalogPage() {
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600"><Box className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Live</span></div><p className="text-sm font-medium text-gray-500 mt-4">Visible Products</p><p className="text-2xl font-bold text-gray-900 mt-1">{filteredProducts.length}</p><p className="text-[11px] text-gray-400 mt-2">Produk yang sedang terpantau</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-blue-50 text-blue-600"><Layers3 className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">DB</span></div><p className="text-sm font-medium text-gray-500 mt-4">Brand / Productions</p><p className="text-2xl font-bold text-gray-900 mt-1">{productions.length}</p><p className="text-[11px] text-gray-400 mt-2">Source relasi untuk product_by_id</p></CardContent></Card>
         <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-green-50 text-green-600"><Boxes className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Flow</span></div><p className="text-sm font-medium text-gray-500 mt-4">Variant Slots</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalVariants}</p><p className="text-[11px] text-gray-400 mt-2">Pack type mengikuti produk setelah submit</p></CardContent></Card>
-        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-violet-50 text-violet-600"><PackagePlus className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matrix</span></div><p className="text-sm font-medium text-gray-500 mt-4">Submit Product</p><p className="text-2xl font-bold text-gray-900 mt-1">Enabled</p><p className="text-[11px] text-gray-400 mt-2">Shared internal, write action terkontrol</p></CardContent></Card>
+        <Card className="border-none shadow-sm rounded-3xl"><CardContent className="p-6"><div className="flex items-center justify-between"><div className="p-3 rounded-2xl bg-amber-50 text-amber-600"><AlertTriangle className="w-5 h-5" /></div><span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Audit</span></div><p className="text-sm font-medium text-gray-500 mt-4">Perlu Dilengkapi</p><p className="text-2xl font-bold text-gray-900 mt-1">{productsNeedingReview}</p><p className="text-[11px] text-gray-400 mt-2">{productsWithoutImage} tanpa foto • {productsWithoutVariant} tanpa varian</p></CardContent></Card>
       </div>
+
+      {productsNeedingReview > 0 && (
+        <Card className="border-none bg-amber-50 shadow-sm rounded-3xl ring-1 ring-amber-100">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-amber-600 shadow-sm">
+                  <ImageOff className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-amber-950">Product readiness warning</p>
+                  <p className="mt-1 text-sm leading-relaxed text-amber-800">
+                    Ada produk yang belum siap tampil maksimal di marketplace. Prioritaskan upload foto utama, tambah varian/stok, dan cek harga sebelum promosi lebih luas.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs sm:min-w-[320px]">
+                <div className="rounded-2xl bg-white px-3 py-2 text-amber-900">
+                  <strong className="block text-lg">{productsNeedingReview}</strong>
+                  perlu cek
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2 text-amber-900">
+                  <strong className="block text-lg">{productsWithoutImage}</strong>
+                  tanpa foto
+                </div>
+                <div className="rounded-2xl bg-white px-3 py-2 text-amber-900">
+                  <strong className="block text-lg">{productsWithoutVariant}</strong>
+                  tanpa varian
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 2xl:grid-cols-[1.1fr_0.9fr] gap-6 xl:gap-8 items-start">
         <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
@@ -572,6 +623,15 @@ export default function CatalogPage() {
                             <p className="break-words text-sm font-bold text-gray-900 sm:text-base">{product.name}</p>
                             <p className="break-all text-[11px] font-medium text-gray-400">ID: {product.id}</p>
                             <p className="text-xs text-gray-500">Production: <strong className="text-gray-700">{product.brand_info?.name || '-'}</strong></p>
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {product.isMarketplaceReady ? (
+                                <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">Siap tampil</span>
+                              ) : product.readinessIssues.map((issue) => (
+                                <span key={`${product.id}-${issue.type}`} className="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700 ring-1 ring-amber-100">
+                                  {issue.label}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
 
@@ -609,6 +669,15 @@ export default function CatalogPage() {
                       <p>Production: {selectedProduct.brand_info?.name || '-'}</p>
                       <p>Harga: {selectedProduct.priceSummary}</p>
                       <p>Variant aktif: {selectedProduct.validVariants?.length || 0}</p>
+                      {selectedProduct.readinessIssues.length > 0 ? (
+                        <div className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                          <strong>Perlu dilengkapi:</strong> {selectedProduct.readinessIssues.map((issue) => issue.label).join(', ')}. Klik Edit Produk untuk upload foto, lalu lengkapi varian dari modul Variants.
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl border border-emerald-100 bg-white/70 px-3 py-2 text-xs text-emerald-800">
+                          Produk ini sudah punya foto, brand, harga, dan varian dasar untuk tampil lebih siap di storefront.
+                        </div>
+                      )}
                       <div className="pt-2 flex flex-wrap gap-2">
                         <Button type="button" size="sm" variant="outline" className="rounded-xl" onClick={() => navigate(`/catalog/edit/${selectedProduct.id}`)}>
                           <PencilLine className="w-4 h-4 mr-2" />

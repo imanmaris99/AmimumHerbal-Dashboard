@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Box, Boxes, Loader2, PencilLine, PlusCircle, Save } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Box, Boxes, ImageOff, Loader2, PencilLine, PlusCircle, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 import api from '@/lib/api';
@@ -158,6 +158,21 @@ export default function ProductEditPage() {
 
     return `Rp ${minPrice.toLocaleString('id-ID')} - Rp ${maxPrice.toLocaleString('id-ID')}`;
   }, [productDetailQuery.data, variantCount]);
+
+  const readinessIssues = useMemo(() => {
+    const data = productDetailQuery.data;
+    if (!data) return [] as string[];
+
+    const issues: string[] = [];
+    if ((data.images || []).length === 0) issues.push('Belum ada foto utama produk');
+    if ((data.variants_list || []).length === 0) issues.push('Belum ada varian/pack type');
+    if (!String(data.info || '').trim()) issues.push('Info singkat masih kosong');
+    if ((data.description_list || []).length === 0) issues.push('Deskripsi produk masih kosong');
+    if ((data.instructions_list || []).length === 0) issues.push('Instruksi penggunaan masih kosong');
+    if (Number(data.price || 0) <= 0 && Number(data.min_variant_price || 0) <= 0) issues.push('Harga belum valid');
+
+    return issues;
+  }, [productDetailQuery.data]);
 
   const refreshDetail = async () => {
     await queryClient.invalidateQueries({ queryKey: ['catalog-product-detail', productId] });
@@ -383,6 +398,25 @@ export default function ProductEditPage() {
                 Product ini saat ini terhubung ke <strong>{variantCount}</strong> variant / pack type. Edit product menjaga layer inti katalog, sedangkan harga jual operasional per variant tetap dikelola di modul Variants.
               </div>
 
+              {readinessIssues.length > 0 ? (
+                <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <div>
+                      <p className="font-bold text-amber-950">Produk belum siap maksimal untuk storefront</p>
+                      <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-relaxed">
+                        {readinessIssues.map((issue) => <li key={issue}>{issue}</li>)}
+                      </ul>
+                      <p className="mt-2 text-xs leading-relaxed">Lengkapi foto, varian/stok, harga, dan copy produk supaya catalog customer tidak tampil placeholder atau membingungkan.</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
+                  Produk ini sudah punya foto, varian, harga, deskripsi, dan instruksi dasar untuk tampil lebih siap di storefront.
+                </div>
+              )}
+
               <div className="rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 p-4 text-sm space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="flex items-center gap-2 font-semibold"><Boxes className="w-4 h-4 text-emerald-600" />Variant slots aktif</span>
@@ -457,6 +491,12 @@ export default function ProductEditPage() {
                       {reorderBusy && <span className="text-sm text-gray-600">Menyimpan urutan...</span>}
                     </div>
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => e.target.files && uploadFiles(e.target.files)} />
+                    {images.length === 0 && (
+                      <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-100 bg-white px-3 py-2 text-xs leading-relaxed text-amber-800">
+                        <ImageOff className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>Produk ini belum punya foto. Upload 1 foto utama agar customer tidak melihat placeholder di katalog, detail produk, dan riwayat pesanan.</span>
+                      </div>
+                    )}
                     <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
                       Upload foto baru akan <strong>mengganti foto produk saat ini</strong>. Setelah upload berhasil, foto lama otomatis dihapus dari storage agar database/storage tidak menumpuk.
                     </div>
