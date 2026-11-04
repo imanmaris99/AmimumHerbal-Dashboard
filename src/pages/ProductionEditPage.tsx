@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
-import { validateImageFile } from '@/lib/imageValidation';
+import { SMALL_IMAGE_UPLOAD_BYTES, validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -249,7 +249,7 @@ export default function ProductionEditPage() {
                       <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        if (!validateImageFile(file)) {
+                        if (!validateImageFile(file, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
                           e.target.value = '';
                           return;
                         }
@@ -258,7 +258,7 @@ export default function ProductionEditPage() {
                       }} />
                       {logoUploading && <span className="text-sm text-gray-600">Mengunggah gambar... {logoUploadProgress}%</span>}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan diperbarui bersamaan proses update production.</p>
+                    <p className="text-xs text-gray-500 mt-2">Format: JPG/PNG/WebP, maksimal 300KB. Logo akan diperbarui bersamaan proses update production.</p>
 
                     {logoFile && (
                       <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">

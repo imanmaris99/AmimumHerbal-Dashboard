@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
+import { VERCEL_SAFE_UPLOAD_BYTES } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -184,14 +185,15 @@ export default function ProductEditPage() {
     const list = Array.from(files).slice(0, 1);
     if (!list.length) return;
 
-    const maxMb = 5;
+    const maxBytes = VERCEL_SAFE_UPLOAD_BYTES;
+    const maxLabel = '4MB';
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-    const rejected = list.filter((file) => !allowed.includes(file.type) || file.size > maxMb * 1024 * 1024);
+    const rejected = list.filter((file) => !allowed.includes(file.type) || file.size > maxBytes);
     if (rejected.length) {
-      toast.error(`Sebagian file ditolak. Format: JPG/PNG/WEBP, max ${maxMb}MB`);
+      toast.error(`Sebagian file ditolak. Format: JPG/PNG/WEBP, max ${maxLabel}`);
     }
 
-    const validFiles = list.filter((file) => allowed.includes(file.type) && file.size <= maxMb * 1024 * 1024);
+    const validFiles = list.filter((file) => allowed.includes(file.type) && file.size <= maxBytes);
     if (!validFiles.length) return;
 
     if (Array.from(files).length > 1) {

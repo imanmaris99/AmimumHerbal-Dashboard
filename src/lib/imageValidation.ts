@@ -1,15 +1,20 @@
 import { toast } from 'sonner';
 
-// Keep aligned with BE MAX_FILE_SIZE (10MB)
-export function validateImageFile(file: File, maxSizeMb = 10) {
+export const VERCEL_SAFE_UPLOAD_BYTES = 4 * 1024 * 1024;
+export const SMALL_IMAGE_UPLOAD_BYTES = 300 * 1024;
+
+export function validateImageFile(
+  file: File,
+  maxSizeBytes = VERCEL_SAFE_UPLOAD_BYTES,
+  maxSizeLabel = '4MB',
+) {
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  const maxSizeBytes = maxSizeMb * 1024 * 1024;
   if (!allowedTypes.includes(file.type)) {
     toast.error('Format gambar harus JPG, PNG, atau WebP.');
     return false;
   }
   if (file.size > maxSizeBytes) {
-    toast.error(`Ukuran gambar maksimal ${maxSizeMb}MB`);
+    toast.error(`Ukuran gambar maksimal ${maxSizeLabel}`);
     return false;
   }
   return true;

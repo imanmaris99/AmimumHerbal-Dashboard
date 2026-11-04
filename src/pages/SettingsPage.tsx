@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
-import { validateImageFile } from '@/lib/imageValidation';
+import { SMALL_IMAGE_UPLOAD_BYTES, validateImageFile } from '@/lib/imageValidation';
 
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                       setPhotoFile(null);
                       return;
                     }
-                    if (!validateImageFile(file)) {
+                    if (!validateImageFile(file, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
                       e.target.value = '';
                       setPhotoFile(null);
                       return;

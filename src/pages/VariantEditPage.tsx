@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
-import { validateImageFile } from '@/lib/imageValidation';
+import { SMALL_IMAGE_UPLOAD_BYTES, validateImageFile } from '@/lib/imageValidation';
 import { useAuthStore } from '@/store/authStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -225,7 +225,7 @@ export default function VarianEditPage() {
       toast.error(t('variantsPage.messages.selectImage'));
       return;
     }
-    if (!validateImageFile(imageFile)) {
+    if (!validateImageFile(imageFile, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
       return;
     }
     uploadImageMutation.mutate(imageFile);
@@ -409,7 +409,7 @@ export default function VarianEditPage() {
                       <input ref={fileInputRef} id="edit-variant-image-page" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
-                        if (!validateImageFile(file)) {
+                        if (!validateImageFile(file, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
                           e.target.value = '';
                           return;
                         }

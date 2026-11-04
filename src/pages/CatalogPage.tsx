@@ -491,7 +491,7 @@ export default function CatalogPage() {
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" multiple className="hidden" onChange={(e) => handlePendingFiles(e.target.files)} />
                     {isUploadingImages && <span className="text-sm text-gray-600">Mengunggah gambar...</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Format JPG/PNG/WebP maksimal 10MB. Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
+                  <p className="text-xs text-gray-500 mt-2">Format JPG/PNG/WebP maksimal 4MB. Gambar akan di-upload otomatis setelah product berhasil dibuat.</p>
 
                   {pendingImages.length > 0 && (
                     <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">

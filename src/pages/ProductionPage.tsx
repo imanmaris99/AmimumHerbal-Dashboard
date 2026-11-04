@@ -11,7 +11,7 @@ import { Factory, PlusCircle, Search, Tags, LayoutGrid, PencilLine } from 'lucid
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
-import { validateImageFile } from '@/lib/imageValidation';
+import { SMALL_IMAGE_UPLOAD_BYTES, validateImageFile } from '@/lib/imageValidation';
 
 interface ProductionItem {
   id: number;
@@ -208,7 +208,7 @@ export default function ProductionPage() {
                     <input ref={brandImageInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      if (!validateImageFile(file)) {
+                      if (!validateImageFile(file, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
                         e.target.value = '';
                         return;
                       }
@@ -217,7 +217,7 @@ export default function ProductionPage() {
                     }} />
                     {uploadingBrandImage && <span className="text-sm text-gray-600">Mengunggah gambar... {brandUploadProgress}%</span>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">Format: image, maksimal 2MB. Logo akan di-upload otomatis setelah production berhasil dibuat.</p>
+                  <p className="text-xs text-gray-500 mt-2">Format: JPG/PNG/WebP, maksimal 300KB. Logo akan di-upload otomatis setelah production berhasil dibuat.</p>
 
                   {brandImageFile && (
                     <div className="mt-3 text-xs rounded-lg border border-gray-200 bg-white px-3 py-2 flex items-center justify-between gap-3">

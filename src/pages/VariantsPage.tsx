@@ -11,7 +11,7 @@ import { Boxes, PackagePlus, Layers3, Search, Archive, ShieldCheck, PencilLine, 
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { getAdminSafeErrorMessage } from '@/lib/dashboard';
-import { validateImageFile } from '@/lib/imageValidation';
+import { SMALL_IMAGE_UPLOAD_BYTES, validateImageFile } from '@/lib/imageValidation';
 
 interface ProductItem {
   id: string;
@@ -386,7 +386,7 @@ export default function VariantsPage() {
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
-                    if (!validateImageFile(file)) {
+                    if (!validateImageFile(file, SMALL_IMAGE_UPLOAD_BYTES, '300KB')) {
                       e.target.value = '';
                       return;
                     }
