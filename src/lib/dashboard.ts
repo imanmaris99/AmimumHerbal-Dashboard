@@ -123,3 +123,7 @@ export function getAdminSafeErrorMessage(error: any, fallback: string) {
 
   return fallback;
 }
+
+export function getProfileUpdateErrorMessage(error: unknown) {
+  return getAdminSafeErrorMessage(error, 'Gagal memperbarui profil internal.');
+}

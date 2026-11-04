@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ShieldCheck, User as UserIcon, Mail, Save, Loader2 } from 'lucide-react';
 import { ROLE_LABELS } from '@/types';
+import { getProfileUpdateErrorMessage } from '@/lib/dashboard';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -57,9 +58,8 @@ export function ProfileDialog({ open, onOpenChange }: ProfileDialogProps) {
       toast.success(response?.message || 'Profil internal berhasil diperbarui.');
       onOpenChange(false);
     },
-    onError: (error: any) => {
-      const message = error?.response?.data?.detail?.message || error?.message || 'Gagal memperbarui profil internal.';
-      toast.error(message);
+    onError: (error: unknown) => {
+      toast.error(getProfileUpdateErrorMessage(error));
     },
   });
 
